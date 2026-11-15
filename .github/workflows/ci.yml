@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  ci:
+    name: CI
+    # The latest reviewed revision of Mikode13/.github when this repository adopted MiKode CI,
+    # the one harness-api pins. It is later than the last entry of that repository's table of
+    # known-good releases, and has the Documentation capability's locked shared formatter.
+    uses: Mikode13/.github/.github/workflows/ci.yml@aa9c6acfbc57297bf53966512b91ad9f677cea35
+    with:
+      # Documentation: Markdown is the only artifact here, so its formatting, structure and
+      # internal links are the repository's invariants. No other capability applies: there
+      # is no source, test suite, build or package.
+      documentation: true
