@@ -105,3 +105,93 @@ no link checks.
 each code repository's `AGENTS.md` points here and requires the flow to be updated with the
 change. harness-api's pull requests #21, #22 and #23, which added these documents there, are
 replaced by this repository.
+
+## Events come in two families, and a contract package defines the product's
+
+**Decision:** An event is one of two kinds. What happens inside a run, such as a tool's
+activity, text, an ask, the final answer or an error, is defined by the harness. The state
+around a run, such as its workspace being set up, an interruption by a restart or a session
+being cleared, is defined by the product, in a contract package of types only that depends on
+the harness. The API, the CLI and the mobile app depend on that package. The API stores and
+delivers the harness's events as they are and adds only what it needs, and each stored event
+carries the version of its schema. [`design/events.md`](design/events.md) holds the rest.
+
+**Context:** Decided by the maintainer on 2026-11-15. He first asked to reuse the harness's
+events, with at most the ones the API needs for its own infrastructure, and then set the two
+apart: one is what occurs inside the conversation, the other is the state of the
+conversation. His rule for the dependencies is that they go from the harness outwards: the
+harness knows nothing of the API or of the CLI, and the others build on it. The harness
+therefore cannot define the second family, since "interrupted because the API restarted" is
+the API under another name. Defining it in the API would make every client depend on the API.
+
+**Consequences:** There is one schema for what a run produces and nothing to translate. A
+package that does not exist yet has to be created and named. The final answer and the ask are
+not events in the harness today, so the API builds them until the harness offers them;
+[`design/harness-needs.md`](design/harness-needs.md) lists it. A client holds two
+subscriptions, one for a conversation and one for the user's changes of state, and the second
+is part of the contract between the API and the clients, unknown to the harness.
+
+## An ask is not sent to a device, and the first answer wins
+
+**Decision:** The API does not route an ask to a device. It adds the ask to the
+conversation's events, and the devices subscribed to that conversation get it. A device is
+active when its subscription is open; the device that sent the prompt is not special. A
+device that was away asks for the events after the last number it saw and gets the ask, or
+the ask and its answer. The first answer wins and a later one is rejected. The device that
+answers gets only accepted or rejected, and updates its screen from the answer event.
+[`flows/ask-and-answer.md`](flows/ask-and-answer.md) holds the flow.
+
+**Context:** Decided by the maintainer on 2026-11-15. His concern was telling which devices
+are in use: with a desktop, a laptop and a mobile, an ask must not go to the desktop when it
+is off or has not loaded that conversation, and the server cannot know that a laptop closed.
+Keeping track of devices to send each ask to the right one would need a list of devices and
+of what each has open. An open subscription already says which devices are there, and
+R06 of [`mvp.md`](mvp.md) says a question does not depend on the terminal that started the
+run.
+
+**Consequences:** The API keeps no list of devices and never needs to know whether one
+received an ask: the record of events is the guarantee, not the delivery. A device that
+answers and one that only watches update their screens the same way. Notifications are the
+one place where a device has to be known, since they are for a device that is not connected;
+they are out for now.
+
+## One API key, and three users of the operating system
+
+**Decision:** The API accepts one key of the product's own, shared by the maintainer's
+devices, and only that key works. On the server the product runs as three users besides the
+maintainer's own, which has sudo: a service user that runs the API and starts the executors,
+an agent user that can only read, and an agent user that can do more. The executor of an
+agent with no tools that write runs as the read-only user. Neither agent user has sudo or can
+read the database credentials. [`design/security.md`](design/security.md) holds the rest.
+
+**Context:** Decided by the maintainer on 2026-11-15. The key is so that nobody else can use
+the harness through the server. A key per device was proposed, to revoke a lost device's
+alone, and declined: losing a device is not a concern for him. The two agent users are his:
+one only for reading and one with more capability. Whether an agent writes is known before
+its run starts, from its tools, which is what lets the API choose the user.
+
+**Consequences:** The API cannot tell devices apart by their key, and does not need to, since
+an ask is not sent to a device. The operating system refuses a write from an agent that only
+reads, as well as the harness. A workflow with a planner, an executor and a reviewer is one
+process, so its roles that only read run as the writing user too. How the service user starts
+a process as another user is not decided, and neither is where the server can be reached
+from.
+
+## The harness saves and restores a conversation before the API is built
+
+**Decision:** Saving and restoring an agent's conversation,
+[harness#111](https://github.com/Mikode13/harness/issues/111), is done before the API, once
+the design is finished. [`design/harness-needs.md`](design/harness-needs.md) lists what else
+the product needs from the harness.
+
+**Context:** Decided by the maintainer on 2026-11-15. The API starts one executor for each
+run, as a process of its own, and the harness keeps an agent's conversation in memory, so the
+second prompt of a conversation would start knowing nothing of the first. Two other ways were
+considered: an executor that lives as long as its session is in use, which loses what the
+model knew on a restart, and passing only the text of the earlier messages until harness#111
+exists, which blocks nothing but makes each run start almost from nothing about the code.
+
+**Consequences:** The API starts later, after the harness work, and is built on what it will
+keep. The product stores the conversation the harness gives it without reading it, so its
+format stays the harness's. The order of work is the flows, then the database, then what the
+harness needs, then the API.

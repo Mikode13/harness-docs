@@ -139,27 +139,18 @@ from the conversation.
 
 ## Open points
 
-These were proposed in the design discussion and the maintainer has not confirmed them.
-They are inputs to system design (agenda items in [mvp.md](mvp.md)), not decisions.
+These are not decided. They are inputs to system design (agenda items in
+[mvp.md](mvp.md)), not decisions. Points that were here and are now decided are in
+[design/events.md](design/events.md), [flows/ask-and-answer.md](flows/ask-and-answer.md) and
+[design/harness-needs.md](design/harness-needs.md): the order and delivery of events, the
+user's message in the same order, the answer to an ask, and the harness's conversation stored
+as the harness gives it.
 
-- **Event order and delivery.** Events might be numbered in order within a conversation and
-  stored before they are delivered, so that a client that reconnects asks for everything
-  after the last number it saw.
-- **The prompt in the ordered record.** The prompt might also appear in the same ordered
-  record a client reads, so that a second device sees what the first one sent.
-- **Events and the model's messages are two records.** The events a client sees and the
-  messages the model needs might be kept as two different records. The harness's progress
-  events are a short narration and cannot rebuild the model's context, so the model's
-  conversation might be stored as the harness serializes it
-  ([harness#111](https://github.com/Mikode13/harness/issues/111)).
 - **Stored summaries.** A summary the context uses might be stored, since it costs tokens
   and cannot be reproduced.
 - **A name for what the user writes.** The prompt is the user's text plus the context the
   product adds, so the user's text alone has no term of its own yet. Whether the
   conversation keeps the whole prompt or only that text is not decided either.
-- **An ask is answered once.** The answer to an ask might be an event of its own, so that a
-  pending ask is one with no answer yet. An answer to an ask that was already answered does
-  not resume the work again, as the acceptance of R06 requires.
 - **Code history belongs to the session.** The code history, which restores code (R09),
   might belong to the session and its workspace, so that it survives a clear.
 - **Terms to name later.** These are named when their flow is designed: agent and workflow
@@ -207,8 +198,9 @@ Source: the harness's `docs/architecture.md`.
 - **[#4](https://github.com/Mikode13/harness-api/issues/4)** says "task" where this
   vocabulary says run, and adds an "execution attempt". It has the user create, list and
   reopen conversations, where this vocabulary has sessions. Its task states are queued,
-  running, waiting_for_input, completed, failed, cancelled and interrupted; the run states
-  in the open points above have no "queued". It allows one active execution per
+  running, waiting_for_input, completed, failed, cancelled and interrupted; a run's states
+  in [design/run-lifecycle.md](design/run-lifecycle.md) have `setting_up` in place of
+  "queued", and add `cancelling`. It allows one active execution per
   conversation. It keeps "public conversation IDs distinct from harness session/history
   IDs".
 - **[#5](https://github.com/Mikode13/harness-api/issues/5)** says "a session has its own
