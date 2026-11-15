@@ -68,9 +68,13 @@ here, never the reverse. The harness's documents never describe the product.
 - `design/`: the design documents: [`run-lifecycle.md`](design/run-lifecycle.md),
   [`events.md`](design/events.md), [`security.md`](design/security.md) and
   [`harness-needs.md`](design/harness-needs.md).
-- [`decisions.md`](decisions.md): the decisions that cross projects.
-- [`learnings.md`](learnings.md): what building or running the product taught.
+- [`docs/decisions.md`](docs/decisions.md): the product's decisions, which cross its
+  projects.
+- [`docs/architecture.md`](docs/architecture.md): how this repository itself is organized.
 - [`AGENTS.md`](AGENTS.md): how an agent uses and updates this repository.
+
+What building or running the product teaches goes in `docs/learnings.md`, created with its
+first lesson.
 
 ## Checks
 
@@ -81,3 +85,9 @@ pnpm run docs:check
 
 The checks cover formatting, Markdown structure and internal links. External URLs are not
 checked.
+
+## License
+
+The documentation in this repository is licensed under the
+[Creative Commons Attribution 4.0 International License](LICENSE) (CC BY 4.0). The software
+projects it describes have their own licenses.

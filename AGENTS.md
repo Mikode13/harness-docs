@@ -14,11 +14,14 @@ the area you work on. Open only those; do not load every document by default.
 
 - Use the glossary's terms. Add a term to the glossary before using a new one.
 - A change in any project that departs from a flow or a design document updates that
-  document in the same batch of work, and adds an entry to [`decisions.md`](decisions.md)
+  document in the same batch of work, and adds an entry to
+  [`docs/decisions.md`](docs/decisions.md)
   that says why. An entry has **Decision**, **Context**, **Alternatives considered** when
   there were any, and **Consequences**.
-- [`learnings.md`](learnings.md) records what building or running the product taught, and
-  links the decision it led to.
+- `docs/learnings.md` records what building or running the product taught, and links the
+  decision it led to. It is created with its first lesson.
+- [`docs/architecture.md`](docs/architecture.md) describes how this repository is organized.
+  Update it when the layout or a rule about where a document lives changes.
 
 ## Writing
 

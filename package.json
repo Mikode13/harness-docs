@@ -3,6 +3,7 @@
 	"version": "0.0.0",
 	"private": true,
 	"description": "The design of the MiKode harness product, across its projects.",
+	"license": "CC-BY-4.0",
 	"engines": {
 		"node": "^22.13.0 || ^24.0.0"
 	},
@@ -12,7 +13,7 @@
 		"prepare": "mikode-git-hooks install",
 		"format": "prettier . --write",
 		"format:check": "prettier . --check",
-		"lint:markdown": "markdownlint-cli2 README.md AGENTS.md mvp.md glossary.md decisions.md learnings.md \"design/**/*.md\" \"flows/**/*.md\"",
+		"lint:markdown": "markdownlint-cli2 README.md AGENTS.md mvp.md glossary.md \"design/**/*.md\" \"docs/**/*.md\" \"flows/**/*.md\"",
 		"links:internal": "remark --quiet --frail --use remark-validate-links .",
 		"docs:check": "pnpm run format:check && pnpm run lint:markdown && pnpm run links:internal"
 	},

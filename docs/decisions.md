@@ -1,7 +1,7 @@
 # Decisions
 
-This file records the decisions that cross projects: the product's scope, vocabulary, flows and
-design. A decision about how one repository is built goes in that repository's
+This file records the product's decisions, which cross its projects: scope, vocabulary, flows
+and design. A decision about how one repository is built goes in that repository's
 `docs/decisions.md`, and a rule for all MiKode projects goes in
 [`Mikode13/engineering`](https://github.com/Mikode13/engineering). Entries are in
 chronological order, and each has a **Decision**, a **Context** and its **Consequences**.
@@ -12,12 +12,12 @@ chronological order, and each has a **Decision**, a **Context** and its **Conseq
 conversation at a time, and clearing it archives that conversation and starts a new, empty one
 in the same session. Deletion is logical first, and a real purge may come later. An archived
 conversation can still be found; a deleted one is no longer returned by listing, opening or
-retrieval. [`glossary.md`](glossary.md) defines the terms.
+retrieval. [`glossary.md`](../glossary.md) defines the terms.
 
 **Context:** The maintainer's example is the session for translations, whose workspace is a
 worktree for translations: the session is cleared to start a different translations task and
 keeps its title and workspace. A conversation per work item would tie the workspace to
-something the user discards. R13 of [`mvp.md`](mvp.md) retrieves messages from other
+something the user discards. R13 of [`mvp.md`](../mvp.md) retrieves messages from other
 conversations, so a clear cannot delete the conversation it replaces. Deleting is for what is
 not worth remembering, such as a throwaway question.
 
@@ -32,7 +32,7 @@ conversations are not decided; the glossary's open points hold the proposals.
 **Decision:** A session has one workspace, or none when it is not about code. A workspace is
 where the harness works: one root or several, each a worktree or a project's main folder. A
 worktree is a copy of a repository and nothing more. On the server of the MVP every root is a
-worktree. [`glossary.md`](glossary.md) defines the terms.
+worktree. [`glossary.md`](../glossary.md) defines the terms.
 
 **Context:** The harness can work in a worktree, in a project's main folder, or in several
 projects at once, such as the API and the harness together, and its `workspace` option is
@@ -40,7 +40,7 @@ already a list of `roots`. Calling all of that a worktree named one case for the
 session has the workspace, not the reverse, because the session is what the user lists and a
 session without code has no workspace.
 
-**Consequences:** R03 of [`mvp.md`](mvp.md) stays as it is: sessions on the same project use
+**Consequences:** R03 of [`mvp.md`](../mvp.md) stays as it is: sessions on the same project use
 separate worktrees. Two sessions on a project's main folder would write in the same place,
 where the harness lets one run write at a time, so that form is left for local use. A
 conversation has many runs, one per prompt, and each run has a state; which states is not
@@ -51,9 +51,9 @@ decided.
 **Decision:** The API starts one executor per run, as a child process. The executor runs the
 harness for that run, talks only to the API over a local channel, and does not connect to the
 database. The API is the only writer of the database and of a run's state.
-[`run-lifecycle.md`](design/run-lifecycle.md) holds the rules.
+[`run-lifecycle.md`](../design/run-lifecycle.md) holds the rules.
 
-**Context:** Agenda item 1 of [`mvp.md`](mvp.md). Inside the API's process, a run that hangs
+**Context:** Agenda item 1 of [`mvp.md`](../mvp.md). Inside the API's process, a run that hangs
 or runs out of memory takes the API down, and the commands a model starts run as the user that
 holds the database credentials. An executor as a service of its own would also survive a
 restart of the API, but needs a channel that survives either side going away, a heartbeat and
@@ -76,7 +76,7 @@ run that was not ended becomes `interrupted` and its pending ask is closed. A se
 be cleared or deleted while a run of its conversation is not ended; the API enforces it and
 the clients mirror it.
 
-**Context:** Agenda item 2 of [`mvp.md`](mvp.md). Issue
+**Context:** Agenda item 2 of [`mvp.md`](../mvp.md). Issue
 [#4](https://github.com/Mikode13/harness-api/issues/4) listed the states for a task with
 `queued`; nothing is queued (R05), and what happens first is preparing the workspace, so it
 is `setting_up`. Stopping a command's processes takes seconds, and a prompt accepted in that
@@ -114,7 +114,7 @@ around a run, such as its workspace being set up, an interruption by a restart o
 being cleared, is defined by the product, in a contract package of types only that depends on
 the harness. The API, the CLI and the mobile app depend on that package. The API stores and
 delivers the harness's events as they are and adds only what it needs, and each stored event
-carries the version of its schema. [`design/events.md`](design/events.md) holds the rest.
+carries the version of its schema. [`design/events.md`](../design/events.md) holds the rest.
 
 **Context:** Decided by the maintainer on 2026-11-15. He first asked to reuse the harness's
 events, with at most the ones the API needs for its own infrastructure, and then set the two
@@ -127,7 +127,7 @@ the API under another name. Defining it in the API would make every client depen
 **Consequences:** There is one schema for what a run produces and nothing to translate. A
 package that does not exist yet has to be created and named. The final answer and the ask are
 not events in the harness today, so the API builds them until the harness offers them;
-[`design/harness-needs.md`](design/harness-needs.md) lists it. A client holds two
+[`design/harness-needs.md`](../design/harness-needs.md) lists it. A client holds two
 subscriptions, one for a conversation and one for the user's changes of state, and the second
 is part of the contract between the API and the clients, unknown to the harness.
 
@@ -139,14 +139,14 @@ active when its subscription is open; the device that sent the prompt is not spe
 device that was away asks for the events after the last number it saw and gets the ask, or
 the ask and its answer. The first answer wins and a later one is rejected. The device that
 answers gets only accepted or rejected, and updates its screen from the answer event.
-[`flows/ask-and-answer.md`](flows/ask-and-answer.md) holds the flow.
+[`flows/ask-and-answer.md`](../flows/ask-and-answer.md) holds the flow.
 
 **Context:** Decided by the maintainer on 2026-11-15. His concern was telling which devices
 are in use: with a desktop, a laptop and a mobile, an ask must not go to the desktop when it
 is off or has not loaded that conversation, and the server cannot know that a laptop closed.
 Keeping track of devices to send each ask to the right one would need a list of devices and
 of what each has open. An open subscription already says which devices are there, and
-R06 of [`mvp.md`](mvp.md) says a question does not depend on the terminal that started the
+R06 of [`mvp.md`](../mvp.md) says a question does not depend on the terminal that started the
 run.
 
 **Consequences:** The API keeps no list of devices and never needs to know whether one
@@ -162,7 +162,7 @@ devices, and only that key works. On the server the product runs as three users 
 maintainer's own, which has sudo: a service user that runs the API and starts the executors,
 an agent user that can only read, and an agent user that can do more. The executor of an
 agent with no tools that write runs as the read-only user. Neither agent user has sudo or can
-read the database credentials. [`design/security.md`](design/security.md) holds the rest.
+read the database credentials. [`design/security.md`](../design/security.md) holds the rest.
 
 **Context:** Decided by the maintainer on 2026-11-15. The key is so that nobody else can use
 the harness through the server. A key per device was proposed, to revoke a lost device's
@@ -181,7 +181,7 @@ from.
 
 **Decision:** Saving and restoring an agent's conversation,
 [harness#111](https://github.com/Mikode13/harness/issues/111), is done before the API, once
-the design is finished. [`design/harness-needs.md`](design/harness-needs.md) lists what else
+the design is finished. [`design/harness-needs.md`](../design/harness-needs.md) lists what else
 the product needs from the harness.
 
 **Context:** Decided by the maintainer on 2026-11-15. The API starts one executor for each
