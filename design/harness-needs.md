@@ -33,6 +33,8 @@ Two other ways were considered:
 
 ### The final answer and the ask as events
 
+[harness#177](https://github.com/Mikode13/harness/issues/177).
+
 Today the final answer of a run travels in its result, and what an agent asks its user
 arrives through a callback: `ask` for a question and `approve` for an approval. Neither is
 an event.
@@ -42,7 +44,9 @@ Both happen inside a run, so they belong with the harness's events; see
 stores and forwards events has everything a run produced in one place.
 
 The maintainer agreed to the two families of events on 2026-11-15, and this need was noted
-then. How the harness offers them is not designed.
+then. How the harness offers them is not designed. The harness has a rule that a progress
+event never carries what a consumer needs to be correct, so the issue asks for that rule to
+be kept or changed on purpose.
 
 ## Candidates
 
