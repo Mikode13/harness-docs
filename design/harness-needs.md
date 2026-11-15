@@ -20,8 +20,12 @@ conversation in memory, inside its process, so a new process for the second prom
 knowing nothing of the first.
 
 The harness has to give the conversation of an agent as something a consumer can store, and
-take it back to continue from it. The product stores it as it is, without reading it: its
-format is the harness's.
+take it back to continue from it. The product calls it a snapshot and stores it as it is,
+without reading it: its format is the harness's.
+
+The flow [prompt-and-reconnect](../flows/prompt-and-reconnect.md) shows where it is used: a
+run's executor restores the agent from the snapshot the run before left, and hands over its
+own with the final answer, which the API stores before it ends the run.
 
 The maintainer chose, on 2026-11-15, to do this before the API, once the design is finished.
 Two other ways were considered:
@@ -59,7 +63,7 @@ Implied by the documents, and not agreed. Each one says why it might be needed.
   of its schema, since a stored event outlives the harness that produced it. Whether that
   version is the harness package's own or one the harness states for its events is open.
 - **Restoring a run that waits for an answer.** After a restart, a run that asked something
-  is interrupted and its ask is closed, because the run that asked no longer exists; see the
+  is interrupted and its ask is closed, because the API has lost the executor that asked; see the
   [run lifecycle](run-lifecycle.md#rules). Going on from the ask instead depends on
   [harness#136](https://github.com/Mikode13/harness/issues/136). The MVP accepts the
   interruption, so this is not needed for it.

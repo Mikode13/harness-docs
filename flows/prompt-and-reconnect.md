@@ -23,7 +23,8 @@ sequenceDiagram
     A->>D: stores what the user sent, creates the run
     A-->>C: accepted, with the run
     C->>A: subscribes to the conversation's events
-    A->>E: starts the executor of the run
+    A->>D: reads the snapshot the run before left, if there is one
+    A->>E: starts the executor of the run, with that snapshot
 
     loop while the run works
         E-->>A: event
@@ -38,8 +39,8 @@ sequenceDiagram
     A->>D: reads the events after that number
     A-->>S: the events it missed, then each new one
 
-    E-->>A: final answer, and ends
-    A->>D: stores the final answer and the end of the run
+    E-->>A: final answer and the run's snapshot, and ends
+    A->>D: stores the final answer and the snapshot, then the end of the run
     A-->>S: final answer
 ```
 
@@ -50,15 +51,19 @@ sequenceDiagram
    client gets only an acknowledgement, with the run. It does not wait for the run to end.
 3. **The client subscribes to the conversation's events.** Everything else arrives through
    that subscription, the final answer included.
-4. **The API starts the executor of the run**, as a child process. The executor runs the
-   harness and reports each event to the API.
+4. **The API starts the executor of the run**, as a child process, and gives it the
+   snapshot the run before left, if there is one. The executor restores the agent from it,
+   so the agent continues from what it already knew, runs the harness and reports each event
+   to the API.
 5. **Each event is stored, then delivered.** The API gives the event its number, in order
    within the conversation, stores it, and only then sends it to whoever is subscribed.
 6. **The client disconnects and the run goes on.** A disconnection never cancels a run.
 7. **A second device lists the sessions, opens one and subscribes**, saying the last number
    it saw. The API sends it the events after that number, and then each new one as it
    happens. A device that has seen nothing gets them all.
-8. **The run ends.** The final answer is stored and delivered as one more event.
+8. **The run ends.** The executor hands over the final answer and the run's snapshot. The
+   API stores both, and only then ends the run as `completed`. The final answer is delivered
+   as one more event.
 
 A device that reconnects after a network failure does the same as the second device in
 step 7. There is one mechanism for both.
@@ -79,6 +84,13 @@ step 7. There is one mechanism for both.
   numbering of their conversation. See [events](../design/events.md).
 - **The events are the harness's own**, with the few the API adds. See
   [events](../design/events.md).
+- **A run starts from the snapshot of the run before, and leaves its own.** Each run has an
+  executor of its own, which starts knowing nothing. The stored messages are what the user
+  reads; the snapshot is what the agent continues from, and the API stores it without
+  reading it. A run whose answer is stored and whose snapshot is lost would leave the chat
+  whole and the next prompt without its context, so a run is `completed` only once its
+  snapshot is stored. The harness does not offer a snapshot yet; see
+  [harness-needs](../design/harness-needs.md).
 
 ## Open points
 
@@ -97,6 +109,11 @@ for later.
 - **What the conversation keeps of the prompt.** The prompt is what the user writes plus the
   context the product adds. Whether the conversation keeps the whole prompt or only the
   user's text is open in the [glossary](../glossary.md).
+- **What a run that does not complete leaves as its snapshot.** A run that failed, was
+  cancelled or was interrupted may have no snapshot to hand over. Whether the next run
+  starts from the snapshot before it, and what it is told, was not discussed.
+- **What happens when the snapshot cannot be stored.** The answer exists and the continuity
+  does not. Which state the run ends in then was not discussed.
 - **Who sets up the workspace** before the harness starts working, while the run is
   `setting_up`. It is open in the [run lifecycle](../design/run-lifecycle.md#open-points).
 - **The channel between the API and the executor.** Open in the same place.

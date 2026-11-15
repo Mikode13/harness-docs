@@ -29,6 +29,7 @@ are in `docs/`. That is proportional to a repository whose only artifact is text
 | `flows/`               | One document per flow, with its sequence diagram; `flows/README.md` lists them. |
 | `design/`              | What is decided about one area of the product, such as a run's lifecycle.       |
 | `docs/decisions.md`    | Why each product decision was taken, in chronological order.                    |
+| `docs/learnings.md`    | What designing, building or running the product taught, with its evidence.      |
 | `docs/architecture.md` | This document: how the repository is organized.                                 |
 | `AGENTS.md`            | How an agent uses and updates the repository.                                   |
 

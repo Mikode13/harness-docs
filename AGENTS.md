@@ -18,8 +18,8 @@ the area you work on. Open only those; do not load every document by default.
   [`docs/decisions.md`](docs/decisions.md)
   that says why. An entry has **Decision**, **Context**, **Alternatives considered** when
   there were any, and **Consequences**.
-- `docs/learnings.md` records what building or running the product taught, and links the
-  decision it led to. It is created with its first lesson.
+- [`docs/learnings.md`](docs/learnings.md) records what designing, building or running the
+  product taught, with its evidence, and links the decision it led to.
 - [`docs/architecture.md`](docs/architecture.md) describes how this repository is organized.
   Update it when the layout or a rule about where a document lives changes.
 

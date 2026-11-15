@@ -59,9 +59,13 @@ holds the database credentials. An executor as a service of its own would also s
 restart of the API, but needs a channel that survives either side going away, a heartbeat and
 a reconciliation. The maintainer chose the child process on 2026-11-14.
 
-**Consequences:** A failing run leaves the API up, and killing its process always ends it. The
-API sees an executor die because its process exits, with no heartbeat. A restart of the API
-ends every executor, and their runs become `interrupted`. Issue
+**Consequences:** A failing run leaves the API up. While the API runs, it sees an executor end
+because its process exits, with no heartbeat. Being a child does not make an executor end with
+the API, nor a command with its executor: on Linux both can outlive their parent. So ending a
+run means ending its executor and everything it started, and confirming that none is left,
+before its conversation or its workspace takes another run. A restart of the API does the same
+for the runs it finds not ended, and only then are they `interrupted`. How is not decided;
+[`learnings.md`](learnings.md) has what showed it. Issue
 [#6](https://github.com/Mikode13/harness-api/issues/6) describes a separately runnable
 executor that claims tasks from PostgreSQL; it keeps its text until it is refined. Moving the
 executor out later does not change a run's states.
@@ -72,7 +76,8 @@ executor out later does not change a run's states.
 `completed`, `failed` or `interrupted`, and the last four are final. A cancellation passes
 through `cancelling` until the executor confirms that everything stopped. Cancelling rejects a
 pending ask, and an answer that arrives later does not count. After a restart of the API, a
-run that was not ended becomes `interrupted` and its pending ask is closed. A session cannot
+run that was not ended becomes `interrupted`, once everything it started is confirmed gone,
+and its pending ask is closed. A run is `completed` once its snapshot is stored. A session cannot
 be cleared or deleted while a run of its conversation is not ended; the API enforces it and
 the clients mirror it.
 
@@ -81,7 +86,8 @@ the clients mirror it.
 `queued`; nothing is queued (R05), and what happens first is preparing the workspace, so it
 is `setting_up`. Stopping a command's processes takes seconds, and a prompt accepted in that
 time would write in the same workspace. An ask is a stored event, which a reconnecting client
-gets again, but the run that asked lives in the executor and does not survive a restart.
+gets again, but a restarted API has lost its channel to the executor that asked, so an answer
+cannot reach it.
 
 **Consequences:** One run is active per conversation, and one writing run per workspace,
 which on the server is the same rule. A question asked before a restart has to be asked again
@@ -192,6 +198,9 @@ model knew on a restart, and passing only the text of the earlier messages until
 exists, which blocks nothing but makes each run start almost from nothing about the code.
 
 **Consequences:** The API starts later, after the harness work, and is built on what it will
-keep. The product stores the conversation the harness gives it without reading it, so its
-format stays the harness's. The order of work is the flows, then the database, then what the
+keep. The product stores what the harness gives it, a snapshot, without reading it, so its
+format stays the harness's. A run's executor restores the agent from the snapshot the run
+before left and hands over its own with the final answer, and a run is `completed` only once
+that snapshot is stored; [`flows/prompt-and-reconnect.md`](../flows/prompt-and-reconnect.md)
+shows the steps. The order of work is the flows, then the database, then what the
 harness needs, then the API.

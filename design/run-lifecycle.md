@@ -14,9 +14,11 @@ the harness for that run and nothing else.
   database.
 - The API is the only writer of the database, and so the only writer of a run's state. The
   executor reports what happens; the API stores it and decides the state.
-- The API knows an executor died because its process exited. No heartbeat is needed.
-- An executor does not outlive the API. When the API restarts, its executors end with it,
-  and their runs become `interrupted`.
+- While the API runs, it knows an executor ended because its process exited. No heartbeat
+  is needed for that.
+- Being a child does not make an executor end with the API. On Linux an executor can outlive
+  the API that started it, and a command can outlive the executor that started it. The first
+  of the [rules](#rules) says what that requires.
 
 ## States
 
@@ -27,7 +29,7 @@ the harness for that run and nothing else.
 | `waiting_for_input` | The run asked the user something and waits. Its last event is an ask.   |
 | `cancelling`        | The user cancelled, and the executor is stopping what it started.       |
 | `cancelled`         | The executor confirmed that everything stopped.                         |
-| `completed`         | The run ended with its answer.                                          |
+| `completed`         | The run ended with its answer, and its snapshot is stored.              |
 | `failed`            | The run ended with an error.                                            |
 | `interrupted`       | The API restarted, or the executor died, while the run was not ended.   |
 
@@ -57,8 +59,17 @@ stateDiagram-v2
     interrupted --> [*]
 ```
 
+In the diagram, "restart" stands for a restart of the API and for the death of an executor.
+
 ## Rules
 
+- **Everything a run started is gone before another run starts.** Ending a run means ending
+  its executor and every process the executor started, and confirming that none is left.
+  Until that is confirmed the run is not ended, and neither its conversation nor its
+  workspace takes another run. It holds for a cancellation, for an executor that died and
+  for a restart of the API: a process that lost its parent keeps running, and marking its
+  run `interrupted` while it runs would let two runs write in the same workspace. How the
+  processes are ended and how their end is confirmed is an [open point](#open-points).
 - **One active run per conversation.** A prompt sent while a run of the conversation is not
   ended is rejected as busy, as R05 requires. Nothing is queued.
 - **One writing run per workspace.** Whether a run writes is known before it starts: its
@@ -76,9 +87,14 @@ stateDiagram-v2
 - **A late answer does not count.** An answer that arrives after the run was cancelled, or
   after the ask was answered, is not considered and does not resume anything.
 - **A restart closes a pending ask.** The ask is a stored event, so a client that reconnects
-  gets it again as the last event and can answer it. After a restart of the API the run that
-  asked no longer exists: the run becomes `interrupted` and its ask is closed, so no client
-  shows a question that leads nowhere.
+  gets it again as the last event and can answer it. After a restart, the API has lost its
+  channel to the executor that asked, whether or not that process is still there, so an
+  answer cannot reach it. Once everything the run started is confirmed gone, the run becomes
+  `interrupted` and its ask is closed, so no client shows a question that leads nowhere.
+- **A run is `completed` once its snapshot is stored.** The executor hands the snapshot over
+  with the final answer, and the API stores both before it ends the run. A conversation
+  whose messages are stored and whose snapshot is lost shows the chat, and has lost what the
+  next prompt needs. See [prompt-and-reconnect](../flows/prompt-and-reconnect.md).
 
 ## What is left after a run that does not complete
 
@@ -102,6 +118,9 @@ The next run can recover the conversation, and compacts it when it is very large
 
 Not decided. Each is an input to the next design steps.
 
+- **How a run's processes are ended and confirmed gone.** It has to reach a process that
+  lost its parent, and work after a restart of the API, when the API no longer holds the
+  executors it started.
 - **Who prepares the workspace.** Cloning the repository and adding the worktree need git
   credentials. Whether the API or the executor does it during `setting_up`, and with which
   credentials, is not decided.

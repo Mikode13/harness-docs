@@ -70,11 +70,10 @@ here, never the reverse. The harness's documents never describe the product.
   [`harness-needs.md`](design/harness-needs.md).
 - [`docs/decisions.md`](docs/decisions.md): the product's decisions, which cross its
   projects.
+- [`docs/learnings.md`](docs/learnings.md): what designing, building or running the product
+  taught, with its evidence.
 - [`docs/architecture.md`](docs/architecture.md): how this repository itself is organized.
 - [`AGENTS.md`](AGENTS.md): how an agent uses and updates this repository.
-
-What building or running the product teaches goes in `docs/learnings.md`, created with its
-first lesson.
 
 ## Checks
 

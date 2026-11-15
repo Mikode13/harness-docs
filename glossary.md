@@ -137,6 +137,17 @@ stays whole.
 It is not the conversation. Compacting or summarizing the context never removes anything
 from the conversation.
 
+### Snapshot
+
+What an agent needs to continue from where a run left it, as the harness gives it: the
+agent's own record of the conversation, in the harness's format. A run starts from the
+snapshot the run before it left, and leaves its own when it ends. The API stores it without
+reading it.
+
+It is not the conversation. The conversation is what the user reads; the snapshot is what
+the agent continues from. The harness does not offer one yet; see
+[design/harness-needs.md](design/harness-needs.md).
+
 ## Open points
 
 These are not decided. They are inputs to system design (agenda items in

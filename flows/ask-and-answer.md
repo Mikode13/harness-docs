@@ -66,8 +66,9 @@ sequenceDiagram
   the subscription, as every other device does, so there is one way to update a screen.
 - **Cancelling rejects a pending ask, and a restart closes it.** A run cancelled while it
   waits has its ask rejected, and an answer that arrives later does not count. After a
-  restart of the API the run that asked no longer exists, so the run becomes `interrupted`
-  and its ask is closed. See the [run lifecycle](../design/run-lifecycle.md#rules).
+  restart the API has lost its channel to the executor that asked, so once everything the
+  run started is confirmed gone the run becomes `interrupted` and its ask is closed. See the
+  [run lifecycle](../design/run-lifecycle.md#rules).
 
 ## A session that waits, seen from the list of sessions
 
