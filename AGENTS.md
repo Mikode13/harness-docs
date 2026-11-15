@@ -33,6 +33,17 @@ the area you work on. Open only those; do not load every document by default.
 - Do not invent decisions, future artifacts or implementation details. Describe a design that
   is not built as not built.
 
+## Consistency
+
+A change is coherent when all of these hold. A review checks them.
+
+- A flow or a design document does not contradict the glossary, the run lifecycle or another
+  document.
+- Nothing is written as settled in one document and listed as an open point in another.
+- Every term a document uses for a part of the product is in the glossary.
+- A change to what is settled has its entry in `docs/decisions.md`.
+- [`flows/README.md`](flows/README.md) lists every flow with the status its document has.
+
 ## Where a document lives
 
 A document lives with the owner of what it describes. The test: if the document would still
