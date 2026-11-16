@@ -25,8 +25,9 @@ sequenceDiagram
 ```
 
 1. **A client sends the clear as a command.**
-2. **The API rejects it while a run of the session is not ended.** The clients show a
-   message or do not offer the action, and the API enforces it whatever the client does.
+2. **The API rejects it while a run of the session is not ended**, or while a restore or a
+   push works on its workspace. The clients show a message or do not offer the action, and
+   the API enforces it whatever the client does.
 3. **The API archives the active conversation and starts a new, empty one** in the same
    session.
 4. **The session, its title and its workspace stay.** The code is as it was.

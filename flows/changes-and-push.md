@@ -40,7 +40,8 @@ harness's default, one question at the end of the run.
 - **The user asks from a client.** For a restore, the API starts a workspace process, which
   calls the harness's history.
 - **Only while no run of the session is active**, since one writer works in a workspace at a
-  time; see the [run lifecycle](../design/run-lifecycle.md#rules).
+  time; see the [run lifecycle](../design/run-lifecycle.md#rules). While a restore or a push
+  works, the session takes no prompt, and neither a clear nor a deletion.
 - **A restore changes the code, not the conversation.** The messages stay as they are, and
   the next run's agent is told that the code was restored.
 - **The outcome is reported as the harness gives it**: complete, or partial with the files
@@ -59,8 +60,8 @@ sequenceDiagram
     Note over C: the user confirms or changes the name
     C->>A: push, with the name
     A->>W: push, with the name and the credential
-    W->>W: renames the branch in each project
-    W->>G: pushes the branch of each project
+    W->>G: checks that the remote has no branch of that name
+    W->>G: pushes the branch of each project under that name
     W-->>A: pushed, or the error
     A-->>C: pushed, or the error
 
@@ -71,8 +72,9 @@ sequenceDiagram
 
 - **A workspace process pushes**, as it prepares a workspace: started by the API, as the
   writing user, with the credential.
-- **A push waits until no run of the session is active**, as a restore does. The first push
-  renames the branch of each worktree, which a run that is working must not find changed.
+- **A push waits until no run of the session is active**, as a restore does. A run that is
+  working may be committing, and one piece of work at a time uses a workspace; see the
+  [run lifecycle](../design/run-lifecycle.md#rules).
 - **Neither is ever automatic.** The branch is pushed, and a pull request is opened, only
   when the user asks for it from a client. Nothing does it at the end of a run or after a
   commit.
@@ -86,16 +88,22 @@ sequenceDiagram
 Each worktree of a session is on a branch of its own, which git requires when the worktree
 is created.
 
-- **It starts with a provisional name** that carries the id of the session, so it cannot
-  collide.
-- **It gets its name at the first push.** The client proposes one, the user confirms or
-  changes it, and the branch is renamed before it is pushed. When a session is created
-  nobody knows yet whether the work is a fix or a feature; at the first push it is known.
+- **In the worktree it has a provisional name** that carries the id of the session, so it
+  cannot collide, and it keeps that name for as long as the worktree exists.
+- **It is published under another name, chosen at the first push.** The client proposes
+  one, the user confirms or changes it, and the branch is pushed under that name, which
+  becomes its upstream. When a session is created nobody knows yet whether the work is a
+  fix or a feature; at the first push it is known.
+- **The branch is never renamed in the worktree.** The harness's history ties the commits of
+  a run to the name of the branch they were made on, and takes them back only while that
+  branch is checked out. Renaming it would leave those commits where they are when a run is
+  undone; see [learnings](../docs/learnings.md). The upstream is what the harness reads to
+  refuse a reset once the commits are pushed, so that keeps working.
 - **The model can propose the name**, when the user asks it to.
 - **A session with several projects uses the same name in each.**
-- **A name that already exists is an error.** Branches are deleted once they are merged, so
-  it is not expected. When it happens, the push fails, and the API passes the error to the
-  client, which shows it.
+- **A name the remote already has is an error.** Branches are deleted once they are merged,
+  so it is not expected. The workspace process never pushes onto a branch that is already
+  there: the push fails, and the API passes the error to the client, which shows it.
 
 ## Open points
 
@@ -105,6 +113,11 @@ Not decided.
   harness it is a run of its history. The product has no term for it yet.
 - **Whether the code history belongs to the session**, and so survives a clear. It is an
   open point of the [glossary](../glossary.md#open-points).
+- **A restore or a push that the API's restart cut short.** The rule is in the
+  [run lifecycle](../design/run-lifecycle.md#rules) and the steps in
+  [restart](restart.md): the API has to recognize it, end or reconcile it, and confirm that
+  the workspace can be used again. How is not decided.
+- **Whether a restore or a push can be cancelled.**
 - **What the name is proposed from**, the session's title, the plan or the changes, and
   which model proposes it. The projects' own rules for branch names have to hold.
 - **The title and the description of a pull request**: who writes them, and from what.

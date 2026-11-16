@@ -104,8 +104,8 @@ sequenceDiagram
   branch the CLI offers: the one the folder is on, when the remote has it. Changes in the
   folder that were not pushed do not reach the server, and the CLI says so.
 - **A worktree is on a branch of its own, with a provisional name** that carries the id of
-  the session. It gets its name at the first push; see
-  [changes-and-push](changes-and-push.md#the-name-of-the-branch).
+  the session, and keeps it. The branch is published under a name chosen at the first push;
+  see [changes-and-push](changes-and-push.md#the-name-of-the-branch).
 
 ### Preparing the workspace
 

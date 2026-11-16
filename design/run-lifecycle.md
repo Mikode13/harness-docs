@@ -83,6 +83,12 @@ In the diagram, "restart" stands for a restart of the API and for the death of a
   ended is rejected as busy, as R05 requires. Nothing is queued. A prompt whose id the API
   already has is not a new prompt: it gets the acceptance and the run of the first time,
   whatever state that run is in.
+- **A restore or a push holds the workspace as a run does.** A workspace process that
+  restores code or pushes works outside a run. While it works, its session takes no prompt,
+  which is rejected as busy, and neither a clear nor a deletion. It is ended and confirmed
+  gone as a run's processes are. After a restart, the API has to recognize a restore or a
+  push that was in progress, end or reconcile it, and confirm that the workspace can be
+  used again, before the workspace takes any work. See [restart](../flows/restart.md).
 - **One writing run per workspace.** Whether a run writes is known before it starts: its
   agent has tools that write, or it has none. Two runs that write in the same workspace
   would work against each other. Inside one run, several subagents may work in the
@@ -132,6 +138,9 @@ Not decided. Each is an input to the next design steps.
 - **How a run's processes are ended and confirmed gone.** It has to reach a process that
   lost its parent, and work after a restart of the API, when the API no longer holds the
   executors it started.
+- **How a restore or a push in progress is recognized after a restart**, and how it is
+  ended or reconciled. It is not a run, so the list of runs that are not ended does not
+  hold it.
 - **The channel between the API and the executor.** What carries the events one way and the
   answers and the cancellation the other.
 - **What the model is told.** Whether the next prompt tells the model that the earlier run

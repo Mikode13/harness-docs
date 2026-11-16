@@ -324,10 +324,11 @@ decided.
 code, and adds only what the harness never does. A branch is pushed and a pull request is
 opened only when the user asks from a client; neither is ever automatic, and neither is a
 command a model runs. A workspace process pushes, and only while no run of the session is
-active. A worktree's branch has a provisional name with the session's id until
-the first push, when the client proposes a name, or the model does if the user asks, the user
-confirms it and the branch is renamed. A session with several projects uses the same name in
-each, and a name that already exists is an error the client shows.
+active. A worktree's branch has a provisional name with the session's id, and keeps it. At the
+first push the client proposes a name, or the model does if the user asks, the user confirms
+it, and the branch is published under that name, which becomes its upstream; it is never
+renamed in the worktree. A session with several projects uses the same name in each, and a
+name the remote already has is an error the client shows.
 [`flows/changes-and-push.md`](../flows/changes-and-push.md) holds the flow.
 
 **Context:** Decided by the maintainer on 2026-11-16. The harness already asks before it
@@ -345,8 +346,15 @@ whether the work is a fix or a feature, which the projects' branch names say.
   ruled out.
 - **Naming the branch when the session is created.** The name is final from the start, but the
   user has to choose the kind of change before writing the first prompt.
+- **Renaming the branch in the worktree at the first push.** It was the first choice. The
+  harness's history ties a run's commits to the name of their branch and takes them back only
+  while that branch is checked out, so after a rename a revert leaves them;
+  [`learnings.md`](learnings.md) has the evidence.
 
 **Consequences:** Work that was committed and not pushed exists only on the server. The commit
-question is an ask, answered from any device. A restore and a push are carried out by a
-workspace process, as the entry about preparing a workspace says. Who writes a pull request's
+question is an ask, answered from any device. The branch has one name in the worktree and
+another on the remote. A restore and a push are carried out by a workspace process, as the
+entry about preparing a workspace says, and hold the workspace as a run does: after a restart
+of the API one that was in progress has to be recognized, ended or reconciled before the
+workspace takes any work. Who writes a pull request's
 title and description is not decided.
