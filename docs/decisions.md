@@ -304,9 +304,13 @@ that creates a session. The flow kept the credential off disk and gave that as t
 The review pointed out that a command a model starts runs as the same user as the process that
 holds the credential and could read it from that process, for example after a prompt injection
 from web content. With the workspace process, no executor holds the credential and a session's
-workspace process never runs beside that session's executor. The gap that is left is between
-sessions: one session's workspace process and the commands of another session's run, at the
-same time and as the same user.
+workspace process never runs beside that session's executor. The gap that is accepted is
+between sessions: one session's workspace process and the commands of another session's run,
+at the same time and as the same user. A second way was found in the maintainer's review: a
+command can leave a hook or a changed configuration in its own worktree, which a later push
+would run or obey with the credential. That one is not accepted. A git operation with the
+credential trusts nothing in the worktree: it runs no hook, obeys no configuration a command
+could have changed, and uses the registered repository as its destination.
 
 **Alternatives considered:**
 
@@ -314,11 +318,13 @@ same time and as the same user.
   have to be shared between that user and the one that runs the model's commands, which is not
   designed, and it would hold up the first slice.
 
-**Consequences:** Until it changes, a leaked credential gives what that credential can do in
-the registered repositories, with the maintainer's account while there is no account for
-agents. Nothing that makes an injection likelier should ship before the change; closing the gap
-before the product reads the web, R14 of [`mvp.md`](../mvp.md), was proposed, and when is not
-decided.
+**Consequences:** Running the workspace process at another time, or later as another user,
+does not replace that rule, since git would still run what was left. How git is run so that
+it holds is not designed. Until the accepted gap changes, a leaked credential gives what that
+credential can do in the registered repositories, with the maintainer's account while there is
+no account for agents. Nothing that makes an injection likelier should ship before the change;
+closing the gap before the product reads the web, R14 of [`mvp.md`](../mvp.md), was proposed,
+and when is not decided.
 
 ## Pushing and opening a pull request are the user's commands, and the branch is named then
 
@@ -329,8 +335,9 @@ command a model runs. A workspace process pushes, and only while no run of the s
 active. A worktree's branch has a provisional name with the session's id, and keeps it. At the
 first push the client proposes a name, or the model does if the user asks, the user confirms
 it, and the branch is published under that name, which becomes its upstream; it is never
-renamed in the worktree. A session with several projects uses the same name in each, and a
-name the remote already has is an error the client shows.
+renamed in the worktree. A session with several projects uses the same name in each. At the
+first push a name the remote already has is an error the client shows; every later push goes
+to the branch's upstream.
 [`flows/changes-and-push.md`](../flows/changes-and-push.md) holds the flow.
 
 **Context:** Decided by the maintainer on 2026-11-16. The harness already asks before it
@@ -359,4 +366,4 @@ another on the remote. A restore and a push are carried out by a workspace proce
 entry about preparing a workspace says, and hold the workspace as a run does: after a restart
 of the API one that was in progress has to be recognized, ended or reconciled before the
 workspace takes any work. Who writes a pull request's
-title and description is not decided.
+title and description is not decided, and neither is which credential the API opens it with.

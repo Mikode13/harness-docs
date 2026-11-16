@@ -48,20 +48,33 @@ others:
 - **For now it is the maintainer's own account.** A separate git account only for agents is
   the aim, and waits because of its cost.
 - **The credential is never written to disk** nor to the git configuration of a worktree,
-  and it is used only to clone, fetch and push. That narrows where it can be read.
+  and the workspace process uses it only to clone, fetch and push. That narrows where it
+  can be read.
+- **A git operation with the credential trusts nothing in the worktree.** A command a model
+  started could have left a hook there, or changed the repository's configuration: where it
+  pushes to, a helper that is handed the credential. So such an operation runs no hook,
+  obeys no configuration a command could have changed, and uses the repository registered
+  for the project as its destination. Running it at another time, or as another user, does
+  not replace this: git would still run what was left.
 - **The credential reaches only the registered repositories.**
 
 ### An accepted risk, for now
 
-No executor holds the credential, and a workspace process works on a session only while
-that session has no executor. The gap is between sessions: the workspace process of one
-session and the commands a model starts in another run at the same time, as the same user.
-Keeping the credential off disk does not keep it from such a command, which could read it
-from the workspace process. A prompt injection could make a model start one.
+A command a model starts could reach the credential in two ways. Only the first is accepted.
 
-The maintainer accepted this on 2026-11-16 for the first slice, limited by a credential that
-reaches only the registered repositories. It is a known gap, not the design: it will be
-closed by running the workspace process as a user the model's commands do not run as.
+- **By reading it from a workspace process.** No executor holds the credential, and a
+  workspace process works on a session only while that session has no executor. But the
+  workspace process of one session and the commands a model starts in another run at the
+  same time, as the same user, so such a command could read the credential from that
+  process. Keeping the credential off disk does not prevent it. This is the accepted risk.
+- **By leaving something for git to run.** A command could install a hook or change the
+  configuration in its own session's worktree, and a later push would run or obey it with
+  the credential. This is not accepted: the rule above closes it.
+
+The maintainer accepted the first on 2026-11-16 for the first slice, limited by a credential
+that reaches only the registered repositories. It is a known gap, not the design: it will be
+closed by running the workspace process as a user the model's commands do not run as. A
+prompt injection could make a model start such a command.
 
 ## Open points
 
@@ -71,6 +84,11 @@ Not decided.
   to a private network.
 - **How the service user starts a process as another user.** The API runs as the service
   user and its executors run as the agent users.
+- **How git is run so that it trusts nothing in the worktree.** Turning hooks off is one
+  setting. Not obeying a repository's own configuration is harder, and is not designed.
+- **Which credential opens a pull request.** The workspace process uses its credential only
+  to clone, fetch and push. Opening a pull request is a call from the API to the git host;
+  whether it uses the same credential, with that one more use, or another, is not decided.
 - **When the accepted risk on the git credential ends, and how.** Closing it before the
   product reads the web (R14 of [mvp.md](../mvp.md)) was proposed. How the workspace
   process runs as another user, with the worktrees shared between both users, is not

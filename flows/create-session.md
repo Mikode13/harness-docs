@@ -130,7 +130,11 @@ sequenceDiagram
 - **For now it is the maintainer's own account.** A separate git account only for agents is
   the aim, and waits because of its cost.
 - **The credential is never written to disk** nor to the git configuration of a worktree,
-  and it is used only to clone, fetch and push. That narrows where it can be read.
+  and the workspace process uses it only to clone, fetch and push. That narrows where it
+  can be read.
+- **A git operation with the credential trusts nothing in the worktree**: no hook, no
+  configuration a command could have changed, and the registered repository as its
+  destination. See [security](../design/security.md#git-credentials).
 - **A command a model starts could still reach it, and that is accepted for now.** No
   executor holds the credential, and a workspace process works on a session only while that
   session has no executor. But the workspace process of one session and the commands a
@@ -138,8 +142,9 @@ sequenceDiagram
   read the credential from that process, for example after a prompt injection. The
   maintainer accepts this risk for the first slice, with a credential that reaches only the
   registered repositories. It is not the intended design and will change: the workspace
-  process will run as a user the model's commands do not run as. See
-  [security](../design/security.md#git-credentials).
+  process will run as a user the model's commands do not run as. What a command leaves in
+  its own worktree for a later push to run is not part of the accepted risk; the rule
+  above closes it. See [security](../design/security.md#git-credentials).
 
 ## Open points
 

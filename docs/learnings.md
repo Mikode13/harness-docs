@@ -54,3 +54,27 @@ worktree exists, and is published under the chosen name;
 
 **Lesson:** "Reused as it is" is a claim about every step around the reused part. A change to
 something the reused part keys on, here a branch's name, has to be checked against it.
+
+## Running at another time does not separate what was left behind
+
+**What happened:** On 2026-11-16 the documents said that the risk on the git credential was
+only between sessions, because a session's workspace process never runs beside that session's
+executor. Reviewing it, the maintainer pointed out a way inside one session: a command the
+agent starts installs a `pre-push` hook, and when the user later pushes, git runs that hook
+from the process that holds the credential.
+
+**Evidence:** In a scratch repository on Linux, a `pre-push` hook was written into
+`.git/hooks` and a push was run with a variable in its environment standing for the
+credential. The hook ran and read the variable. The same push with
+`-c core.hooksPath=/dev/null` did not run it. Setting `remote.origin.pushurl` in the
+repository's configuration changed where a push to `origin` goes.
+
+**What it changed:** [security](../design/security.md#git-credentials) now has a rule of its
+own: a git operation with the credential trusts nothing in the worktree. The entry "A model's
+command can reach the git credential: accepted for now, to be changed" of
+[`decisions.md`](decisions.md) says that this way is not part of the accepted risk, and that
+changing the user would not close it.
+
+**Lesson:** Two pieces of work that never run together can still reach each other through
+what the first leaves for the second to run. A boundary in time, or between users, needs a
+rule about the files both touch.

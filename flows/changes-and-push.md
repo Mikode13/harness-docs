@@ -60,8 +60,8 @@ sequenceDiagram
     Note over C: the user confirms or changes the name
     C->>A: push, with the name
     A->>W: push, with the name and the credential
-    W->>G: checks that the remote has no branch of that name
-    W->>G: pushes the branch of each project under that name
+    W->>G: the first time: checks that the remote has no branch of that name
+    W->>G: pushes the branch of each project, under that name or to its upstream
     W-->>A: pushed, or the error
     A-->>C: pushed, or the error
 
@@ -78,6 +78,10 @@ sequenceDiagram
 - **Neither is ever automatic.** The branch is pushed, and a pull request is opened, only
   when the user asks for it from a client. Nothing does it at the end of a run or after a
   commit.
+- **A push trusts nothing a command could have left in the worktree.** It runs no hook,
+  obeys no configuration a command could have changed, and goes to the repository
+  registered for the project, not to what the worktree's configuration says. See
+  [security](../design/security.md#git-credentials).
 - **They are commands of the client, not commands a model runs.** So they happen when the
   user asks, and no model decides to push. That a command a model starts could still reach
   the credential is a risk accepted for now; see
@@ -101,9 +105,13 @@ is created.
   refuse a reset once the commits are pushed, so that keeps working.
 - **The model can propose the name**, when the user asks it to.
 - **A session with several projects uses the same name in each.**
-- **A name the remote already has is an error.** Branches are deleted once they are merged,
-  so it is not expected. The workspace process never pushes onto a branch that is already
-  there: the push fails, and the API passes the error to the client, which shows it.
+- **At the first push, a name the remote already has is an error.** Branches are deleted
+  once they are merged, so it is not expected. The workspace process never publishes a
+  session's branch onto one that is already there: the push fails, and the API passes the
+  error to the client, which shows it.
+- **Every later push goes to the branch's upstream.** After the first push the session's
+  branch is on the remote under its name, and that is where its later commits go, such as
+  the corrections a review asks for. The name is asked for once.
 
 ## Open points
 
@@ -121,6 +129,10 @@ Not decided.
 - **What the name is proposed from**, the session's title, the plan or the changes, and
   which model proposes it. The projects' own rules for branch names have to hold.
 - **The title and the description of a pull request**: who writes them, and from what.
+- **Which credential opens a pull request.** In the diagram the API calls the git host
+  itself. Whether it uses the credential the workspace process pushes with, which would
+  then need to open pull requests, or another one, is not decided; see
+  [security](../design/security.md#open-points).
 - **Whether the commit question can be asked at another moment**, per phase or with the
   plan, as the harness allows, and where that is chosen.
 - **A push that succeeds in one project and fails in another.**
