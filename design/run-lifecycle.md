@@ -118,6 +118,10 @@ In the diagram, "restart" stands for a restart of the API and for the death of a
 After `failed`, `cancelled` or `interrupted`, the user sees everything up to the last event,
 and at most one more message that says what went wrong. Nothing is removed.
 
+The code the run changed stays in the workspace. Nothing is undone by itself: the harness's
+history lists the run with what it changed, and the user decides whether to restore it; see
+[changes-and-push](../flows/changes-and-push.md).
+
 The next run can recover the conversation, and compacts it when it is very large.
 
 ## Alternatives considered
@@ -145,8 +149,6 @@ Not decided. Each is an input to the next design steps.
   answers and the cancellation the other.
 - **What the model is told.** Whether the next prompt tells the model that the earlier run
   did not complete.
-- **Code a run changed before it stopped.** It might stay in the workspace until the user
-  restores it (R09); this was assumed in the discussion, not confirmed.
 - **Reasons within `failed`.** Whether a failed run names a kind of failure, such as the
   provider or the workspace, or only carries a message.
 

@@ -69,8 +69,9 @@ The messages and the events stored before the restart are kept, and so is the co
 earlier runs completed. The user sees everything up to the last stored event, and at most
 one more message that says what happened.
 
-Whether what the interrupted run itself changed stays in the workspace is not decided; it is
-an open point of the [run lifecycle](../design/run-lifecycle.md#open-points).
+What the interrupted run itself changed stays in the workspace too. Nothing is undone by
+itself: the user sees it in the history and decides whether to restore it; see
+[what is left after a run that does not complete](../design/run-lifecycle.md#what-is-left-after-a-run-that-does-not-complete).
 
 ## Open points
 

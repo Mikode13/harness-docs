@@ -50,7 +50,8 @@ sequenceDiagram
 ## What is left
 
 The user sees everything up to the last event, and at most one more message. Nothing is
-removed. See [what is left after a run that does not complete](../design/run-lifecycle.md#what-is-left-after-a-run-that-does-not-complete).
+removed, and the code the run changed stays in the workspace until the user restores it.
+See [what is left after a run that does not complete](../design/run-lifecycle.md#what-is-left-after-a-run-that-does-not-complete).
 
 ## Open points
 
@@ -64,5 +65,3 @@ Not decided.
   moment after the first. What the client gets back was not discussed.
 - **The snapshot of a cancelled run.** Whether the next run starts from the snapshot before
   it, and what it is told; see [prompt-and-reconnect](prompt-and-reconnect.md#open-points).
-- **The code the run changed before it stopped.** It is an open point of the
-  [run lifecycle](../design/run-lifecycle.md#open-points).

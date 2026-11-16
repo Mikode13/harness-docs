@@ -94,7 +94,9 @@ which on the server is the same rule. A question asked before a restart has to b
 by a new run; resuming it depends on harness
 [#136](https://github.com/Mikode13/harness/issues/136). After a run that does not complete,
 the user sees everything up to the last event and at most one message with the error, and the
-next run recovers the conversation, compacting it when it is very large.
+next run recovers the conversation, compacting it when it is very large. The code such a run
+changed stays in the workspace, and the user decides whether to restore it; the maintainer
+confirmed this on 2026-11-16, after it had only been assumed.
 
 ## The product's design lives in a repository of its own
 
