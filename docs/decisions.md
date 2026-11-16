@@ -265,8 +265,8 @@ The API holds the git credential and passes it to the executor, which uses it on
 fetch and push; it is never written to disk nor to a worktree's git configuration. For now the
 credential is the maintainer's own account.
 
-**Context:** Decided by the maintainer on 2026-11-15. The executor has the disk and runs as
-the writing user, so the API keeps to the database. He would prepare a workspace before the
+**Context:** Decided by the maintainer on 2026-11-15. The executor has the disk, so the API
+keeps to the database. He would prepare a workspace before the
 first prompt, but nothing says when a session will be used, or whether it will, so it is
 prepared when the first run needs it. A separate git account for agents is the aim and waits
 because of its cost. The commands a model starts run as the executor's user, so a credential
@@ -274,7 +274,9 @@ in a file could be read by them.
 
 **Consequences:** The first run of a session is slower, and the user sees why. A run that
 fails while cloning ends as `failed` and leaves the session without a workspace, which the next
-prompt prepares again. Keeping the credential off disk narrows where it can be read and does
+prompt prepares again. The executor of an agent that only reads runs as the read-only user,
+which cannot clone and should not hold the credential; who prepares the workspace then is not
+decided. Keeping the credential off disk narrows where it can be read and does
 not keep it from the commands a model starts; the next entry says what was decided about that.
 Which credential is used, a fine-grained token or a GitHub App, is not decided.
 

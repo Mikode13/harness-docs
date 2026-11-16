@@ -52,16 +52,16 @@ harness's default, one question at the end of the run.
 sequenceDiagram
     participant C as Client
     participant A as API
-    participant E as Executor
+    participant W as What carries out the command
     participant G as Git host
 
     C->>C: proposes a name for the branch, or asks for one
     Note over C: the user confirms or changes the name
     C->>A: push, with the name
-    A->>E: push, with the name and the credential
-    E->>E: renames the branch in each project
-    E->>G: pushes the branch of each project
-    E-->>A: pushed, or the error
+    A->>W: push, with the name and the credential
+    W->>W: renames the branch in each project
+    W->>G: pushes the branch of each project
+    W-->>A: pushed, or the error
     A-->>C: pushed, or the error
 
     C->>A: open a pull request
@@ -73,8 +73,9 @@ sequenceDiagram
   when the user asks for it from a client. Nothing does it at the end of a run or after a
   commit.
 - **They are commands of the client, not commands a model runs.** So they happen when the
-  user asks, and the credential is used only by what pushes, never by a command a model
-  starts.
+  user asks, and no model decides to push. That a command a model starts could still reach
+  the credential is a risk accepted for now; see
+  [security](../design/security.md#git-credentials).
 
 ### The name of the branch
 
@@ -98,6 +99,14 @@ Not decided.
 
 - **What carries out a command that is not a run**, such as a restore or a push. An executor
   exists for a run; see [where a run executes](../design/run-lifecycle.md#where-a-run-executes).
+  The diagram above names it only by what it does.
+- **Whether a push can happen while a run of the session is active.** A push renames the
+  branch of each worktree the first time. Seeing changes and restoring wait for no active
+  run; whether a push does too was not discussed.
+- **A name for a point the code is restored to.** R09 calls it a retained checkpoint; in the
+  harness it is a run of its history. The product has no term for it yet.
+- **Whether the code history belongs to the session**, and so survives a clear. It is an
+  open point of the [glossary](../glossary.md#open-points).
 - **What the name is proposed from**, the session's title, the plan or the changes, and
   which model proposes it. The projects' own rules for branch names have to hold.
 - **The title and the description of a pull request**: who writes them, and from what.

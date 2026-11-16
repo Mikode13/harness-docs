@@ -42,12 +42,12 @@ others:
 
 ## Git credentials
 
-- **The API holds the credential and passes it to the executor**, which prepares the
-  workspace; see [create-session](../flows/create-session.md).
+- **The API holds the credential and passes it to what prepares the workspace**; see
+  [create-session](../flows/create-session.md).
 - **For now it is the maintainer's own account.** A separate git account only for agents is
   the aim, and waits because of its cost.
 - **The credential is never written to disk** nor to the git configuration of a worktree,
-  and the executor uses it only to clone, fetch and push. That narrows where it can be read.
+  and it is used only to clone, fetch and push. That narrows where it can be read.
 - **The credential reaches only the registered repositories.**
 
 ### An accepted risk, for now

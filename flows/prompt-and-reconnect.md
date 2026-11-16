@@ -19,7 +19,8 @@ sequenceDiagram
     participant S as Second device
 
     C->>A: prompt, as a command, with an id the client generates
-    A->>A: authenticates, checks that the conversation has no active run
+    A->>A: authenticates, looks for the prompt's id
+    A->>A: checks that the conversation has no active run
     A->>D: stores what the user sent, creates the run
     A-->>C: accepted, with the run
     C->>A: subscribes to the conversation's events

@@ -75,7 +75,9 @@ In the diagram, "restart" stands for a restart of the API and for the death of a
   run `interrupted` while it runs would let two runs write in the same workspace. How the
   processes are ended and how their end is confirmed is an [open point](#open-points).
 - **One active run per conversation.** A prompt sent while a run of the conversation is not
-  ended is rejected as busy, as R05 requires. Nothing is queued.
+  ended is rejected as busy, as R05 requires. Nothing is queued. A prompt whose id the API
+  already has is not a new prompt: it gets the acceptance and the run of the first time,
+  whatever state that run is in.
 - **One writing run per workspace.** Whether a run writes is known before it starts: its
   agent has tools that write, or it has none. Two runs that write in the same workspace
   would work against each other. Inside one run, several subagents may work in the
@@ -122,6 +124,11 @@ The next run can recover the conversation, and compacts it when it is very large
 
 Not decided. Each is an input to the next design steps.
 
+- **Who prepares the workspace when the run's agent only reads.** The executor of an agent
+  with no tools that write runs as the read-only user, which cannot clone or add a worktree
+  and should not hold the git credential; see [security](security.md). Whether the
+  workspace is then prepared as the writing user, in a step before the executor starts, is
+  not decided.
 - **How a run's processes are ended and confirmed gone.** It has to reach a process that
   lost its parent, and work after a restart of the API, when the API no longer holds the
   executors it started.

@@ -116,11 +116,11 @@ sequenceDiagram
 
 ### Git credentials
 
-- **The API holds the credential and passes it to the executor.**
+- **The API holds the credential and passes it to what prepares the workspace.**
 - **For now it is the maintainer's own account.** A separate git account only for agents is
   the aim, and waits because of its cost.
 - **The credential is never written to disk** nor to the git configuration of a worktree,
-  and the executor uses it only to clone, fetch and push. That narrows where it can be read.
+  and it is used only to clone, fetch and push. That narrows where it can be read.
 - **A command a model starts could still reach it, and that is accepted for now.** Those
   commands run as the same user as the executor that holds the credential, so one of them
   could read it from the executor's process or through what it inherits, for example after
@@ -140,6 +140,9 @@ Not decided.
   were proposed to limit what a leaked credential can reach.
 - **Whether a session created with "none" can get a project later.** An ask that stops the
   run and asks where to work was considered, and left for later.
+- **Who prepares the workspace when the run's agent only reads.** Its executor runs as the
+  read-only user, which cannot clone and should not hold the credential. It is an open
+  point of the [run lifecycle](../design/run-lifecycle.md#open-points).
 - **When the accepted risk on the credential ends.** Doing it before the product reads the
   web (R14 of [mvp.md](../mvp.md)), which is where an injection would come from, was
   proposed. How the git operations run as another user, with the worktrees shared between

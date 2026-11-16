@@ -175,8 +175,9 @@ as the harness gives it.
 - **Code history belongs to the session.** The code history, which restores code (R09),
   might belong to the session and its workspace, so that it survives a clear.
 - **Terms to name later.** These are named when their flow is designed: agent and workflow
-  definitions (R10), a delegated run (R11), memory and plan (R12), device (R07) and code
-  checkpoint (R09).
+  definitions (R10), a delegated run (R11), memory and plan (R12) and device (R07). The
+  flow for R09 is written and still has no term for a point the code is restored to; see
+  [flows/changes-and-push.md](flows/changes-and-push.md#open-points).
 
 ## Words used elsewhere
 
