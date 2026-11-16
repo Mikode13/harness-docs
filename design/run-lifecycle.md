@@ -12,6 +12,9 @@ the harness for that run and nothing else.
 
 - The executor talks only to the API, over a local channel. It does not connect to the
   database.
+- Before the executor, the API starts a workspace process when the session's workspace has
+  to be prepared. It is a child process too, talks only to the API, and ends before the
+  executor starts. See the [rules](#rules).
 - The API is the only writer of the database, and so the only writer of a run's state. The
   executor reports what happens; the API stores it and decides the state.
 - While the API runs, it knows an executor ended because its process exited. No heartbeat
@@ -63,12 +66,14 @@ In the diagram, "restart" stands for a restart of the API and for the death of a
 
 ## Rules
 
-- **The executor prepares the workspace, while the run is `setting_up`.** Every run checks
-  that its session's workspace is ready and prepares it when it is not, so the first run
-  clones and a later one rebuilds what was lost. A failure while preparing ends the run as
-  `failed`. See [create-session](../flows/create-session.md).
+- **A workspace process prepares the workspace, while the run is `setting_up`.** The API
+  starts it before the run's executor, as the writing user whatever the run's agent. Every
+  run checks that its session's workspace is ready and has it prepared when it is not, so
+  the first run clones and a later one rebuilds what was lost. A failure while preparing
+  ends the run as `failed`. See [create-session](../flows/create-session.md).
 - **Everything a run started is gone before another run starts.** Ending a run means ending
-  its executor and every process the executor started, and confirming that none is left.
+  its executor, its workspace process if it was still preparing, and every process they
+  started, and confirming that none is left.
   Until that is confirmed the run is not ended, and neither its conversation nor its
   workspace takes another run. It holds for a cancellation, for an executor that died and
   for a restart of the API: a process that lost its parent keeps running, and marking its
@@ -124,11 +129,6 @@ The next run can recover the conversation, and compacts it when it is very large
 
 Not decided. Each is an input to the next design steps.
 
-- **Who prepares the workspace when the run's agent only reads.** The executor of an agent
-  with no tools that write runs as the read-only user, which cannot clone or add a worktree
-  and should not hold the git credential; see [security](security.md). Whether the
-  workspace is then prepared as the writing user, in a step before the executor starts, is
-  not decided.
 - **How a run's processes are ended and confirmed gone.** It has to reach a process that
   lost its parent, and work after a restart of the API, when the API no longer holds the
   executors it started.

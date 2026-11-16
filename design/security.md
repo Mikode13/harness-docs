@@ -24,11 +24,11 @@ See [ask-and-answer](../flows/ask-and-answer.md).
 The server has four users. The maintainer has his own, with sudo. The product runs as three
 others:
 
-| User            | Runs                                              | Can                                                 |
-| --------------- | ------------------------------------------------- | --------------------------------------------------- |
-| Service user    | The API                                           | Use the database, and start the executors.          |
-| Read-only agent | The executor of an agent with no tools that write | Read a workspace.                                   |
-| Writing agent   | The executor of an agent with tools that write    | Do more operations, such as writing in a workspace. |
+| User            | Runs                                                                        | Can                                                 |
+| --------------- | --------------------------------------------------------------------------- | --------------------------------------------------- |
+| Service user    | The API                                                                     | Use the database, and start the executors.          |
+| Read-only agent | The executor of an agent with no tools that write                           | Read a workspace.                                   |
+| Writing agent   | The executor of an agent with tools that write, and every workspace process | Do more operations, such as writing in a workspace. |
 
 - **The operating system enforces what the harness already does.** Whether an agent writes
   is known before its run starts: it has tools that write, or it has none. An executor of an
@@ -42,8 +42,9 @@ others:
 
 ## Git credentials
 
-- **The API holds the credential and passes it to what prepares the workspace**; see
-  [create-session](../flows/create-session.md).
+- **The API holds the credential and passes it to the workspace process**, never to an
+  executor; see [create-session](../flows/create-session.md). The workspace process
+  prepares a workspace, restores code and pushes, and runs as the writing user.
 - **For now it is the maintainer's own account.** A separate git account only for agents is
   the aim, and waits because of its cost.
 - **The credential is never written to disk** nor to the git configuration of a worktree,
@@ -52,15 +53,15 @@ others:
 
 ### An accepted risk, for now
 
-A command a model starts runs as the same user as the executor that holds the credential.
-Keeping the credential off disk does not keep it from such a command: it could read it from
-the executor's process, or through what it inherits. A prompt injection could make a model
-start one.
+No executor holds the credential, and a workspace process works on a session only while
+that session has no executor. The gap is between sessions: the workspace process of one
+session and the commands a model starts in another run at the same time, as the same user.
+Keeping the credential off disk does not keep it from such a command, which could read it
+from the workspace process. A prompt injection could make a model start one.
 
 The maintainer accepted this on 2026-11-16 for the first slice, limited by a credential that
 reaches only the registered repositories. It is a known gap, not the design: it will be
-closed by running the git operations that need the credential as a user the model's commands
-do not run as.
+closed by running the workspace process as a user the model's commands do not run as.
 
 ## Open points
 
@@ -71,8 +72,9 @@ Not decided.
 - **How the service user starts a process as another user.** The API runs as the service
   user and its executors run as the agent users.
 - **When the accepted risk on the git credential ends, and how.** Closing it before the
-  product reads the web (R14 of [mvp.md](../mvp.md)) was proposed. How the git operations
-  run as another user, with the worktrees shared between both users, is not designed.
+  product reads the web (R14 of [mvp.md](../mvp.md)) was proposed. How the workspace
+  process runs as another user, with the worktrees shared between both users, is not
+  designed.
 - **Which git credential, while it is the maintainer's account.** A fine-grained personal
   access token limited to the registered repositories, or a GitHub App whose tokens last an
   hour, were proposed to limit what a leaked credential can reach.

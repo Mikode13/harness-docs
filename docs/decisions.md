@@ -256,50 +256,61 @@ to clone was considered and left for a session that starts with none.
 that needs another project is another session. Changes in the user's folder that were not
 pushed do not reach the server, and the CLI has to say so.
 
-## The executor prepares the workspace in the run, with a credential the API passes
+## A workspace process prepares the workspace before the executor, with the git credential
 
-**Decision:** The executor prepares a session's workspace inside the run, while it is
-`setting_up`: it clones each project and adds a worktree for the session, and reports it with
-events of state. Every run checks that the workspace is ready and prepares it when it is not.
-The API holds the git credential and passes it to the executor, which uses it only to clone,
-fetch and push; it is never written to disk nor to a worktree's git configuration. For now the
-credential is the maintainer's own account.
+**Decision:** A workspace process prepares a session's workspace inside the run, while it is
+`setting_up`, before the run's executor starts: it clones each project and adds a worktree for
+the session, and reports it with events of state. The API starts it as the writing user,
+whatever the run's agent. Every run checks that the workspace is ready and has it prepared when
+it is not. The same kind of process restores code and pushes a branch. The API holds the git
+credential and passes it to the workspace process, never to an executor; it is used only to
+clone, fetch and push, and is never written to disk nor to a worktree's git configuration. For
+now the credential is the maintainer's own account.
 
-**Context:** Decided by the maintainer on 2026-11-15. The executor has the disk, so the API
-keeps to the database. He would prepare a workspace before the
-first prompt, but nothing says when a session will be used, or whether it will, so it is
-prepared when the first run needs it. A separate git account for agents is the aim and waits
-because of its cost. The commands a model starts run as the executor's user, so a credential
-in a file could be read by them.
+**Context:** Decided by the maintainer on 2026-11-15 and 2026-11-16. He first gave the
+preparation to the executor: it has the disk, so the API keeps to the database. The automated
+review of that flow found that it could not hold: the executor of an agent with no tools that
+write runs as the read-only user, which cannot clone and should not hold the credential. A
+restore and a push also needed something to carry them out that is not a run. He would prepare
+a workspace before the first prompt, but nothing says when a session will be used, or whether
+it will, so it is prepared when the first run needs it. A separate git account for agents is
+the aim and waits because of its cost.
+
+**Alternatives considered:**
+
+- **The run's executor prepares the workspace.** One process fewer, but an agent that only
+  reads would need to write and to hold the credential.
 
 **Consequences:** The first run of a session is slower, and the user sees why. A run that
 fails while cloning ends as `failed` and leaves the session without a workspace, which the next
-prompt prepares again. The executor of an agent that only reads runs as the read-only user,
-which cannot clone and should not hold the credential; who prepares the workspace then is not
-decided. Keeping the credential off disk narrows where it can be read and does
-not keep it from the commands a model starts; the next entry says what was decided about that.
-Which credential is used, a fine-grained token or a GitHub App, is not decided.
+prompt has prepared again. No executor ever holds the credential. A run has two processes one
+after the other, and ending a run means ending whichever is there. Which credential is used, a
+fine-grained token or a GitHub App, is not decided; the next entry says what was decided about
+who can still reach it.
 
 ## A model's command can reach the git credential: accepted for now, to be changed
 
 **Decision:** For the first slice, the risk that a command a model starts reads the git
 credential is accepted. It is limited by a credential that reaches only the registered
 repositories. This is a known gap and not the intended design: it will be closed by running
-the git operations that need the credential as a user of the operating system that the
-model's commands do not run as. [`design/security.md`](../design/security.md#git-credentials)
-states it.
+the workspace process, which is what holds the credential, as a user of the operating system
+that the model's commands do not run as.
+[`design/security.md`](../design/security.md#git-credentials) states it.
 
 **Context:** Decided by the maintainer on 2026-11-16, after the automated review of the flow
 that creates a session. The flow kept the credential off disk and gave that as the protection.
-The review pointed out that the executor holds the credential for the whole run and starts the
-model's commands as its own user, so a command could read it from the executor's process or
-through what it inherits, for example after a prompt injection from web content.
+The review pointed out that a command a model starts runs as the same user as the process that
+holds the credential and could read it from that process, for example after a prompt injection
+from web content. With the workspace process, no executor holds the credential and a session's
+workspace process never runs beside that session's executor. The gap that is left is between
+sessions: one session's workspace process and the commands of another session's run, at the
+same time and as the same user.
 
 **Alternatives considered:**
 
-- **Running the credentialed git operations as another user from the start.** Safer, but the
-  worktrees have to be shared between that user and the one that runs the model's commands,
-  which is not designed, and it would hold up the first slice.
+- **Running the workspace process as another user from the start.** Safer, but the worktrees
+  have to be shared between that user and the one that runs the model's commands, which is not
+  designed, and it would hold up the first slice.
 
 **Consequences:** Until it changes, a leaked credential gives what that credential can do in
 the registered repositories, with the maintainer's account while there is no account for
@@ -312,7 +323,8 @@ decided.
 **Decision:** The product reuses how the harness commits, shows a run's changes and restores
 code, and adds only what the harness never does. A branch is pushed and a pull request is
 opened only when the user asks from a client; neither is ever automatic, and neither is a
-command a model runs. A worktree's branch has a provisional name with the session's id until
+command a model runs. A workspace process pushes, and only while no run of the session is
+active. A worktree's branch has a provisional name with the session's id until
 the first push, when the client proposes a name, or the model does if the user asks, the user
 confirms it and the branch is renamed. A session with several projects uses the same name in
 each, and a name that already exists is an error the client shows.
@@ -335,6 +347,6 @@ whether the work is a fix or a feature, which the projects' branch names say.
   user has to choose the kind of change before writing the first prompt.
 
 **Consequences:** Work that was committed and not pushed exists only on the server. The commit
-question is an ask, answered from any device. What carries out a command that is not a run,
-such as a restore or a push, is not decided, and neither is who writes a pull request's title
-and description.
+question is an ask, answered from any device. A restore and a push are carried out by a
+workspace process, as the entry about preparing a workspace says. Who writes a pull request's
+title and description is not decided.

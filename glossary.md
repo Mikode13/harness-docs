@@ -124,6 +124,15 @@ prompt, and at most one of them works at a time. A run has a state;
 The process that runs the harness for one run. The API starts it as a child process and is
 the only one it talks to.
 
+### Workspace process
+
+A process the API starts to work on a session's workspace outside a run's executor: it
+prepares the workspace before a run, restores code and pushes a branch. It runs as the
+writing user, talks only to the API, and is the one that is given the git credential.
+
+It is not an executor. An executor runs the harness for a run; a workspace process runs no
+agent.
+
 ### Event
 
 What the API returns while a run works, inside the conversation: a tool's activity, a text

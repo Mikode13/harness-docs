@@ -37,8 +37,8 @@ harness's default, one question at the end of the run.
 
 ### Seeing changes and restoring are commands of the client
 
-- **The user asks from a client**, and the API passes the command on to where the workspace
-  is, which calls the harness's history.
+- **The user asks from a client.** For a restore, the API starts a workspace process, which
+  calls the harness's history.
 - **Only while no run of the session is active**, since one writer works in a workspace at a
   time; see the [run lifecycle](../design/run-lifecycle.md#rules).
 - **A restore changes the code, not the conversation.** The messages stay as they are, and
@@ -52,7 +52,7 @@ harness's default, one question at the end of the run.
 sequenceDiagram
     participant C as Client
     participant A as API
-    participant W as What carries out the command
+    participant W as Workspace process
     participant G as Git host
 
     C->>C: proposes a name for the branch, or asks for one
@@ -69,6 +69,10 @@ sequenceDiagram
     A-->>C: the pull request, or the error
 ```
 
+- **A workspace process pushes**, as it prepares a workspace: started by the API, as the
+  writing user, with the credential.
+- **A push waits until no run of the session is active**, as a restore does. The first push
+  renames the branch of each worktree, which a run that is working must not find changed.
 - **Neither is ever automatic.** The branch is pushed, and a pull request is opened, only
   when the user asks for it from a client. Nothing does it at the end of a run or after a
   commit.
@@ -97,12 +101,6 @@ is created.
 
 Not decided.
 
-- **What carries out a command that is not a run**, such as a restore or a push. An executor
-  exists for a run; see [where a run executes](../design/run-lifecycle.md#where-a-run-executes).
-  The diagram above names it only by what it does.
-- **Whether a push can happen while a run of the session is active.** A push renames the
-  branch of each worktree the first time. Seeing changes and restoring wait for no active
-  run; whether a push does too was not discussed.
 - **A name for a point the code is restored to.** R09 calls it a retained checkpoint; in the
   harness it is a run of its history. The product has no term for it yet.
 - **Whether the code history belongs to the session**, and so survives a clear. It is an

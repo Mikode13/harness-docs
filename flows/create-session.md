@@ -14,6 +14,7 @@ sequenceDiagram
     participant C as Client
     participant A as API
     participant D as Database
+    participant W as Workspace process
     participant E as Executor
     participant G as Git host
 
@@ -27,10 +28,11 @@ sequenceDiagram
     A->>D: stores what the user sent, creates the run as setting_up
     A-->>C: accepted, with the session and the run
 
-    A->>E: starts the executor, with the projects and the credential
-    E-->>A: state event: cloning
-    E->>G: clones each project, adds a worktree for the session
-    E-->>A: state event: the workspace is ready
+    A->>W: prepare the workspace, with the projects and the credential
+    W-->>A: state event: cloning
+    W->>G: clones each project, adds a worktree for the session
+    W-->>A: the workspace is ready, and ends
+    A->>E: starts the executor of the run
     Note over E: the run is running, and goes on as any run
 ```
 
@@ -52,9 +54,12 @@ sequenceDiagram
      another device deleted.
 6. **The API gives the session its default title**, stores what the user sent, creates the
    run as `setting_up` and acknowledges.
-7. **The executor prepares the workspace.** It clones each project and adds a worktree for
-   the session, and says what it is doing with events of state, such as that it is cloning.
-8. **The run goes on** as `running`, as in [prompt-and-reconnect](prompt-and-reconnect.md).
+7. **A workspace process prepares the workspace.** The API starts it, as the writing user,
+   before the run's executor. It clones each project and adds a worktree for the session,
+   says what it is doing with events of state, such as that it is cloning, and ends.
+8. **The API starts the executor of the run**, as the user its agent calls for: an agent
+   that only reads gets a workspace it did not have to write.
+9. **The run goes on** as `running`, as in [prompt-and-reconnect](prompt-and-reconnect.md).
 
 ## Rules
 
@@ -104,11 +109,15 @@ sequenceDiagram
 
 ### Preparing the workspace
 
-- **The executor prepares it, inside the run.** The API does not touch the disk. The run is
-  `setting_up` meanwhile, and the user sees what is happening through events of state.
+- **A workspace process prepares it, inside the run and before the executor starts.** The
+  API does not touch the disk. The run is `setting_up` meanwhile, and the user sees what is
+  happening through events of state.
+- **It always runs as the writing user**, whatever the run's agent. The executor of an agent
+  with no tools that write runs as the read-only user, which cannot clone or add a worktree
+  and is never given the credential.
 - **Every run checks, not only the first.** A run whose session has projects and no
-  workspace ready prepares it. So a session whose first run failed while cloning tries again
-  with the next prompt, and a workspace that was lost is rebuilt.
+  workspace ready has it prepared. So a session whose first run failed while cloning tries
+  again with the next prompt, and a workspace that was lost is rebuilt.
 - **A failure while preparing ends the run as `failed`.** The session stays, without its
   workspace.
 - **It is prepared late on purpose.** Nothing is cloned before a prompt asks for it, since
@@ -116,18 +125,21 @@ sequenceDiagram
 
 ### Git credentials
 
-- **The API holds the credential and passes it to what prepares the workspace.**
+- **The API holds the credential and passes it to the workspace process**, never to an
+  executor.
 - **For now it is the maintainer's own account.** A separate git account only for agents is
   the aim, and waits because of its cost.
 - **The credential is never written to disk** nor to the git configuration of a worktree,
   and it is used only to clone, fetch and push. That narrows where it can be read.
-- **A command a model starts could still reach it, and that is accepted for now.** Those
-  commands run as the same user as the executor that holds the credential, so one of them
-  could read it from the executor's process or through what it inherits, for example after
-  a prompt injection. The maintainer accepts this risk for the first slice, with a
-  credential that reaches only the registered repositories. It is not the intended design
-  and will change: the git operations that need the credential will run as a user the
-  model's commands do not run as. See [security](../design/security.md#git-credentials).
+- **A command a model starts could still reach it, and that is accepted for now.** No
+  executor holds the credential, and a workspace process works on a session only while that
+  session has no executor. But the workspace process of one session and the commands a
+  model starts in another run as the same user at the same time, so such a command could
+  read the credential from that process, for example after a prompt injection. The
+  maintainer accepts this risk for the first slice, with a credential that reaches only the
+  registered repositories. It is not the intended design and will change: the workspace
+  process will run as a user the model's commands do not run as. See
+  [security](../design/security.md#git-credentials).
 
 ## Open points
 
@@ -140,13 +152,10 @@ Not decided.
   were proposed to limit what a leaked credential can reach.
 - **Whether a session created with "none" can get a project later.** An ask that stops the
   run and asks where to work was considered, and left for later.
-- **Who prepares the workspace when the run's agent only reads.** Its executor runs as the
-  read-only user, which cannot clone and should not hold the credential. It is an open
-  point of the [run lifecycle](../design/run-lifecycle.md#open-points).
 - **When the accepted risk on the credential ends.** Doing it before the product reads the
   web (R14 of [mvp.md](../mvp.md)), which is where an injection would come from, was
-  proposed. How the git operations run as another user, with the worktrees shared between
-  both, is not designed.
+  proposed. How the workspace process runs as another user, with the worktrees shared
+  between both, is not designed.
 - **What a rebuilt workspace starts from.** When the worktree of a session is lost and a run
   prepares it again: the session's own branch if the clone or the remote still has it, or
   the default branch, and how the user learns that work that was not pushed is gone.
