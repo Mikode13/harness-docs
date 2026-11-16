@@ -46,9 +46,9 @@ others:
   workspace; see [create-session](../flows/create-session.md).
 - **For now it is the maintainer's own account.** A separate git account only for agents is
   the aim, and waits because of its cost.
-- **The credential is never written to disk** nor to the git configuration of a worktree.
-  The executor uses it only to clone, fetch and push, because the commands a model starts
-  run as the same user and could read a file.
+- **The credential is never written to disk** nor to the git configuration of a worktree,
+  and the executor uses it only to clone, fetch and push. That narrows where it can be read;
+  it does not keep it from the commands a model starts, as the open points say.
 
 ## Open points
 
@@ -58,6 +58,11 @@ Not decided.
   to a private network.
 - **How the service user starts a process as another user.** The API runs as the service
   user and its executors run as the agent users.
+- **Keeping the git credential from the commands a model starts.** They run as the same
+  user as the executor that holds it, so one of them could still reach it, in the executor's
+  process or through what it inherits. Whether that is accepted for now, with a credential
+  that reaches little, or the git operations that need it run as another user, is not
+  decided.
 - **Which git credential, while it is the maintainer's account.** A fine-grained personal
   access token limited to the registered repositories, or a GitHub App whose tokens last an
   hour, were proposed to limit what a leaked credential can reach.

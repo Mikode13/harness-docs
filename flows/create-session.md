@@ -22,7 +22,7 @@ sequenceDiagram
     Note over C: the user confirms or changes the projects, and writes
 
     C->>A: first prompt: session id, prompt id, projects or none, text
-    A->>D: looks for the session
+    A->>D: looks for the prompt's id, then for the session
     A->>D: creates the session with its default title and its projects
     A->>D: stores what the user sent, creates the run as setting_up
     A-->>C: accepted, with the session and the run
@@ -40,18 +40,21 @@ sequenceDiagram
    sending. See [which projects](#which-projects-a-session-works-in).
 3. **The first prompt carries everything.** The id of the session, an id for the prompt that
    the client also generates, the projects chosen or an explicit "none", and the text.
-4. **The API looks for the session.** There are three cases:
+4. **The API looks at the prompt's id first.** A prompt whose id it already has is the same
+   prompt sent again: the API answers with the acceptance and the run it gave the first
+   time, before any other check, so a retry is never rejected as busy.
+5. **Then the API looks for the session.** There are three cases:
    - it does not exist: the API creates it, and goes on;
    - it exists: the prompt is one more prompt of that session, as in
      [prompt-and-reconnect](prompt-and-reconnect.md);
    - it exists and is deleted: the API rejects the prompt. It neither brings the session
      back nor creates another. This is the case of a device that still shows a session
      another device deleted.
-5. **The API gives the session its default title**, stores what the user sent, creates the
+6. **The API gives the session its default title**, stores what the user sent, creates the
    run as `setting_up` and acknowledges.
-6. **The executor prepares the workspace.** It clones each project and adds a worktree for
+7. **The executor prepares the workspace.** It clones each project and adds a worktree for
    the session, and says what it is doing with events of state, such as that it is cloning.
-7. **The run goes on** as `running`, as in [prompt-and-reconnect](prompt-and-reconnect.md).
+8. **The run goes on** as `running`, as in [prompt-and-reconnect](prompt-and-reconnect.md).
 
 ## Rules
 
@@ -60,7 +63,9 @@ sequenceDiagram
 - **The client generates the id of a session and the id of each prompt.** The API creates
   what it does not find under that id.
 - **A prompt sent twice runs once.** A client that does not get the acknowledgement sends
-  the prompt again with the same id. The API recognizes it and does not start a second run.
+  the prompt again with the same id. The API recognizes it and does not start a second run:
+  it answers with the same acceptance and the same run. It checks the id before it checks
+  whether the conversation is busy, since the retry arrives while the first run works.
   Without the prompt's id, the retry of a first prompt would look like a second prompt of a
   session that now exists.
 
@@ -73,8 +78,8 @@ sequenceDiagram
 
 ### Which projects a session works in
 
-- **Projects are registered in the API.** A project is a name and its remote repository. The
-  API clones only registered projects, never a URL it is handed.
+- **Projects are registered in the API.** A project is a name and its remote repository.
+  Only registered projects are cloned, never a URL the API is handed.
 - **The user chooses, never the model.** The choice is visible in the new chat before the
   first prompt is sent, and can be changed there.
 - **The CLI proposes from the remote, not from the folder.** Started in a folder, it reads
@@ -90,9 +95,12 @@ sequenceDiagram
   first prompt that says neither projects nor "none".
 - **The workspace is fixed when the session is created.** Work on another project is another
   session.
-- **A worktree starts from the repository's default branch.** The CLI may offer the branch
-  the folder is on, when the remote has it. Changes in the folder that were not pushed do
-  not reach the server, and the CLI says so.
+- **A worktree starts from the repository's default branch**, unless the user takes the
+  branch the CLI offers: the one the folder is on, when the remote has it. Changes in the
+  folder that were not pushed do not reach the server, and the CLI says so.
+- **A worktree is on a branch of its own, with a provisional name** that carries the id of
+  the session. It gets its name at the first push; see
+  [changes-and-push](changes-and-push.md#the-name-of-the-branch).
 
 ### Preparing the workspace
 
@@ -111,9 +119,10 @@ sequenceDiagram
 - **The API holds the credential and passes it to the executor.**
 - **For now it is the maintainer's own account.** A separate git account only for agents is
   the aim, and waits because of its cost.
-- **The credential is never written to disk** nor to the git configuration of a worktree.
-  The executor uses it only to clone, fetch and push: the commands a model starts run as the
-  same user and could read a file.
+- **The credential is never written to disk** nor to the git configuration of a worktree,
+  and the executor uses it only to clone, fetch and push. That narrows where it can be read.
+  It does not keep it from the commands a model starts, which run as the executor's user;
+  see the open points.
 
 ## Open points
 
@@ -126,8 +135,14 @@ Not decided.
   were proposed to limit what a leaked credential can reach.
 - **Whether a session created with "none" can get a project later.** An ask that stops the
   run and asks where to work was considered, and left for later.
-- **The name of the branch a worktree is on.** A worktree needs a new branch. What it is
-  called, and whether the user can name it, was not discussed.
+- **Keeping the credential from the commands a model starts.** Those commands run as the
+  same user as the executor that holds it, so one of them could still reach it, in the
+  executor's process or through what it inherits, for example after a prompt injection from
+  the web. Whether that is accepted for now, with a credential that reaches little, or the
+  git operations that need it run as another user, is not decided.
+- **What a rebuilt workspace starts from.** When the worktree of a session is lost and a run
+  prepares it again: the session's own branch if the clone or the remote still has it, or
+  the default branch, and how the user learns that work that was not pushed is gone.
 - **One clone of a repository for all its sessions.** Whether sessions on the same project
   share a clone and add their worktrees to it, and what two first runs that clone at once
   do, was not discussed.

@@ -91,8 +91,8 @@ main folder is for local use.
 ### Project
 
 A name and its remote repository, registered in the API. The user chooses the projects of a
-session when it is created, and each becomes a root of its workspace. The API clones only
-registered projects.
+session when it is created, and each becomes a root of its workspace. Only registered
+projects are cloned.
 
 It is not a workspace. A project is what can be worked on; a workspace is where one session
 works on it.

@@ -21,7 +21,7 @@ None of this is built yet.
 | 4   | Restart of the server                                    | Decided in the [run lifecycle](../design/run-lifecycle.md); diagram pending       |
 | 5   | Create a session and set up its workspace                | Written: [create-session.md](create-session.md)                                   |
 | 6   | Clear and delete                                         | Rules decided in the [run lifecycle](../design/run-lifecycle.md); diagram pending |
-| 7   | See changes, restore code and push the branch            | Not designed                                                                      |
+| 7   | See changes, restore code and push the branch            | Written: [changes-and-push.md](changes-and-push.md)                               |
 | 8   | Authenticate a device                                    | Decided in [security](../design/security.md); diagram pending                     |
 
 Flows beyond the first slice, such as changing the agent or model, delegation, memory and

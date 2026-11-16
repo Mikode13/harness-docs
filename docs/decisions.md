@@ -210,7 +210,8 @@ harness needs, then the API.
 **Decision:** The client generates the id of a session and the id of each prompt. A session is
 created by the first prompt sent to it: the API creates a session it does not find, takes the
 prompt as one more of a session that exists, and rejects a prompt to a session that is deleted.
-A prompt whose id the API already has is the same prompt sent again and starts no second run.
+A prompt whose id the API already has is the same prompt sent again and starts no second run:
+the API checks the id before anything else and answers with the first acceptance and run.
 The API gives a new session a default title, the first prompt's text cut short, and a title
 the user set is never replaced. [`flows/create-session.md`](../flows/create-session.md) holds
 the flow.
@@ -229,13 +230,14 @@ user's.
 
 ## A session works in the registered projects its user chooses
 
-**Decision:** A project is a name and its remote repository, registered in the API, and the API
-clones only registered projects. The user chooses the projects of a session before the first
+**Decision:** A project is a name and its remote repository, registered in the API, and only
+registered projects are cloned. The user chooses the projects of a session before the first
 prompt, in the client, where the choice is visible and can be changed; the model never chooses.
 The CLI proposes the project whose repository is the remote of the folder it runs in, a mobile
 proposes the one used last, and "none" is an explicit choice. More than one project gives a
-workspace with several roots. The workspace is fixed when the session is created, and a
-worktree starts from the repository's default branch.
+workspace with several roots. The workspace is fixed when the session is created. A worktree
+starts from the repository's default branch, or from the branch of the user's folder when the
+CLI offers it and the user takes it.
 
 **Context:** Decided by the maintainer on 2026-11-15. With an agent on the user's machine the
 project is the folder it runs in. On a server the CLI would have to say which folder, and a
@@ -272,5 +274,39 @@ in a file could be read by them.
 
 **Consequences:** The first run of a session is slower, and the user sees why. A run that
 fails while cloning ends as `failed` and leaves the session without a workspace, which the next
-prompt prepares again. Which credential limits the damage of a leak, a fine-grained token or a
-GitHub App, is not decided.
+prompt prepares again. Keeping the credential off disk narrows where it can be read and does
+not keep it from the commands a model starts, which run as the executor's user; whether that
+is accepted or the git operations run as another user is not decided, and neither is which
+credential limits the damage of a leak, a fine-grained token or a GitHub App.
+
+## Pushing and opening a pull request are the user's commands, and the branch is named then
+
+**Decision:** The product reuses how the harness commits, shows a run's changes and restores
+code, and adds only what the harness never does. A branch is pushed and a pull request is
+opened only when the user asks from a client; neither is ever automatic, and neither is a
+command a model runs. A worktree's branch has a provisional name with the session's id until
+the first push, when the client proposes a name, or the model does if the user asks, the user
+confirms it and the branch is renamed. A session with several projects uses the same name in
+each, and a name that already exists is an error the client shows.
+[`flows/changes-and-push.md`](../flows/changes-and-push.md) holds the flow.
+
+**Context:** Decided by the maintainer on 2026-11-16. The harness already asks before it
+commits, lists and shows a run's changes, moves a workspace through its history and refuses to
+reset a branch whose upstream holds the commits; R09 of [`mvp.md`](../mvp.md) says to reuse
+that. He was clear that pushing and opening a pull request will not be automatic. A command of
+the client was chosen over a configured command the agent runs: it does not depend on the
+model deciding to call it, and a configured command would need the credential where a model's
+commands can read it. A worktree needs a branch when it is created, and then nobody knows
+whether the work is a fix or a feature, which the projects' branch names say.
+
+**Alternatives considered:**
+
+- **Pushing after each commit.** The work would survive the server without asking, which he
+  ruled out.
+- **Naming the branch when the session is created.** The name is final from the start, but the
+  user has to choose the kind of change before writing the first prompt.
+
+**Consequences:** Work that was committed and not pushed exists only on the server. The commit
+question is an ask, answered from any device. What carries out a command that is not a run,
+such as a restore or a push, is not decided, and neither is who writes a pull request's title
+and description.

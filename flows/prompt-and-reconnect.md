@@ -45,9 +45,10 @@ sequenceDiagram
 ```
 
 1. **The client sends the prompt as a command**, with an id the client generates. The API
-   authenticates it, and rejects it as busy when the conversation already has a run that is
-   not ended (R05; see the [run lifecycle](../design/run-lifecycle.md)). A prompt whose id
-   the API already has is the same prompt sent again, and starts no second run.
+   authenticates it and looks at that id first: a prompt whose id it already has is the same
+   prompt sent again, and gets the acceptance and the run of the first time. Only then does
+   it reject a prompt as busy, when the conversation already has a run that is not ended
+   (R05; see the [run lifecycle](../design/run-lifecycle.md)).
 2. **The API stores and acknowledges.** It stores what the user sent and creates the run. The
    client gets only an acknowledgement, with the run. It does not wait for the run to end.
 3. **The client subscribes to the conversation's events.** Everything else arrives through
