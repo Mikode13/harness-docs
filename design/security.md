@@ -47,8 +47,20 @@ others:
 - **For now it is the maintainer's own account.** A separate git account only for agents is
   the aim, and waits because of its cost.
 - **The credential is never written to disk** nor to the git configuration of a worktree,
-  and the executor uses it only to clone, fetch and push. That narrows where it can be read;
-  it does not keep it from the commands a model starts, as the open points say.
+  and the executor uses it only to clone, fetch and push. That narrows where it can be read.
+- **The credential reaches only the registered repositories.**
+
+### An accepted risk, for now
+
+A command a model starts runs as the same user as the executor that holds the credential.
+Keeping the credential off disk does not keep it from such a command: it could read it from
+the executor's process, or through what it inherits. A prompt injection could make a model
+start one.
+
+The maintainer accepted this on 2026-11-16 for the first slice, limited by a credential that
+reaches only the registered repositories. It is a known gap, not the design: it will be
+closed by running the git operations that need the credential as a user the model's commands
+do not run as.
 
 ## Open points
 
@@ -58,11 +70,9 @@ Not decided.
   to a private network.
 - **How the service user starts a process as another user.** The API runs as the service
   user and its executors run as the agent users.
-- **Keeping the git credential from the commands a model starts.** They run as the same
-  user as the executor that holds it, so one of them could still reach it, in the executor's
-  process or through what it inherits. Whether that is accepted for now, with a credential
-  that reaches little, or the git operations that need it run as another user, is not
-  decided.
+- **When the accepted risk on the git credential ends, and how.** Closing it before the
+  product reads the web (R14 of [mvp.md](../mvp.md)) was proposed. How the git operations
+  run as another user, with the worktrees shared between both users, is not designed.
 - **Which git credential, while it is the maintainer's account.** A fine-grained personal
   access token limited to the registered repositories, or a GitHub App whose tokens last an
   hour, were proposed to limit what a leaked credential can reach.

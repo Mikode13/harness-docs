@@ -275,9 +275,35 @@ in a file could be read by them.
 **Consequences:** The first run of a session is slower, and the user sees why. A run that
 fails while cloning ends as `failed` and leaves the session without a workspace, which the next
 prompt prepares again. Keeping the credential off disk narrows where it can be read and does
-not keep it from the commands a model starts, which run as the executor's user; whether that
-is accepted or the git operations run as another user is not decided, and neither is which
-credential limits the damage of a leak, a fine-grained token or a GitHub App.
+not keep it from the commands a model starts; the next entry says what was decided about that.
+Which credential is used, a fine-grained token or a GitHub App, is not decided.
+
+## A model's command can reach the git credential: accepted for now, to be changed
+
+**Decision:** For the first slice, the risk that a command a model starts reads the git
+credential is accepted. It is limited by a credential that reaches only the registered
+repositories. This is a known gap and not the intended design: it will be closed by running
+the git operations that need the credential as a user of the operating system that the
+model's commands do not run as. [`design/security.md`](../design/security.md#git-credentials)
+states it.
+
+**Context:** Decided by the maintainer on 2026-11-16, after the automated review of the flow
+that creates a session. The flow kept the credential off disk and gave that as the protection.
+The review pointed out that the executor holds the credential for the whole run and starts the
+model's commands as its own user, so a command could read it from the executor's process or
+through what it inherits, for example after a prompt injection from web content.
+
+**Alternatives considered:**
+
+- **Running the credentialed git operations as another user from the start.** Safer, but the
+  worktrees have to be shared between that user and the one that runs the model's commands,
+  which is not designed, and it would hold up the first slice.
+
+**Consequences:** Until it changes, a leaked credential gives what that credential can do in
+the registered repositories, with the maintainer's account while there is no account for
+agents. Nothing that makes an injection likelier should ship before the change; closing the gap
+before the product reads the web, R14 of [`mvp.md`](../mvp.md), was proposed, and when is not
+decided.
 
 ## Pushing and opening a pull request are the user's commands, and the branch is named then
 

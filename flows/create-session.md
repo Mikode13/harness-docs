@@ -121,8 +121,13 @@ sequenceDiagram
   the aim, and waits because of its cost.
 - **The credential is never written to disk** nor to the git configuration of a worktree,
   and the executor uses it only to clone, fetch and push. That narrows where it can be read.
-  It does not keep it from the commands a model starts, which run as the executor's user;
-  see the open points.
+- **A command a model starts could still reach it, and that is accepted for now.** Those
+  commands run as the same user as the executor that holds the credential, so one of them
+  could read it from the executor's process or through what it inherits, for example after
+  a prompt injection. The maintainer accepts this risk for the first slice, with a
+  credential that reaches only the registered repositories. It is not the intended design
+  and will change: the git operations that need the credential will run as a user the
+  model's commands do not run as. See [security](../design/security.md#git-credentials).
 
 ## Open points
 
@@ -135,11 +140,10 @@ Not decided.
   were proposed to limit what a leaked credential can reach.
 - **Whether a session created with "none" can get a project later.** An ask that stops the
   run and asks where to work was considered, and left for later.
-- **Keeping the credential from the commands a model starts.** Those commands run as the
-  same user as the executor that holds it, so one of them could still reach it, in the
-  executor's process or through what it inherits, for example after a prompt injection from
-  the web. Whether that is accepted for now, with a credential that reaches little, or the
-  git operations that need it run as another user, is not decided.
+- **When the accepted risk on the credential ends.** Doing it before the product reads the
+  web (R14 of [mvp.md](../mvp.md)), which is where an injection would come from, was
+  proposed. How the git operations run as another user, with the worktrees shared between
+  both, is not designed.
 - **What a rebuilt workspace starts from.** When the worktree of a session is lost and a run
   prepares it again: the session's own branch if the clone or the remote still has it, or
   the default branch, and how the user learns that work that was not pushed is gone.
