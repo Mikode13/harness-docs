@@ -40,6 +40,16 @@ others:
 - **A workflow runs as one user.** A workflow with a planner, an executor and a reviewer is
   one process, so all of it runs as the writing user, the roles that only read included.
 
+## Git credentials
+
+- **The API holds the credential and passes it to the executor**, which prepares the
+  workspace; see [create-session](../flows/create-session.md).
+- **For now it is the maintainer's own account.** A separate git account only for agents is
+  the aim, and waits because of its cost.
+- **The credential is never written to disk** nor to the git configuration of a worktree.
+  The executor uses it only to clone, fetch and push, because the commands a model starts
+  run as the same user and could read a file.
+
 ## Open points
 
 Not decided.
@@ -48,9 +58,9 @@ Not decided.
   to a private network.
 - **How the service user starts a process as another user.** The API runs as the service
   user and its executors run as the agent users.
-- **Git credentials, and who prepares the workspace.** Cloning a repository and adding a
-  worktree need credentials. Credentials limited to that repository, used by the executor,
-  were proposed. It is open in the [run lifecycle](run-lifecycle.md#open-points).
+- **Which git credential, while it is the maintainer's account.** A fine-grained personal
+  access token limited to the registered repositories, or a GitHub App whose tokens last an
+  hour, were proposed to limit what a leaked credential can reach.
 - **What exactly the writing agent may do** beyond writing in its workspace. The maintainer
   described it as the user "with more capability to do operations".
 - **A threat model.** The server holds the keys of the model providers and git credentials,

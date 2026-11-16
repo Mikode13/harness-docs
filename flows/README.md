@@ -19,7 +19,7 @@ None of this is built yet.
 | 2   | Ask and answer from another device                       | Written: [ask-and-answer.md](ask-and-answer.md)                                   |
 | 3   | Cancel                                                   | Decided in the [run lifecycle](../design/run-lifecycle.md); diagram pending       |
 | 4   | Restart of the server                                    | Decided in the [run lifecycle](../design/run-lifecycle.md); diagram pending       |
-| 5   | Create a session and set up its workspace                | Not designed; next                                                                |
+| 5   | Create a session and set up its workspace                | Written: [create-session.md](create-session.md)                                   |
 | 6   | Clear and delete                                         | Rules decided in the [run lifecycle](../design/run-lifecycle.md); diagram pending |
 | 7   | See changes, restore code and push the branch            | Not designed                                                                      |
 | 8   | Authenticate a device                                    | Decided in [security](../design/security.md); diagram pending                     |

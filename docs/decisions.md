@@ -204,3 +204,73 @@ before left and hands over its own with the final answer, and a run is `complete
 that snapshot is stored; [`flows/prompt-and-reconnect.md`](../flows/prompt-and-reconnect.md)
 shows the steps. The order of work is the flows, then the database, then what the
 harness needs, then the API.
+
+## The client names a session and a prompt, and the API creates what it does not find
+
+**Decision:** The client generates the id of a session and the id of each prompt. A session is
+created by the first prompt sent to it: the API creates a session it does not find, takes the
+prompt as one more of a session that exists, and rejects a prompt to a session that is deleted.
+A prompt whose id the API already has is the same prompt sent again and starts no second run.
+The API gives a new session a default title, the first prompt's text cut short, and a title
+the user set is never replaced. [`flows/create-session.md`](../flows/create-session.md) holds
+the flow.
+
+**Context:** Decided by the maintainer on 2026-11-15. In his words, "new" makes an empty chat
+that exists only in the client, and the id should come from the client, not from the API. He
+saw two cases, a session that exists and one that does not. The third came from the review of
+that idea: a device still showing a session another device deleted. So did the prompt's id: a
+client that misses the acknowledgement of a first prompt sends it again, and the session now
+exists, so without an id the retry would be a second prompt.
+
+**Consequences:** No request creates a session by itself, and a session never exists without a
+prompt. A retry is safe for the first prompt and for every other, which closes the open point
+of the first flow about sending a prompt twice. The session keeps a mark that its title is the
+user's.
+
+## A session works in the registered projects its user chooses
+
+**Decision:** A project is a name and its remote repository, registered in the API, and the API
+clones only registered projects. The user chooses the projects of a session before the first
+prompt, in the client, where the choice is visible and can be changed; the model never chooses.
+The CLI proposes the project whose repository is the remote of the folder it runs in, a mobile
+proposes the one used last, and "none" is an explicit choice. More than one project gives a
+workspace with several roots. The workspace is fixed when the session is created, and a
+worktree starts from the repository's default branch.
+
+**Context:** Decided by the maintainer on 2026-11-15. With an agent on the user's machine the
+project is the folder it runs in. On a server the CLI would have to say which folder, and a
+folder's name is not reliable; its git remote is. He also wanted the door open: in the folder
+of harness-cli, asking for a change in the harness. Stopping the run to ask which repository
+to clone was considered and left for a session that starts with none.
+
+**Alternatives considered:**
+
+- **Any repository URL, sent with the first prompt.** More flexible, but the credential would
+  have to reach every repository.
+- **Asking during the run.** It needs an ask before the run has anything to work on, and a
+  failure shows later.
+
+**Consequences:** Registering a project is a deliberate step; how is not decided. A session
+that needs another project is another session. Changes in the user's folder that were not
+pushed do not reach the server, and the CLI has to say so.
+
+## The executor prepares the workspace in the run, with a credential the API passes
+
+**Decision:** The executor prepares a session's workspace inside the run, while it is
+`setting_up`: it clones each project and adds a worktree for the session, and reports it with
+events of state. Every run checks that the workspace is ready and prepares it when it is not.
+The API holds the git credential and passes it to the executor, which uses it only to clone,
+fetch and push; it is never written to disk nor to a worktree's git configuration. For now the
+credential is the maintainer's own account.
+
+**Context:** Decided by the maintainer on 2026-11-15. The executor has the disk and runs as
+the writing user, so the API keeps to the database. He would prepare a workspace before the
+first prompt, but nothing says when a session will be used, or whether it will, so it is
+prepared when the first run needs it. A separate git account for agents is the aim and waits
+because of its cost. The commands a model starts run as the executor's user, so a credential
+in a file could be read by them.
+
+**Consequences:** The first run of a session is slower, and the user sees why. A run that
+fails while cloning ends as `failed` and leaves the session without a workspace, which the next
+prompt prepares again. Which credential limits the damage of a leak, a fine-grained token or a
+GitHub App, is not decided.

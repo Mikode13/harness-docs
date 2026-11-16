@@ -36,7 +36,8 @@ A reserved space the user keeps and comes back to. It has a title and is where w
 thing lives. For example, the session for translations, whose workspace is a worktree for
 translations.
 
-A session has one workspace, or none when it is not about code.
+A session has one workspace, or none when it is not about code. It always has a title: a
+default the API gives it, until the user renames it.
 
 A session outlives its conversations: the user can clear it and keep it. What the user
 lists, opens, renames and deletes is sessions, not conversations.
@@ -86,6 +87,15 @@ It is not a worktree. A worktree is one thing a root can be.
 On the server of the MVP, every root is a worktree, so two sessions on the same project
 never write in the same folder, as R03 of [mvp.md](mvp.md) requires. Working in a project's
 main folder is for local use.
+
+### Project
+
+A name and its remote repository, registered in the API. The user chooses the projects of a
+session when it is created, and each becomes a root of its workspace. The API clones only
+registered projects.
+
+It is not a workspace. A project is what can be worked on; a workspace is where one session
+works on it.
 
 ### Root
 

@@ -63,6 +63,10 @@ In the diagram, "restart" stands for a restart of the API and for the death of a
 
 ## Rules
 
+- **The executor prepares the workspace, while the run is `setting_up`.** Every run checks
+  that its session's workspace is ready and prepares it when it is not, so the first run
+  clones and a later one rebuilds what was lost. A failure while preparing ends the run as
+  `failed`. See [create-session](../flows/create-session.md).
 - **Everything a run started is gone before another run starts.** Ending a run means ending
   its executor and every process the executor started, and confirming that none is left.
   Until that is confirmed the run is not ended, and neither its conversation nor its
@@ -121,9 +125,6 @@ Not decided. Each is an input to the next design steps.
 - **How a run's processes are ended and confirmed gone.** It has to reach a process that
   lost its parent, and work after a restart of the API, when the API no longer holds the
   executors it started.
-- **Who prepares the workspace.** Cloning the repository and adding the worktree need git
-  credentials. Whether the API or the executor does it during `setting_up`, and with which
-  credentials, is not decided.
 - **The channel between the API and the executor.** What carries the events one way and the
   answers and the cancellation the other.
 - **What the model is told.** Whether the next prompt tells the model that the earlier run
