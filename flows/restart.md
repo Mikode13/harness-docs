@@ -16,7 +16,7 @@ sequenceDiagram
     participant C as Client
     participant A as API
     participant D as Database
-    participant P as Executors and workspace processes
+    participant P as Executors, workspace and transfer processes
 
     Note over A: stops
     Note over C: its subscription drops
@@ -43,10 +43,10 @@ sequenceDiagram
 3. **It also recognizes the restores and the pushes that were in progress.** A workspace
    process restores and pushes outside a run, so it is not among those runs, and it may
    still be writing in a workspace.
-4. **For each, it ends what is left and confirms that nothing is.** The executor or the
-   workspace process, and every process it started. Until that is confirmed the run is not
-   ended and the restore or the push is not over, and the workspace takes no work: a prompt
-   is rejected as busy.
+4. **For each, it ends what is left and confirms that nothing is.** The executor, or the
+   workspace process and its transfer process, and every process they started. Until that
+   is confirmed the run is not ended and the restore or the push is not over, and the
+   workspace takes no work: a prompt is rejected as busy.
 5. **Each run becomes `interrupted`, and its pending ask is closed.** The API lost its
    channel to the executor that asked, so an answer could not reach it.
 6. **Each restore or push is reconciled**, so that the workspace is in a state the product
@@ -60,8 +60,8 @@ sequenceDiagram
 ## An executor that dies while the API runs
 
 The API sees the executor's process exit. The rest is the same from step 4: it confirms that
-nothing the run started is left, and the run becomes `interrupted`. A workspace process that
-dies during a restore or a push is treated the same way, and its work is reconciled.
+nothing the run started is left, and the run becomes `interrupted`. A workspace process or a
+transfer process that dies during a restore or a push is treated the same way, and its work is reconciled.
 
 ## What is left
 

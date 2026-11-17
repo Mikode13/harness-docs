@@ -289,6 +289,8 @@ fails while cloning ends as `failed` and leaves the session without a workspace,
 prompt has prepared again. No executor ever holds the credential. A run has two processes one
 after the other, and ending a run means ending whichever is there. The next entry says what
 was decided about who can still reach the credential, and a later one which credential it is.
+The entry "Only a transfer process holds the git credential" takes the credential away from
+the workspace process.
 
 ## A model's command can reach the git credential: accepted for now, to be changed
 
@@ -322,7 +324,9 @@ could have changed, and uses the registered repository as its destination.
 does not replace that rule, since git would still run what was left. A later entry says how
 git is run so that it holds. Until the accepted gap changes, a leaked credential gives what that
 credential can do in the registered repositories, with the maintainer's account while there is
-no account for agents. Nothing that makes an injection likelier should ship before the change;
+no account for agents. The entry "Only a transfer process holds the git credential" moves the
+credential, and so the process this risk is about, to a transfer process. Nothing that makes
+an injection likelier should ship before the change;
 closing the gap before the product reads the web, R14 of [`mvp.md`](../mvp.md), was proposed,
 and when is not decided. The automated review pointed out later that an injection is not the
 only way: the code that a model's commands run, such as the dependencies of a project's tests,
@@ -445,7 +449,8 @@ credential trusts nothing in the worktree had no mechanism. He took the extra st
 preventing is better than repairing and it costs little time, and will look for another way if
 that time becomes a problem. The name and the upstream follow from rules already settled: a
 push obeys no configuration a command could have changed, and the harness reads the upstream
-to refuse a reset of commits that were pushed.
+to refuse a reset of commits that were pushed. The next entry moves the credential from the
+workspace process to a transfer process.
 
 **Alternatives considered:**
 
@@ -465,3 +470,35 @@ reads the worktree's repository when the branch is brought from it, without the 
 that command. A clone or a fetch downloads the whole repository each time. The design stays
 as it is when the workspace process runs as another user; keeping a clean repository between
 operations is looked at again then, when it is a question of speed only.
+
+## Only a transfer process holds the git credential
+
+**Decision:** The API gives the git credential only to a transfer process: one it starts for a
+single clone, fetch or push that a workspace process needs, as the writing user. A transfer
+process runs git only in a clean repository and does nothing else. The workspace process is
+never given the credential: it prepares a workspace, restores code, brings a branch into a
+clean repository, passes on what was downloaded and records an upstream, all without it. No
+process that holds the credential runs git in a worktree's repository.
+[`design/security.md`](../design/security.md#git-credentials) states it, and the glossary has
+the term.
+
+**Context:** Decided by the maintainer on 2026-11-17, after the automated review of the clean
+repository. The rule covered the git commands that use the credential, but the workspace
+process held it and also ran git in the worktree's repository: to add a worktree, to restore
+through the harness's history, to record an upstream. Those commands run a hook or obey a
+setting such as `core.fsmonitor` that a command of an earlier run of the same session left,
+and what they run is a child of a process that holds the credential. That is the way inside
+one session that was not accepted, and it would still be open after the accepted risk between
+sessions is closed.
+
+**Alternatives considered:**
+
+- **Applying the rule to every git command of the process that holds the credential.** A
+  restore runs the harness's history in the worktree's repository, which the product does not
+  control, so the rule could not be kept there.
+
+**Consequences:** A clone, a fetch and a push each take one process more. The accepted risk is
+about the transfer process now, which runs only for the length of a transfer. A cancellation
+or a restart ends a transfer process as it ends a workspace process. How the API starts a
+transfer process for a workspace process that is waiting, and how the two hand over the clean
+repository, is not designed.

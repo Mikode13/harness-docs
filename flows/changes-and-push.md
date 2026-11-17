@@ -54,17 +54,20 @@ sequenceDiagram
     participant C as Client
     participant A as API
     participant W as Workspace process
+    participant T as Transfer process
     participant G as Git host
 
     C->>C: proposes a name for the branch, or asks for one
     Note over C: the user confirms or changes the name
     C->>A: push, with the name
-    A->>W: push, with the name and the credential
+    A->>W: push
     W->>W: brings the branch of each project into a clean repository
-    W->>G: the first time: checks that the remote has no branch of that name
-    W->>G: pushes each branch from the clean repository, under that name
-    W->>W: records the upstream in the worktree's repository
-    W-->>A: pushed, or the error
+    A->>T: push from it, with the name and the credential
+    T->>G: the first time: checks that the remote has no branch of that name
+    T->>G: pushes each branch, under that name
+    T-->>A: pushed, or the error, and ends
+    W->>W: records the upstream, removes the clean repository
+    W-->>A: done
     A-->>C: pushed, or the error
 
     C->>A: open a pull request
@@ -72,8 +75,9 @@ sequenceDiagram
     A-->>C: the pull request, or the error
 ```
 
-- **A workspace process pushes**, as it prepares a workspace: started by the API, as the
-  writing user, with the credential.
+- **A workspace process and a transfer process push**, as they prepare a workspace: both
+  started by the API, as the writing user, and only the transfer process with the
+  credential.
 - **A push waits until no run of the session is active**, as a restore does. A run that is
   working may be committing, and one piece of work at a time uses a workspace; see the
   [run lifecycle](../design/run-lifecycle.md#rules).
@@ -83,7 +87,7 @@ sequenceDiagram
   end, and the client offers no way to stop them.
 - **The model writes the title and the description of a pull request.** Nobody confirms
   them first: the user sees the pull request and asks for a change if one is needed.
-- **The API opens the pull request with the same credential** the workspace process pushes
+- **The API opens the pull request with the same credential** the transfer process pushes
   with; see [security](../design/security.md#git-credentials).
 - **Neither is ever automatic.** The branch is pushed, and a pull request is opened, only
   when the user asks for it from a client. Nothing does it at the end of a run or after a
@@ -92,10 +96,12 @@ sequenceDiagram
   obeys no configuration a command could have changed, and goes to the repository
   registered for the project, not to what the worktree's configuration says.
 - **So a push runs from a clean repository, not from the worktree.** The workspace process
-  makes a repository of its own, brings the session's branch into it from the worktree's
-  repository as a local path, and pushes from there with the credential. No git command
-  that runs in the worktree's repository is given the credential. The clean repository is
-  made for that push and removed after it, so it is one more local copy for each push. See [security](../design/security.md#git-credentials).
+  makes a repository of its own and brings the session's branch into it from the worktree's
+  repository as a local path. A transfer process pushes from there with the credential, and
+  does nothing else. No process that holds the credential runs git in the worktree's
+  repository. The clean repository is
+  made for that push and removed after it, so it is one more local copy for each push. See
+  [security](../design/security.md#git-credentials).
 - **After a push, the workspace process records the upstream in the worktree's
   repository**, without the credential. The push did not run there, and the upstream is
   what the harness reads to refuse a reset of commits that were pushed.
@@ -123,13 +129,13 @@ is created.
 - **The model can propose the name**, when the user asks it to.
 - **A session with several projects uses the same name in each.**
 - **At the first push, a name the remote already has is an error.** Branches are deleted
-  once they are merged, so it is not expected. The workspace process never publishes a
+  once they are merged, so it is not expected. The transfer process never publishes a
   session's branch onto one that is already there: the push fails, and the API passes the
   error to the client, which shows it.
 - **Every later push goes to the branch's upstream.** After the first push the session's
   branch is on the remote under its name, and that is where its later commits go, such as
   the corrections a review asks for. The name is asked for once.
-- **The API keeps that name and gives it to the workspace process with each push.** It is
+- **The API keeps that name and gives it to the transfer process with each push.** It is
   not read from the worktree's configuration, which a command could have changed to send
   the commits to another branch.
 

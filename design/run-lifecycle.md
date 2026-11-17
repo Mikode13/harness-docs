@@ -13,8 +13,9 @@ the harness for that run and nothing else.
 - The executor talks only to the API, over a local channel. It does not connect to the
   database.
 - Before the executor, the API starts a workspace process when the session's workspace has
-  to be prepared. It is a child process too, talks only to the API, and ends before the
-  executor starts. See the [rules](#rules).
+  to be prepared, and a transfer process for each download it needs. They are child
+  processes too, talk only to the API, and end before the executor starts. See the
+  [rules](#rules).
 - The API is the only writer of the database, and so the only writer of a run's state. The
   executor reports what happens; the API stores it and decides the state.
 - While the API runs, it knows an executor ended because its process exited. No heartbeat
@@ -72,8 +73,8 @@ In the diagram, "restart" stands for a restart of the API and for the death of a
   the first run clones and a later one rebuilds what was lost. A failure while preparing
   ends the run as `failed`. See [create-session](../flows/create-session.md).
 - **Everything a run started is gone before another run starts.** Ending a run means ending
-  its executor, its workspace process if it was still preparing, and every process they
-  started, and confirming that none is left.
+  its executor, its workspace and transfer processes if it was still preparing, and every
+  process they started, and confirming that none is left.
   Until that is confirmed the run is not ended, and neither its conversation nor its
   workspace takes another run. It holds for a cancellation, for an executor that died and
   for a restart of the API: a process that lost its parent keeps running, and marking its
@@ -84,11 +85,12 @@ In the diagram, "restart" stands for a restart of the API and for the death of a
   already has is not a new prompt: it gets the acceptance and the run of the first time,
   whatever state that run is in.
 - **A restore or a push holds the workspace as a run does.** A workspace process that
-  restores code or pushes works outside a run. While it works, its session takes no prompt,
-  which is rejected as busy, and neither a clear nor a deletion. It is ended and confirmed
-  gone as a run's processes are. After a restart, the API has to recognize a restore or a
-  push that was in progress, end or reconcile it, and confirm that the workspace can be
-  used again, before the workspace takes any work. See [restart](../flows/restart.md).
+  restores code or pushes, and the transfer process of a push, work outside a run. While
+  they work, their session takes no prompt, which is rejected as busy, and neither a clear
+  nor a deletion. They are ended and confirmed gone as a run's processes are. After a
+  restart, the API has to recognize a restore or a push that was in progress, end or
+  reconcile it, and confirm that the workspace can be used again, before the workspace
+  takes any work. See [restart](../flows/restart.md).
 - **One writing run per workspace.** Whether a run writes is known before it starts: its
   agent has tools that write, or it has none. Two runs that write in the same workspace
   would work against each other. Inside one run, several subagents may work in the

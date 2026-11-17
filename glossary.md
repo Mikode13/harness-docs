@@ -129,17 +129,26 @@ the only one it talks to.
 A process the API starts to work on a session's workspace outside a run's executor: it
 prepares the workspace inside a run, before the run's executor starts, and outside any run it
 restores code and pushes a branch. It runs as the
-writing user, talks only to the API, and is the one that is given the git credential.
+writing user, talks only to the API, and is never given the git credential: a clone, a
+fetch or a push it needs is done by a transfer process.
 
 It is not an executor. An executor runs the harness for a run; a workspace process runs no
 agent.
+
+### Transfer process
+
+A process the API starts for one clone, fetch or push that a workspace process needs, and
+the only process that is given the git credential. It runs git only in a clean repository,
+as the writing user, and ends when the transfer does. It runs nothing else: no git command
+in a worktree's repository and no agent. See [security](design/security.md#git-credentials).
 
 ### Clean repository
 
 A git repository that a workspace process makes for one operation with the git credential
 and removes when the operation ends, and that no command a model started has written in.
-Git is given the credential only there: a branch is brought into it from a worktree's
-repository to be pushed, and what it downloads is passed on to the worktree's repository.
+A transfer process uses the credential only there. The workspace process brings a branch
+into it from a worktree's repository to be pushed, and passes on what was downloaded into it
+to the worktree's repository.
 See [security](design/security.md#git-credentials).
 
 ### Event

@@ -38,7 +38,7 @@ sequenceDiagram
    an answer that arrives from now on does not count.
 3. **The API tells the executor**, which stops the harness and everything the harness
    started, and says so. A run that is still `setting_up` has a workspace process instead,
-   which is stopped the same way.
+   and perhaps a transfer process, which are stopped the same way.
 4. **The API confirms that nothing of the run is left**: the executor and every process it
    started. Only then is the run `cancelled`.
 5. **Every subscribed device sees both changes of state**, the one that cancelled as the

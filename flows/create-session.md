@@ -15,6 +15,7 @@ sequenceDiagram
     participant A as API
     participant D as Database
     participant W as Workspace process
+    participant T as Transfer process
     participant E as Executor
     participant G as Git host
 
@@ -28,9 +29,13 @@ sequenceDiagram
     A->>D: stores what the user sent, creates the run as setting_up
     A-->>C: accepted, with the session and the run
 
-    A->>W: prepare the workspace, with the projects and the credential
+    A->>W: prepare the workspace, with the projects
     W-->>A: state event: cloning
-    W->>G: clones each project, adds a worktree for the session
+    W->>W: makes a clean repository for each project
+    A->>T: download into it, with the credential
+    T->>G: fetches each project
+    T-->>A: downloaded, and ends
+    W->>W: clones from the clean repository, adds a worktree, removes the clean one
     W-->>A: the workspace is ready, and ends
     A->>E: starts the executor of the run
     Note over E: the run is running, and goes on as any run
@@ -55,8 +60,10 @@ sequenceDiagram
 6. **The API gives the session its default title**, stores what the user sent, creates the
    run as `setting_up` and acknowledges.
 7. **A workspace process prepares the workspace.** The API starts it, as the writing user,
-   before the run's executor. It clones each project and adds a worktree for the session,
-   says what it is doing with events of state, such as that it is cloning, and ends.
+   before the run's executor. A transfer process, which the API starts with the credential,
+   downloads each project into a clean repository; the workspace process clones from it,
+   adds a worktree for the session, says what it is doing with events of state, such as
+   that it is cloning, and ends.
 8. **The API starts the executor of the run**, as the user its agent calls for: an agent
    that only reads gets a workspace it did not have to write.
 9. **The run goes on** as `running`, as in [prompt-and-reconnect](prompt-and-reconnect.md).
@@ -126,29 +133,29 @@ sequenceDiagram
 
 ### Git credentials
 
-- **The API holds the credential and passes it to the workspace process**, never to an
-  executor.
+- **The API holds the credential and passes it only to a transfer process**, never to an
+  executor nor to the workspace process, which runs git in the worktree's repository.
 - **For now it is the maintainer's own account**, through a fine-grained personal access
   token limited to the registered repositories. A separate git account only for agents is
   the aim, and waits because of its cost.
 - **The credential is never written to disk** nor to the git configuration of a worktree,
-  and the workspace process uses it only to clone, fetch and push. That narrows where it
-  can be read.
+  and a transfer process uses it only to clone, fetch and push. That narrows where it can be
+  read.
 - **A git operation with the credential trusts nothing in the worktree**: no hook, no
   configuration a command could have changed, and the registered repository as its
   destination. So git runs with the credential only in a clean repository, one the
   workspace process makes for that operation, removes after it, and no command of a model
-  has written in. What it downloads there
-  reaches the worktree's repository as a local copy, without the credential. See
+  has written in. What a transfer process downloads there reaches the worktree's repository
+  as a local copy, which the workspace process makes without the credential. See
   [security](../design/security.md#git-credentials).
-- **A command a model starts could still reach it, and that is accepted for now.** No
-  executor holds the credential, and a workspace process works on a session only while that
-  session has no executor. But the workspace process of one session and the commands a
-  model starts in another run as the same user at the same time, so such a command could
-  read the credential from that process, for example after a prompt injection, or from
+- **A command a model starts could still reach it, and that is accepted for now.** Only a
+  transfer process holds the credential, and it works for a session only while that session
+  has no executor. But the transfer process of one session and the commands a model starts
+  in another run as the same user at the same time, so such a command could read the
+  credential from that process, for example after a prompt injection, or from
   the code of a dependency that a project's tests run. The
   maintainer accepts this risk for the first slice, with a credential that reaches only the
-  registered repositories. It is not the intended design and will change: the workspace
+  registered repositories. It is not the intended design and will change: the transfer
   process will run as a user the model's commands do not run as. What a command leaves in
   its own worktree for a later push to run is not part of the accepted risk; the rule
   above closes it. See [security](../design/security.md#git-credentials).
