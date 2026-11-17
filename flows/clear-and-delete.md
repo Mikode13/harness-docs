@@ -30,8 +30,11 @@ sequenceDiagram
    the API enforces it whatever the client does.
 3. **The API archives the active conversation and starts a new, empty one** in the same
    session.
-4. **The session, its title and its workspace stay.** The code is as it was.
-5. **The other devices learn it as a change of state.**
+4. **The session, its title and its workspace stay.** The code is as it was, and each
+   worktree stays on the branch it was on.
+5. **The client tells the user that the session is still on its earlier branch**, and offers
+   to update it.
+6. **The other devices learn it as a change of state.**
 
 The archived conversation still exists and can still be found, which is what R13 of
 [mvp.md](../mvp.md) retrieves from. The new conversation has no run before it, so its first
@@ -69,6 +72,8 @@ sequenceDiagram
 
 Not decided.
 
+- **What updating the branch after a clear does.** The client offers it; what it changes in
+  the worktree was not said.
 - **What a deletion does to the session's archived conversations.** The decision "Sessions
   hold conversations, and clearing archives" of [decisions](../docs/decisions.md) leaves it
   open.

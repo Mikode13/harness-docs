@@ -127,7 +127,8 @@ sequenceDiagram
 
 - **The API holds the credential and passes it to the workspace process**, never to an
   executor.
-- **For now it is the maintainer's own account.** A separate git account only for agents is
+- **For now it is the maintainer's own account**, through a fine-grained personal access
+  token limited to the registered repositories. A separate git account only for agents is
   the aim, and waits because of its cost.
 - **The credential is never written to disk** nor to the git configuration of a worktree,
   and the workspace process uses it only to clone, fetch and push. That narrows where it
@@ -152,9 +153,6 @@ Not decided.
 
 - **How a project is registered.** From a client, or in the server's configuration. It is a
   deliberate step either way, since the credential has to reach that repository.
-- **Which credential, while it is the maintainer's account.** A fine-grained personal access
-  token limited to the registered repositories, or a GitHub App whose tokens last an hour,
-  were proposed to limit what a leaked credential can reach.
 - **Whether a session created with "none" can get a project later.** An ask that stops the
   run and asks where to work was considered, and left for later.
 - **When the accepted risk on the credential ends.** Doing it before the product reads the

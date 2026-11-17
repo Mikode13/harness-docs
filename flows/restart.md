@@ -69,6 +69,9 @@ The messages and the events stored before the restart are kept, and so is the co
 earlier runs completed. The user sees everything up to the last stored event, and at most
 one more message that says what happened.
 
+The interrupted run left no snapshot: the next run starts from the last one that was stored,
+and its model is told that the earlier run did not complete.
+
 What the interrupted run itself changed stays in the workspace too. Nothing is undone by
 itself: the user sees it in the history and decides whether to restore it; see
 [what is left after a run that does not complete](../design/run-lifecycle.md#what-is-left-after-a-run-that-does-not-complete).
@@ -87,9 +90,6 @@ Not decided.
 - **What an executor did after it lost the API.** It may have gone on changing files, with
   nobody to report to, so no event tells it. Whether the user is told, and from what, was
   not discussed.
-- **The snapshot of an interrupted run.** It left none. Whether the next run starts from
-  the snapshot before it, and what it is told; see
-  [prompt-and-reconnect](prompt-and-reconnect.md#open-points).
 - **Going on from a checkpoint.** R08 allows restoring execution from supported safe
   checkpoints. None is supported yet: resuming a run that waits for an answer depends on
   [harness#136](https://github.com/Mikode13/harness/issues/136).

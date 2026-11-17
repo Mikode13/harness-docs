@@ -75,6 +75,14 @@ sequenceDiagram
 - **A push waits until no run of the session is active**, as a restore does. A run that is
   working may be committing, and one piece of work at a time uses a workspace; see the
   [run lifecycle](../design/run-lifecycle.md#rules).
+- **A push is reported project by project.** When it succeeds in one and fails in another,
+  nothing is undone, and pushing again pushes what is missing.
+- **A restore and a push cannot be cancelled.** The harness and git carry them out to their
+  end, and the client offers no way to stop them.
+- **The model writes the title and the description of a pull request.** Nobody confirms
+  them first: the user sees the pull request and asks for a change if one is needed.
+- **The API opens the pull request with the same credential** the workspace process pushes
+  with; see [security](../design/security.md#git-credentials).
 - **Neither is ever automatic.** The branch is pushed, and a pull request is opened, only
   when the user asks for it from a client. Nothing does it at the end of a run or after a
   commit.
@@ -125,17 +133,10 @@ Not decided.
   [run lifecycle](../design/run-lifecycle.md#rules) and the steps in
   [restart](restart.md): the API has to recognize it, end or reconcile it, and confirm that
   the workspace can be used again. How is not decided.
-- **Whether a restore or a push can be cancelled.**
 - **What the name is proposed from**, the session's title, the plan or the changes, and
   which model proposes it. The projects' own rules for branch names have to hold.
-- **The title and the description of a pull request**: who writes them, and from what.
-- **Which credential opens a pull request.** In the diagram the API calls the git host
-  itself. Whether it uses the credential the workspace process pushes with, which would
-  then need to open pull requests, or another one, is not decided; see
-  [security](../design/security.md#open-points).
 - **Whether the commit question can be asked at another moment**, per phase or with the
   plan, as the harness allows, and where that is chosen.
-- **A push that succeeds in one project and fails in another.**
 - **What happens to a session's worktree and branch once its pull request is merged.** It
   belongs with the flow for clearing and deleting; see [the list of flows](README.md).
 - **Where the changes a client sees are read from.** It is decided with the database.

@@ -64,6 +64,8 @@ sequenceDiagram
 - **The device that answers updates its screen from the event.** Its command gets back only
   accepted or rejected. It marks the ask as answered when the answer event arrives through
   the subscription, as every other device does, so there is one way to update a screen.
+- **A rejected approval does what the harness does.** The model is told that the user said
+  no, and the run goes on: the model takes another way or asks. The product adds nothing.
 - **Cancelling rejects a pending ask, and a restart closes it.** A run cancelled while it
   waits has its ask rejected, and an answer that arrives later does not count. After a
   restart the API has lost its channel to the executor that asked, so once everything the
@@ -94,5 +96,3 @@ answering from the mobile.
 - **How a mobile receives one.** A notification is for a device that is not connected, such
   as a mobile in the background, and that is the one place where the API needs to know a
   device. A mobile registering a push token for it was proposed.
-- **What a rejected approval does.** Whether the run goes on knowing the user said no, or
-  ends, was not discussed.

@@ -24,6 +24,9 @@ sequenceDiagram
    that nobody else can use the harness through the server.
 3. **The maintainer's devices share it.** There is one user, and no key per device.
 
+The server is reached only from a private network in the first slice; see
+[security](../design/security.md#a-private-network).
+
 ## What follows from one key
 
 - **The API cannot tell one device from another, and does not need to.** An ask is not sent
@@ -37,8 +40,6 @@ sequenceDiagram
 
 Not decided.
 
-- **Where the server can be reached from**: the internet, or only a private network. It is
-  an open point of [security](../design/security.md#open-points).
 - **How the key reaches a device, and where the client keeps it.**
 - **How the key is changed.**
 - **How a mobile is known for notifications.** A notification is for a device that is not

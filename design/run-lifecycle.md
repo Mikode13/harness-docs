@@ -112,6 +112,8 @@ In the diagram, "restart" stands for a restart of the API and for the death of a
   with the final answer, and the API stores both before it ends the run. A conversation
   whose messages are stored and whose snapshot is lost shows the chat, and has lost what the
   next prompt needs. See [prompt-and-reconnect](../flows/prompt-and-reconnect.md).
+- **A run whose snapshot cannot be stored ends as `failed`.** The event with its answer is
+  kept, so the user still reads it.
 
 ## What is left after a run that does not complete
 
@@ -122,7 +124,9 @@ The code the run changed stays in the workspace. Nothing is undone by itself: th
 history lists the run with what it changed, and the user decides whether to restore it; see
 [changes-and-push](../flows/changes-and-push.md).
 
-The next run can recover the conversation, and compacts it when it is very large.
+The next run starts from the last snapshot that was stored, the one a completed run left,
+and its model is told that the earlier run did not complete. It can recover the
+conversation, and compacts it when it is very large.
 
 ## Alternatives considered
 
@@ -147,8 +151,6 @@ Not decided. Each is an input to the next design steps.
   hold it.
 - **The channel between the API and the executor.** What carries the events one way and the
   answers and the cancellation the other.
-- **What the model is told.** Whether the next prompt tells the model that the earlier run
-  did not complete.
 - **Reasons within `failed`.** Whether a failed run names a kind of failure, such as the
   provider or the workspace, or only carries a message.
 

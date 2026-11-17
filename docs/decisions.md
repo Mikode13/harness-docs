@@ -286,9 +286,8 @@ the aim and waits because of its cost.
 **Consequences:** The first run of a session is slower, and the user sees why. A run that
 fails while cloning ends as `failed` and leaves the session without a workspace, which the next
 prompt has prepared again. No executor ever holds the credential. A run has two processes one
-after the other, and ending a run means ending whichever is there. Which credential is used, a
-fine-grained token or a GitHub App, is not decided; the next entry says what was decided about
-who can still reach it.
+after the other, and ending a run means ending whichever is there. The next entry says what
+was decided about who can still reach the credential, and a later one which credential it is.
 
 ## A model's command can reach the git credential: accepted for now, to be changed
 
@@ -365,5 +364,53 @@ question is an ask, answered from any device. The branch has one name in the wor
 another on the remote. A restore and a push are carried out by a workspace process, as the
 entry about preparing a workspace says, and hold the workspace as a run does: after a restart
 of the API one that was in progress has to be recognized, ended or reconciled before the
-workspace takes any work. Who writes a pull request's
-title and description is not decided, and neither is which credential the API opens it with.
+workspace takes any work. A later entry settles who writes a pull request's title and
+description and which credential opens it.
+
+## What happens at the edges of a run, a push and a clear
+
+**Decision:** Each of these follows the simplest rule that keeps one account of what happened.
+
+- A rejected approval does what the harness does: the model is told, and the run goes on.
+- A cancellation of a run that already ended is answered with the run's final state, not with
+  an error.
+- A run that does not complete leaves no snapshot of its own: the next run starts from the
+  last one stored, and its model is told that the earlier run did not complete.
+- A run whose snapshot cannot be stored ends as `failed`, and the event with its answer is
+  kept.
+- A push is reported project by project; nothing is undone, and pushing again pushes what is
+  missing.
+- A restore and a push cannot be cancelled.
+- The model writes a pull request's title and description, and nobody confirms them first.
+- A clear keeps each worktree on its branch, and the client says so and offers to update it.
+
+**Context:** Decided by the maintainer on 2026-11-17, answering a list of the open points of
+the flows of the first slice. For the pull request he first agreed to confirming the text and
+then preferred it automatic, since he asks for a change when he sees it. For a restore and a
+push, the harness and git carry them out themselves, so there is nothing to offer.
+
+**Consequences:** The flows no longer list these as open. What updating the branch after a
+clear does is not decided, and neither is how a project is registered.
+
+## A fine-grained token on a private network, for the first slice
+
+**Decision:** The git credential is a fine-grained personal access token of the maintainer's
+account, limited to the registered repositories, with what pushing and opening a pull request
+need. The workspace process uses it to clone, fetch and push, and the API uses it to open a
+pull request, which is its only use outside the workspace process. In the first slice the
+server is reached only from a private network.
+
+**Context:** Decided by the maintainer on 2026-11-17. A separate git account for agents waits
+because of its cost. The API opening the pull request was in the push flow while security
+named only the workspace process's uses of the credential, which the maintainer's review
+pointed out.
+
+**Alternatives considered:**
+
+- **A GitHub App**, whose tokens last an hour and can be limited to repositories. It limits a
+  leak more, and needs an app to be created and its tokens renewed.
+
+**Consequences:** A leaked token gives what it can do in the registered repositories until it
+is revoked, since it does not expire by itself as an app's would. A server that is not on the
+internet leaves fewer ways to reach it. Registering a project includes giving the token access
+to its repository.

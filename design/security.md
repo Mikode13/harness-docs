@@ -4,6 +4,12 @@ Who may use the product, and as which user of the operating system each part of 
 maintainer closed these two points on 2026-11-15. The rest of the product's security is not
 designed; the open points say what is missing. None of it is built yet.
 
+## A private network
+
+In the first slice the server is reached only from a private network, not from the internet.
+The maintainer decided it on 2026-11-17. It also leaves fewer ways for the accepted risk on
+the git credential, below, to be used.
+
 ## One API key
 
 The API accepts one key of the product's own, and only that key works. The maintainer's
@@ -56,7 +62,10 @@ others:
   obeys no configuration a command could have changed, and uses the repository registered
   for the project as its destination. Running it at another time, or as another user, does
   not replace this: git would still run what was left.
-- **The credential reaches only the registered repositories.**
+- **The credential is a fine-grained personal access token**, limited to the registered
+  repositories, with what pushing and opening a pull request need.
+- **The API uses the same credential to open a pull request**, which is a call to the git
+  host and touches no workspace. That is its only use outside the workspace process.
 
 ### An accepted risk, for now
 
@@ -80,22 +89,14 @@ prompt injection could make a model start such a command.
 
 Not decided.
 
-- **Where the server can be reached from.** Whether it is exposed to the internet or only
-  to a private network.
 - **How the service user starts a process as another user.** The API runs as the service
   user and its executors run as the agent users.
 - **How git is run so that it trusts nothing in the worktree.** Turning hooks off is one
   setting. Not obeying a repository's own configuration is harder, and is not designed.
-- **Which credential opens a pull request.** The workspace process uses its credential only
-  to clone, fetch and push. Opening a pull request is a call from the API to the git host;
-  whether it uses the same credential, with that one more use, or another, is not decided.
 - **When the accepted risk on the git credential ends, and how.** Closing it before the
   product reads the web (R14 of [mvp.md](../mvp.md)) was proposed. How the workspace
   process runs as another user, with the worktrees shared between both users, is not
   designed.
-- **Which git credential, while it is the maintainer's account.** A fine-grained personal
-  access token limited to the registered repositories, or a GitHub App whose tokens last an
-  hour, were proposed to limit what a leaked credential can reach.
 - **What exactly the writing agent may do** beyond writing in its workspace. The maintainer
   described it as the user "with more capability to do operations".
 - **A threat model.** The server holds the keys of the model providers and git credentials,

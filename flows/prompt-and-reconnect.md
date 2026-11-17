@@ -109,10 +109,5 @@ for later.
 - **What the conversation keeps of the prompt.** The prompt is what the user writes plus the
   context the product adds. Whether the conversation keeps the whole prompt or only the
   user's text is open in the [glossary](../glossary.md).
-- **What a run that does not complete leaves as its snapshot.** A run that failed, was
-  cancelled or was interrupted may have no snapshot to hand over. Whether the next run
-  starts from the snapshot before it, and what it is told, was not discussed.
-- **What happens when the snapshot cannot be stored.** The answer exists and the continuity
-  does not. Which state the run ends in then was not discussed.
 - **The channel between the API and the executor.** It is open in the
   [run lifecycle](../design/run-lifecycle.md#open-points).
