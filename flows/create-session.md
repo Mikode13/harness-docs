@@ -99,7 +99,8 @@ sequenceDiagram
 - **"None" is an explicit choice**, for a session that is not about code. The API rejects a
   first prompt that says neither projects nor "none".
 - **The workspace is fixed when the session is created.** Work on another project is another
-  session.
+  session. Whether a session created with "none" can get a project later is an
+  [open point](#open-points).
 - **A worktree starts from the repository's default branch**, unless the user takes the
   branch the CLI offers: the one the folder is on, when the remote has it. Changes in the
   folder that were not pushed do not reach the server, and the CLI says so.
@@ -136,14 +137,16 @@ sequenceDiagram
 - **A git operation with the credential trusts nothing in the worktree**: no hook, no
   configuration a command could have changed, and the registered repository as its
   destination. So git runs with the credential only in a clean repository, one the
-  workspace process makes and no command of a model has written in. What it downloads there
+  workspace process makes for that operation, removes after it, and no command of a model
+  has written in. What it downloads there
   reaches the worktree's repository as a local copy, without the credential. See
   [security](../design/security.md#git-credentials).
 - **A command a model starts could still reach it, and that is accepted for now.** No
   executor holds the credential, and a workspace process works on a session only while that
   session has no executor. But the workspace process of one session and the commands a
   model starts in another run as the same user at the same time, so such a command could
-  read the credential from that process, for example after a prompt injection. The
+  read the credential from that process, for example after a prompt injection, or from
+  the code of a dependency that a project's tests run. The
   maintainer accepts this risk for the first slice, with a credential that reaches only the
   registered repositories. It is not the intended design and will change: the workspace
   process will run as a user the model's commands do not run as. What a command leaves in
@@ -160,8 +163,9 @@ Not decided.
   run and asks where to work was considered, and left for later.
 - **When the accepted risk on the credential ends.** Doing it before the product reads the
   web (R14 of [mvp.md](../mvp.md)), which is where an injection would come from, was
-  proposed. How the workspace process runs as another user, with the worktrees shared
-  between both, is not designed.
+  proposed. It would not cover the code that a model's commands run, such as the
+  dependencies of a project's tests, which is there from the first slice. How the workspace
+  process runs as another user, with the worktrees shared between both, is not designed.
 - **What a rebuilt workspace starts from.** When the worktree of a session is lost and a run
   prepares it again: the session's own branch if the clone or the remote still has it, or
   the default branch, and how the user learns that work that was not pushed is gone.

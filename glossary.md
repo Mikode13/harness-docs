@@ -127,7 +127,8 @@ the only one it talks to.
 ### Workspace process
 
 A process the API starts to work on a session's workspace outside a run's executor: it
-prepares the workspace before a run, restores code and pushes a branch. It runs as the
+prepares the workspace inside a run, before the run's executor starts, and outside any run it
+restores code and pushes a branch. It runs as the
 writing user, talks only to the API, and is the one that is given the git credential.
 
 It is not an executor. An executor runs the harness for a run; a workspace process runs no
@@ -135,11 +136,11 @@ agent.
 
 ### Clean repository
 
-A git repository that a workspace process makes for an operation with the git credential,
-and that no command a model started has written in. Git is given the credential only there:
-a branch is brought into it from a worktree's repository to be pushed, and what it downloads
-is passed on to the worktree's repository. See
-[security](design/security.md#git-credentials).
+A git repository that a workspace process makes for one operation with the git credential
+and removes when the operation ends, and that no command a model started has written in.
+Git is given the credential only there: a branch is brought into it from a worktree's
+repository to be pushed, and what it downloads is passed on to the worktree's repository.
+See [security](design/security.md#git-credentials).
 
 ### Event
 

@@ -73,7 +73,7 @@ Implied by the documents, and not agreed. Each one says why it might be needed.
   publishes it under another name instead; see
   [changes-and-push](../flows/changes-and-push.md#the-name-of-the-branch). It would be
   needed if a branch had to be renamed in its worktree.
-- **Telling an agent that its earlier run did not complete.** It is an open point of the
-  [run lifecycle](run-lifecycle.md#open-points). If the model is to be told, the harness may
-  be the one that knows how to say it, as it already tells an agent what a move through the
-  history undid.
+- **Telling an agent that its earlier run did not complete.** The model of the next run is
+  told; see the [run lifecycle](run-lifecycle.md#rules). Who says it is not decided: the
+  harness may be the one that knows how, as it already tells an agent what a move through
+  the history undid.

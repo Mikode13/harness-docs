@@ -74,6 +74,11 @@ others:
     worktree's repository takes them from it, as a local path and without the credential.
   - **The name a branch is published under comes from the API**, which keeps it from the
     first push. It is not read from the worktree's configuration.
+  - **A clean repository is made for one operation and removed when the operation ends.**
+    One kept between operations would be on disk while the session's runs work, as the same
+    user, and a command could leave a hook in it for a later push. While it exists, a
+    command of another session could write in it; such a command can already read the
+    credential from the process, which is the accepted risk below.
 - **The credential is a fine-grained personal access token**, limited to the registered
   repositories, with what pushing and opening a pull request need.
 - **The API uses the same credential to open a pull request**, which is a call to the git
@@ -95,7 +100,9 @@ A command a model starts could reach the credential in two ways. Only the first 
 The maintainer accepted the first on 2026-11-16 for the first slice, limited by a credential
 that reaches only the registered repositories. It is a known gap, not the design: it will be
 closed by running the workspace process as a user the model's commands do not run as. A
-prompt injection could make a model start such a command.
+prompt injection could make a model start such a command. So could code that a model's
+commands run without any injection: a project's tests and tooling, and their dependencies,
+run as the writing user from the first slice.
 
 ## Open points
 
@@ -103,12 +110,13 @@ Not decided.
 
 - **How the service user starts a process as another user.** The API runs as the service
   user and its executors run as the agent users.
-- **Where the clean repository is, and how long it lives**: made for each operation, or
-  kept between them. A command of another session, running at the same time and as the same
-  user, could write in it. That gives such a command nothing new, since it can already read
-  the credential from the process, which is the accepted risk, and it ends with that risk.
+- **Whether a clean repository is kept between operations** once the workspace process runs
+  as a user the model's commands do not run as. It is then a question of speed only: a
+  clone or a fetch downloads the whole repository each time.
 - **When the accepted risk on the git credential ends, and how.** Closing it before the
-  product reads the web (R14 of [mvp.md](../mvp.md)) was proposed. How the workspace
+  product reads the web (R14 of [mvp.md](../mvp.md)) was proposed. That bound covers an
+  injection from the web, and not the code that a model's commands run, such as the
+  dependencies of a project's tests, which is there from the first slice. How the workspace
   process runs as another user, with the worktrees shared between both users, is not
   designed.
 - **What exactly the writing agent may do** beyond writing in its workspace. The maintainer

@@ -255,7 +255,8 @@ to clone was considered and left for a session that starts with none.
   failure shows later.
 
 **Consequences:** Registering a project is a deliberate step; how is not decided. A session
-that needs another project is another session. Changes in the user's folder that were not
+that needs another project is another session. Whether a session created with "none" can get
+a project later is not decided. Changes in the user's folder that were not
 pushed do not reach the server, and the CLI has to say so.
 
 ## A workspace process prepares the workspace before the executor, with the git credential
@@ -323,7 +324,9 @@ git is run so that it holds. Until the accepted gap changes, a leaked credential
 credential can do in the registered repositories, with the maintainer's account while there is
 no account for agents. Nothing that makes an injection likelier should ship before the change;
 closing the gap before the product reads the web, R14 of [`mvp.md`](../mvp.md), was proposed,
-and when is not decided.
+and when is not decided. The automated review pointed out later that an injection is not the
+only way: the code that a model's commands run, such as the dependencies of a project's tests,
+runs as the same user from the first slice, and that bound would not cover it.
 
 ## Pushing and opening a pull request are the user's commands, and the branch is named then
 
@@ -433,7 +436,8 @@ without the credential, and pushes from there to the registered repository. To c
 it downloads into the clean repository, and the worktree's repository takes the commits from
 it without the credential. The name a branch is published under is kept by the API and is not
 read from the worktree's configuration. After a push, the workspace process records the
-upstream in the worktree's repository, without the credential.
+upstream in the worktree's repository, without the credential. A clean repository is made for
+one operation and removed when the operation ends.
 [`design/security.md`](../design/security.md#git-credentials) states it.
 
 **Context:** Decided by the maintainer on 2026-11-17. The rule that a git operation with the
@@ -451,8 +455,13 @@ to refuse a reset of commits that were pushed.
   own configuration, and overriding each dangerous setting in the command needs the list of
   all of them. The entry "Turning hooks off does not make a repository safe to push from" of
   [`learnings.md`](learnings.md) has the evidence.
+- **A clean repository kept between operations**, for example one remade each day, which the
+  maintainer first thought of. The workspace process runs as the writing user, so a kept
+  repository could be written in by a command of the session's own run, and a later push
+  would run what was left: the way this decision closes, in another folder.
 
 **Consequences:** Each operation with the credential makes one more local copy. Git still
 reads the worktree's repository when the branch is brought from it, without the credential in
-that command. The design stays as it is when the workspace process runs as another user.
-Where the clean repository is and how long it lives is not decided.
+that command. A clone or a fetch downloads the whole repository each time. The design stays
+as it is when the workspace process runs as another user; keeping a clean repository between
+operations is looked at again then, when it is a question of speed only.
