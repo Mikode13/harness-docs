@@ -60,14 +60,15 @@ sequenceDiagram
     C->>C: proposes a name for the branch, or asks for one
     Note over C: the user confirms or changes the name
     C->>A: push, with the name
-    A->>W: push
-    W->>W: brings the branch of each project into a clean repository
+    A->>W: bring the branch of each project into a clean repository
+    W-->>A: ready, and ends
     A->>T: push from it, with the name and the credential
     T->>G: the first time: checks that the remote has no branch of that name
     T->>G: pushes each branch, under that name
-    T-->>A: pushed, or the error, and ends
-    W->>W: records the upstream, removes the clean repository
-    W-->>A: done
+    T-->>A: pushed, or the error, project by project, and ends
+    A->>W: record the upstream of what was pushed
+    W->>W: records it, removes the clean repository
+    W-->>A: done, and ends
     A-->>C: pushed, or the error
 
     C->>A: open a pull request
@@ -99,12 +100,13 @@ sequenceDiagram
   makes a repository of its own and brings the session's branch into it from the worktree's
   repository as a local path. A transfer process pushes from there with the credential, and
   does nothing else. No process that holds the credential runs git in the worktree's
-  repository. The clean repository is
-  made for that push and removed after it, so it is one more local copy for each push. See
-  [security](../design/security.md#git-credentials).
-- **After a push, the workspace process records the upstream in the worktree's
-  repository**, without the credential. The push did not run there, and the upstream is
-  what the harness reads to refuse a reset of commits that were pushed.
+  repository. The clean repository is made for that push and removed after it, so it is one
+  more local copy for each push. The three steps are three processes, one after another;
+  see [security](../design/security.md#git-credentials).
+- **After a push, a workspace process records the upstream in the worktree's
+  repository**, without the credential, for each project that was pushed. The push did not
+  run there, and the upstream is what the harness reads to refuse a reset of commits that
+  were pushed.
 - **They are commands of the client, not commands a model runs.** So they happen when the
   user asks, and no model decides to push. That a command a model starts could still reach
   the credential is a risk accepted for now; see

@@ -51,7 +51,9 @@ sequenceDiagram
    channel to the executor that asked, so an answer could not reach it.
 6. **Each restore or push is reconciled**, so that the workspace is in a state the product
    knows and can be used again. The harness finishes a move through its history that its
-   process did not finish, with the next move or run; what a push needs is not decided.
+   process did not finish, with the next move or run. A push is three steps the API
+   started one at a time, so it knows which one was cut short; a clean repository left
+   behind is removed, never reused. What else a push needs is not decided.
 7. **A client that reconnects gets what it missed**, as in
    [prompt-and-reconnect](prompt-and-reconnect.md), and sees that the run was interrupted.
 8. **The user decides how to go on.** Nothing is run again by itself: a prompt that had
@@ -61,7 +63,8 @@ sequenceDiagram
 
 The API sees the executor's process exit. The rest is the same from step 4: it confirms that
 nothing the run started is left, and the run becomes `interrupted`. A workspace process or a
-transfer process that dies during a restore or a push is treated the same way, and its work is reconciled.
+transfer process that dies during a restore or a push is treated the same way, and its work
+is reconciled.
 
 ## What is left
 

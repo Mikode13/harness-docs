@@ -499,6 +499,35 @@ sessions is closed.
 
 **Consequences:** A clone, a fetch and a push each take one process more. The accepted risk is
 about the transfer process now, which runs only for the length of a transfer. A cancellation
-or a restart ends a transfer process as it ends a workspace process. How the API starts a
-transfer process for a workspace process that is waiting, and how the two hand over the clean
-repository, is not designed.
+or a restart ends a transfer process as it ends a workspace process. The next entry says how a
+workspace process and a transfer process hand over the clean repository.
+
+## A transfer is three processes, one after another
+
+**Decision:** The API runs a clone, a fetch or a push as three steps, each a process it starts
+and that ends before the next starts. A workspace process gets a clean repository ready: an
+empty one to download into, or one with the session's branch brought in from the worktree's
+repository. A transfer process, with the credential, downloads into it or pushes from it. A
+workspace process finishes: it clones or fetches from the clean repository and adds a
+worktree, or records the upstream of what was pushed, and removes the clean repository. They
+hand over nothing but the clean repository's path, which the API names for that operation, and
+each tells the API how its step ended. A clean repository has a new path each time, outside
+every worktree; one that a failure or a restart left behind is removed, never reused.
+
+**Context:** The maintainer left the design to Claude on 2026-11-17, after the entry "Only a
+transfer process holds the git credential" left open how the two processes hand over the clean
+repository. Every process of the product already talks only to the API, and the API already
+starts each process and stores what it reports.
+
+**Alternatives considered:**
+
+- **One workspace process that waits while the API runs the transfer process.** It needs the
+  workspace process to learn from the API when the transfer is done, and it is alive, as the
+  same user, while the credential is in the transfer process.
+- **The workspace process starting the transfer process itself.** The credential would pass
+  through the workspace process, which runs git in the worktree's repository.
+
+**Consequences:** No process waits for another and no two talk to each other. The git of a
+worktree's repository never runs while a process holds the credential. After a restart the API
+knows which of the three steps was cut short. A transfer starts three processes instead of
+one.

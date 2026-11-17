@@ -29,13 +29,14 @@ sequenceDiagram
     A->>D: stores what the user sent, creates the run as setting_up
     A-->>C: accepted, with the session and the run
 
-    A->>W: prepare the workspace, with the projects
-    W-->>A: state event: cloning
-    W->>W: makes a clean repository for each project
+    A-->>C: state event: cloning
+    A->>W: get a clean repository ready for each project
+    W-->>A: ready, and ends
     A->>T: download into it, with the credential
     T->>G: fetches each project
     T-->>A: downloaded, and ends
-    W->>W: clones from the clean repository, adds a worktree, removes the clean one
+    A->>W: clone from it and add a worktree
+    W->>W: clones, adds a worktree, removes the clean repository
     W-->>A: the workspace is ready, and ends
     A->>E: starts the executor of the run
     Note over E: the run is running, and goes on as any run
@@ -59,11 +60,12 @@ sequenceDiagram
      another device deleted.
 6. **The API gives the session its default title**, stores what the user sent, creates the
    run as `setting_up` and acknowledges.
-7. **A workspace process prepares the workspace.** The API starts it, as the writing user,
-   before the run's executor. A transfer process, which the API starts with the credential,
-   downloads each project into a clean repository; the workspace process clones from it,
-   adds a worktree for the session, says what it is doing with events of state, such as
-   that it is cloning, and ends.
+7. **The workspace is prepared in three steps**, before the run's executor, each a process
+   the API starts as the writing user and that ends before the next. A workspace process
+   gets a clean repository ready for each project; a transfer process, with the credential,
+   downloads each project into it; a workspace process clones from it, adds a worktree for
+   the session and removes the clean repository. The API says what is happening with
+   events of state, such as that it is cloning.
 8. **The API starts the executor of the run**, as the user its agent calls for: an agent
    that only reads gets a workspace it did not have to write.
 9. **The run goes on** as `running`, as in [prompt-and-reconnect](prompt-and-reconnect.md).

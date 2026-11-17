@@ -128,17 +128,18 @@ the only one it talks to.
 
 A process the API starts to work on a session's workspace outside a run's executor: it
 prepares the workspace inside a run, before the run's executor starts, and outside any run it
-restores code and pushes a branch. It runs as the
-writing user, talks only to the API, and is never given the git credential: a clone, a
-fetch or a push it needs is done by a transfer process.
+restores code and pushes a branch. It runs as the writing user, talks only to the API, and is
+never given the git credential: a clone, a fetch or a push it needs is done by a transfer
+process. An operation that needs one has a workspace process before it and another after it.
 
 It is not an executor. An executor runs the harness for a run; a workspace process runs no
 agent.
 
 ### Transfer process
 
-A process the API starts for one clone, fetch or push that a workspace process needs, and
-the only process that is given the git credential. It runs git only in a clean repository,
+A process the API starts for one clone, fetch or push, between the workspace process that
+gets a clean repository ready and the one that finishes, and the only process that is given
+the git credential. It runs git only in a clean repository,
 as the writing user, and ends when the transfer does. It runs nothing else: no git command
 in a worktree's repository and no agent. See [security](design/security.md#git-credentials).
 

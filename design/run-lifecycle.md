@@ -12,9 +12,9 @@ the harness for that run and nothing else.
 
 - The executor talks only to the API, over a local channel. It does not connect to the
   database.
-- Before the executor, the API starts a workspace process when the session's workspace has
-  to be prepared, and a transfer process for each download it needs. They are child
-  processes too, talk only to the API, and end before the executor starts. See the
+- Before the executor, the API starts workspace processes and a transfer process, one after
+  another, when the session's workspace has to be prepared. They are child processes too,
+  talk only to the API, and all end before the executor starts. See the
   [rules](#rules).
 - The API is the only writer of the database, and so the only writer of a run's state. The
   executor reports what happens; the API stores it and decides the state.
@@ -73,7 +73,7 @@ In the diagram, "restart" stands for a restart of the API and for the death of a
   the first run clones and a later one rebuilds what was lost. A failure while preparing
   ends the run as `failed`. See [create-session](../flows/create-session.md).
 - **Everything a run started is gone before another run starts.** Ending a run means ending
-  its executor, its workspace and transfer processes if it was still preparing, and every
+  its executor, the workspace or transfer process that was preparing, and every
   process they started, and confirming that none is left.
   Until that is confirmed the run is not ended, and neither its conversation nor its
   workspace takes another run. It holds for a cancellation, for an executor that died and

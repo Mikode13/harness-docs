@@ -75,9 +75,19 @@ others:
   - **To clone or fetch**, a transfer process downloads the commits into the clean
     repository, and the workspace process passes them on to the worktree's repository as a
     local path.
+  - **The API runs the three steps one after another, each a process of its own.** A
+    workspace process gets the clean repository ready and ends; a transfer process does
+    the transfer and ends; a workspace process finishes and ends. No two of them run at
+    the same time and none waits for another, so the git of a worktree's repository never
+    runs while a process holds the credential. They hand over nothing but the clean
+    repository's path, which the API names for that operation, and each tells the API how
+    its step ended.
   - **The name a branch is published under comes from the API**, which keeps it from the
     first push. It is not read from the worktree's configuration.
-  - **A clean repository is made for one operation and removed when the operation ends.**
+  - **A clean repository is made for one operation and removed when the operation ends**,
+    whether the transfer succeeded or not. It has a new path each time, outside every
+    worktree, and is never used again: one that a failure or a restart left behind is
+    removed by the next step that touches the workspace, never reused.
     One kept between operations would be on disk while the session's runs work, as the same
     user, and a command could leave a hook in it for a later push. While it exists, a
     command of another session could write in it; such a command can already read the
@@ -120,9 +130,6 @@ Not decided.
 
 - **How the service user starts a process as another user.** The API runs as the service
   user and its executors run as the agent users.
-- **How a workspace process and a transfer process hand over a clean repository**: how the
-  API starts the transfer process while the workspace process waits, and how each learns
-  that the other is done.
 - **Whether a clean repository is kept between operations** once the processes that use it
   run as a user the model's commands do not run as. It is then a question of speed only: a
   clone or a fetch downloads the whole repository each time.
