@@ -135,7 +135,10 @@ sequenceDiagram
   can be read.
 - **A git operation with the credential trusts nothing in the worktree**: no hook, no
   configuration a command could have changed, and the registered repository as its
-  destination. See [security](../design/security.md#git-credentials).
+  destination. So git runs with the credential only in a clean repository, one the
+  workspace process makes and no command of a model has written in. What it downloads there
+  reaches the worktree's repository as a local copy, without the credential. See
+  [security](../design/security.md#git-credentials).
 - **A command a model starts could still reach it, and that is accepted for now.** No
   executor holds the credential, and a workspace process works on a session only while that
   session has no executor. But the workspace process of one session and the commands a

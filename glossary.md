@@ -133,6 +133,14 @@ writing user, talks only to the API, and is the one that is given the git creden
 It is not an executor. An executor runs the harness for a run; a workspace process runs no
 agent.
 
+### Clean repository
+
+A git repository that a workspace process makes for an operation with the git credential,
+and that no command a model started has written in. Git is given the credential only there:
+a branch is brought into it from a worktree's repository to be pushed, and what it downloads
+is passed on to the worktree's repository. See
+[security](design/security.md#git-credentials).
+
 ### Event
 
 What the API returns while a run works, inside the conversation: a tool's activity, a text

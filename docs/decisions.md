@@ -318,8 +318,8 @@ could have changed, and uses the registered repository as its destination.
   designed, and it would hold up the first slice.
 
 **Consequences:** Running the workspace process at another time, or later as another user,
-does not replace that rule, since git would still run what was left. How git is run so that
-it holds is not designed. Until the accepted gap changes, a leaked credential gives what that
+does not replace that rule, since git would still run what was left. A later entry says how
+git is run so that it holds. Until the accepted gap changes, a leaked credential gives what that
 credential can do in the registered repositories, with the maintainer's account while there is
 no account for agents. Nothing that makes an injection likelier should ship before the change;
 closing the gap before the product reads the web, R14 of [`mvp.md`](../mvp.md), was proposed,
@@ -382,15 +382,24 @@ description and which credential opens it.
   missing.
 - A restore and a push cannot be cancelled.
 - The model writes a pull request's title and description, and nobody confirms them first.
-- A clear keeps each worktree on its branch, and the client says so and offers to update it.
+- A clear changes nothing in git: each worktree stays on its branch, and the client says so.
 
 **Context:** Decided by the maintainer on 2026-11-17, answering a list of the open points of
 the flows of the first slice. For the pull request he first agreed to confirming the text and
 then preferred it automatic, since he asks for a change when he sees it. For a restore and a
-push, the harness and git carry them out themselves, so there is nothing to offer.
+push, the harness and git carry them out themselves, so there is nothing to offer. For a
+clear he first spoke of the client offering to update the branch, and then decided that git
+stays as it is.
 
-**Consequences:** The flows no longer list these as open. What updating the branch after a
-clear does is not decided, and neither is how a project is registered.
+**Alternatives considered:**
+
+- **A clear moves each worktree to the default branch.** The maintainer left it to
+  convenience, and it was not taken. Git lets a branch be checked out in one worktree only,
+  so two sessions of a project could not both be on the default branch, and commits that were
+  not pushed would stay on a branch no worktree is on.
+
+**Consequences:** The flows no longer list these as open. A session keeps one branch across
+its conversations. How a project is registered is not decided.
 
 ## A fine-grained token on a private network, for the first slice
 
@@ -414,3 +423,36 @@ pointed out.
 is revoked, since it does not expire by itself as an app's would. A server that is not on the
 internet leaves fewer ways to reach it. Registering a project includes giving the token access
 to its repository.
+
+## Git runs with the credential only in a clean repository
+
+**Decision:** The workspace process gives the credential only to git commands that run in a
+repository it made itself, which no command of a model has written in. To push, it brings the
+session's branch into that repository from the worktree's repository, as a local path and
+without the credential, and pushes from there to the registered repository. To clone or fetch,
+it downloads into the clean repository, and the worktree's repository takes the commits from
+it without the credential. The name a branch is published under is kept by the API and is not
+read from the worktree's configuration. After a push, the workspace process records the
+upstream in the worktree's repository, without the credential.
+[`design/security.md`](../design/security.md#git-credentials) states it.
+
+**Context:** Decided by the maintainer on 2026-11-17. The rule that a git operation with the
+credential trusts nothing in the worktree had no mechanism. He took the extra step because
+preventing is better than repairing and it costs little time, and will look for another way if
+that time becomes a problem. The name and the upstream follow from rules already settled: a
+push obeys no configuration a command could have changed, and the harness reads the upstream
+to refuse a reset of commits that were pushed.
+
+**Alternatives considered:**
+
+- **Pushing from the worktree with hooks turned off and the destination named in the
+  command.** It was tried and it is not enough: a setting in the repository's configuration
+  still sent the push to another repository. Git has no setting that ignores a repository's
+  own configuration, and overriding each dangerous setting in the command needs the list of
+  all of them. The entry "Turning hooks off does not make a repository safe to push from" of
+  [`learnings.md`](learnings.md) has the evidence.
+
+**Consequences:** Each operation with the credential makes one more local copy. Git still
+reads the worktree's repository when the branch is brought from it, without the credential in
+that command. The design stays as it is when the workspace process runs as another user.
+Where the clean repository is and how long it lives is not decided.

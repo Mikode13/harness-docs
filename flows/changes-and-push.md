@@ -60,8 +60,10 @@ sequenceDiagram
     Note over C: the user confirms or changes the name
     C->>A: push, with the name
     A->>W: push, with the name and the credential
+    W->>W: brings the branch of each project into a clean repository
     W->>G: the first time: checks that the remote has no branch of that name
-    W->>G: pushes the branch of each project, under that name or to its upstream
+    W->>G: pushes each branch from the clean repository, under that name
+    W->>W: records the upstream in the worktree's repository
     W-->>A: pushed, or the error
     A-->>C: pushed, or the error
 
@@ -88,8 +90,15 @@ sequenceDiagram
   commit.
 - **A push trusts nothing a command could have left in the worktree.** It runs no hook,
   obeys no configuration a command could have changed, and goes to the repository
-  registered for the project, not to what the worktree's configuration says. See
-  [security](../design/security.md#git-credentials).
+  registered for the project, not to what the worktree's configuration says.
+- **So a push runs from a clean repository, not from the worktree.** The workspace process
+  makes a repository of its own, brings the session's branch into it from the worktree's
+  repository as a local path, and pushes from there with the credential. No git command
+  that runs in the worktree's repository is given the credential. It is one more local copy
+  for each push. See [security](../design/security.md#git-credentials).
+- **After a push, the workspace process records the upstream in the worktree's
+  repository**, without the credential. The push did not run there, and the upstream is
+  what the harness reads to refuse a reset of commits that were pushed.
 - **They are commands of the client, not commands a model runs.** So they happen when the
   user asks, and no model decides to push. That a command a model starts could still reach
   the credential is a risk accepted for now; see
@@ -120,6 +129,9 @@ is created.
 - **Every later push goes to the branch's upstream.** After the first push the session's
   branch is on the remote under its name, and that is where its later commits go, such as
   the corrections a review asks for. The name is asked for once.
+- **The API keeps that name and gives it to the workspace process with each push.** It is
+  not read from the worktree's configuration, which a command could have changed to send
+  the commits to another branch.
 
 ## Open points
 

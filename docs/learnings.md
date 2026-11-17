@@ -78,3 +78,31 @@ changing the user would not close it.
 **Lesson:** Two pieces of work that never run together can still reach each other through
 what the first leaves for the second to run. A boundary in time, or between users, needs a
 rule about the files both touch.
+
+## Turning hooks off does not make a repository safe to push from
+
+**What happened:** On 2026-11-17 the rule that a git operation with the credential trusts
+nothing in the worktree had no mechanism. Turning hooks off and naming the registered
+repository in the command looked like enough, and was tried before it was written down.
+
+**Evidence:** In scratch repositories on Linux, with git 2.43, a repository standing for a
+worktree's was given what a command could leave in it: a `pre-push` hook, a changed
+`remote.origin.pushurl`, a `url.<other>.insteadOf` for the registered repository's address,
+and a `credential.helper`. A push from it with `-c core.hooksPath=/dev/null` and the
+registered repository's address in the command ended without an error, with the branch in the
+other repository and not in the registered one: `insteadOf` had rewritten the address. Then an
+empty repository was made, the branch was fetched into it from the first one as a local path,
+and it was pushed from there to the same address. The branch reached the registered
+repository and the hook did not run. The helper was not put to the test, since a local
+address asks for no credential. An upstream written afterwards into the first repository,
+with `git update-ref` and `git branch --set-upstream-to`, is what the harness's check reads.
+
+**What it changed:** [security](../design/security.md#git-credentials) says that git runs
+with the credential only in a clean repository, and
+[changes-and-push](../flows/changes-and-push.md#pushing-and-opening-a-pull-request) that a
+push runs from one. The entry "Git runs with the credential only in a clean repository" of
+[`decisions.md`](decisions.md) records it.
+
+**Lesson:** A repository's configuration is input to every git command that runs in it.
+Where that input cannot be trusted, the command runs somewhere else; switching off the parts
+known to be dangerous leaves the ones nobody listed.

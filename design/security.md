@@ -62,6 +62,18 @@ others:
   obeys no configuration a command could have changed, and uses the repository registered
   for the project as its destination. Running it at another time, or as another user, does
   not replace this: git would still run what was left.
+- **So git runs with the credential only in a clean repository.** The workspace process
+  makes a repository of its own, which no command of a model has written in, and gives the
+  credential only to git commands that run there. Turning hooks off and naming the
+  destination in the command is not enough; see
+  [learnings](../docs/learnings.md#turning-hooks-off-does-not-make-a-repository-safe-to-push-from).
+  - **To push**, the session's branch is brought into the clean repository from the
+    worktree's repository, as a local path and without the credential, and pushed from
+    there to the registered repository.
+  - **To clone or fetch**, the commits are downloaded into the clean repository, and the
+    worktree's repository takes them from it, as a local path and without the credential.
+  - **The name a branch is published under comes from the API**, which keeps it from the
+    first push. It is not read from the worktree's configuration.
 - **The credential is a fine-grained personal access token**, limited to the registered
   repositories, with what pushing and opening a pull request need.
 - **The API uses the same credential to open a pull request**, which is a call to the git
@@ -91,8 +103,10 @@ Not decided.
 
 - **How the service user starts a process as another user.** The API runs as the service
   user and its executors run as the agent users.
-- **How git is run so that it trusts nothing in the worktree.** Turning hooks off is one
-  setting. Not obeying a repository's own configuration is harder, and is not designed.
+- **Where the clean repository is, and how long it lives**: made for each operation, or
+  kept between them. A command of another session, running at the same time and as the same
+  user, could write in it. That gives such a command nothing new, since it can already read
+  the credential from the process, which is the accepted risk, and it ends with that risk.
 - **When the accepted risk on the git credential ends, and how.** Closing it before the
   product reads the web (R14 of [mvp.md](../mvp.md)) was proposed. How the workspace
   process runs as another user, with the worktrees shared between both users, is not
