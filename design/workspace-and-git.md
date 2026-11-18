@@ -154,9 +154,10 @@ found, most of them reproduced:
 | An `init.templateDir` copied into a new repository         | The clean repository is made in that same environment           |
 | A clean repository kept and written in                     | A new one for each operation, removed after it, never reused    |
 
-The evidence is in [learnings](../docs/learnings.md). What is left is accepted for now: a
-command of another session, running while a transfer process works and as the same user, could
-read the credential from that process. It ends when the transfer process runs as another user
+The evidence is in [learnings](../docs/learnings.md). What is left is accepted for now: code
+of another session, running while a transfer process works and as the same user, could read
+the credential from that process. It can be a command its model starts, or a hook its model
+left that its own workspace process runs. It ends when the transfer process runs as another user
 that also makes and owns the clean repository; when is not decided. See
 [an accepted risk](security.md#an-accepted-risk-for-now).
 

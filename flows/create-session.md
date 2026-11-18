@@ -154,10 +154,11 @@ sequenceDiagram
   configuration of the user's or the system's, and gets an environment the API sets. See [security](../design/security.md#git-credentials).
 - **A command a model starts could still reach it, and that is accepted for now.** Only a
   transfer process holds the credential, and it works for a session only while that session
-  has no executor. But the transfer process of one session and the commands a model starts
-  in another run as the same user at the same time, so such a command could read the
-  credential from that process, for example after a prompt injection, or from
-  the code of a dependency that a project's tests run. The
+  has no executor. But the transfer process of one session and code a model left in another
+  session run as the same user at the same time, so that code could read the credential
+  from that process: a command the model starts, for example after a prompt injection, the
+  code of a dependency that a project's tests run, or a hook the model left that its
+  session's workspace process runs. The
   maintainer accepts this risk for the first slice, with a credential that reaches only the
   registered repositories. It is not the intended design and will change: the transfer
   process will run as a user the model's commands do not run as, and that user will make

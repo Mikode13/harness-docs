@@ -532,15 +532,15 @@ starts each process and stores what it reports. The maintainer confirmed the des
 - **The workspace process starting the transfer process itself.** The credential would pass
   through the workspace process, which runs git in the worktree's repository.
 
-**Consequences:** No process waits for another and no two talk to each other. While the risk
-on the credential is accepted, the workspace process makes the clean repository as the writing
-user. Closing that risk takes more than running the transfer process as another user: that
-user has to make and own the clean repository, or another session's command could plant a hook
-in it, so the first step moves to that user too, and how it brings a branch in from a
-worktree's repository is not designed. The git of a
-worktree's repository never runs while a process holds the credential. After a restart the API
-knows which of the three steps was cut short. A transfer starts three processes instead of
-one.
+**Consequences:** No process waits for another and no two talk to each other. While the risk on
+the credential is accepted, the workspace process makes the clean repository as the writing
+user. Closing that risk takes more than running the transfer process as another user: that user
+has to make and own the clean repository, or another session's command could plant a hook in it,
+so the first step moves to that user too, and how it brings a branch in from a worktree's
+repository is not designed. Within one session, the git of a worktree's repository never runs
+while a process holds the credential; another session's workspace process can, which is part of
+the accepted risk. After a restart the API knows which of the three steps was cut short. A
+transfer starts three processes instead of one.
 
 ## Git runs on a clean repository with nothing of the user's
 

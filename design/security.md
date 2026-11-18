@@ -1,8 +1,11 @@
 # Security
 
-Who may use the product, and as which user of the operating system each part of it runs. The
-maintainer closed these two points on 2026-11-15. The rest of the product's security is not
-designed; the open points say what is missing. None of it is built yet.
+Who may use the product, as which user of the operating system each part of it runs, where
+the server can be reached from, and how the git credential is kept from what a model runs.
+The maintainer closed the API key and the users on 2026-11-15, the private network on
+2026-11-17, and the git credential on 2026-11-16, 2026-11-17 and 2026-11-18; the sections say
+which. The rest of the product's security is not designed; the open points say what is
+missing. None of it is built yet.
 
 ## A private network
 
@@ -30,11 +33,11 @@ See [ask-and-answer](../flows/ask-and-answer.md).
 The server has four users. The maintainer has his own, with sudo. The product runs as three
 others:
 
-| User            | Runs                                                                                               | Can                                                 |
-| --------------- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| Service user    | The API                                                                                            | Use the database, and start the executors.          |
-| Read-only agent | The executor of an agent with no tools that write                                                  | Read a workspace.                                   |
-| Writing agent   | The executor of an agent with tools that write, every workspace process and every transfer process | Do more operations, such as writing in a workspace. |
+| User            | Runs                                                                                               | Can                                                                                            |
+| --------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Service user    | The API                                                                                            | Use the database, and start the executors, the workspace processes and the transfer processes. |
+| Read-only agent | The executor of an agent with no tools that write                                                  | Read a workspace.                                                                              |
+| Writing agent   | The executor of an agent with tools that write, every workspace process and every transfer process | Do more operations, such as writing in a workspace.                                            |
 
 - **The operating system enforces what the harness already does.** Whether an agent writes
   is known before its run starts: it has tools that write, or it has none. An executor of an
@@ -90,8 +93,9 @@ others:
   - **The API runs the three steps one after another, each a process of its own.** A
     workspace process gets the clean repository ready and ends; a transfer process does
     the transfer and ends; a workspace process finishes and ends. No two of them run at
-    the same time and none waits for another, so the git of a worktree's repository never
-    runs while a process holds the credential. They hand over nothing but the clean
+    the same time and none waits for another, so within one session the git of a worktree's
+    repository never runs while a process holds the credential. Across sessions it can; see
+    the accepted risk below. They hand over nothing but the clean
     repository's path, which the API names for that operation, and each tells the API how
     its step ended. The API stores each step before it starts its process, and how it
     ended.
@@ -122,8 +126,11 @@ A command a model starts could reach the credential in two ways. Only the first 
 
 - **By reading it from a transfer process.** Only a transfer process holds the credential,
   and it works for a session only while that session has no executor. But the transfer
-  process of one session and the commands a model starts in another run at the same time,
-  as the same user, so such a command could read the credential from that process. Keeping
+  process of one session and the code a model left in another session run at the same
+  time, as the same user, so that code could read the credential from that process. It can
+  be a command a model starts in a run, or a hook or a setting a model left in its worktree
+  that the session's own workspace process runs outside any run, for a restore, a push or a
+  rebuild. Keeping
   the credential off disk does not prevent it. This is the accepted risk.
 - **By leaving something for git to run.** A command could install a hook or change the
   configuration in its own session's worktree, and a later git command would run or obey it
