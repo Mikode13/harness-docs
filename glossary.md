@@ -36,7 +36,8 @@ A reserved space the user keeps and comes back to. It has a title and is where w
 thing lives. For example, the session for translations, whose workspace is a worktree for
 translations.
 
-A session has one workspace, or none when it is not about code.
+A session has one workspace, or none when it is not about code. It always has a title: a
+default the API gives it, until the user renames it.
 
 A session outlives its conversations: the user can clear it and keep it. What the user
 lists, opens, renames and deletes is sessions, not conversations.
@@ -87,6 +88,15 @@ On the server of the MVP, every root is a worktree, so two sessions on the same 
 never write in the same folder, as R03 of [mvp.md](mvp.md) requires. Working in a project's
 main folder is for local use.
 
+### Project
+
+A name and its remote repository, registered in the API. The user chooses the projects of a
+session when it is created, and each becomes a root of its workspace. Only registered
+projects are cloned.
+
+It is not a workspace. A project is what can be worked on; a workspace is where one session
+works on it.
+
 ### Root
 
 One folder of a workspace: a worktree, or a project's main folder with no worktree.
@@ -113,6 +123,36 @@ prompt, and at most one of them works at a time. A run has a state;
 
 The process that runs the harness for one run. The API starts it as a child process and is
 the only one it talks to.
+
+### Workspace process
+
+A process the API starts to work on a session's workspace outside a run's executor: it
+prepares the workspace inside a run, before the run's executor starts, and outside any run it
+restores code and pushes a branch. It runs as the writing user, talks only to the API, and is
+never given the git credential: a clone, a fetch or a push it needs is done by a transfer
+process. An operation that needs one has a workspace process before it and another after it.
+
+It is not an executor. An executor runs the harness for a run; a workspace process runs no
+agent.
+
+### Transfer process
+
+A process the API starts for one clone, fetch or push, between the workspace process that
+gets a clean repository ready and the one that finishes, and the only process that is given
+the git credential. It runs git only in a clean repository, as the writing user, with no
+user or system git configuration and an environment the API sets, and ends when the transfer
+does. It runs nothing else: no git command
+in a worktree's repository and no agent. See [security](design/security.md#git-credentials).
+
+### Clean repository
+
+A git repository that a workspace process makes for one operation with the git credential
+and removes when the operation ends, and that no command a model started has written in.
+A transfer process uses the credential only there. The workspace process brings a branch
+into it from a worktree's repository to be pushed, and passes on what was downloaded into it
+to the worktree's repository. Every git command on it runs with no user or system git
+configuration and an environment the API sets, so that nothing of the writing user's home is
+copied into it. See [security](design/security.md#git-credentials).
 
 ### Event
 
@@ -165,8 +205,9 @@ as the harness gives it.
 - **Code history belongs to the session.** The code history, which restores code (R09),
   might belong to the session and its workspace, so that it survives a clear.
 - **Terms to name later.** These are named when their flow is designed: agent and workflow
-  definitions (R10), a delegated run (R11), memory and plan (R12), device (R07) and code
-  checkpoint (R09).
+  definitions (R10), a delegated run (R11), memory and plan (R12) and device (R07). The
+  flow for R09 is written and still has no term for a point the code is restored to; see
+  [flows/changes-and-push.md](flows/changes-and-push.md#open-points).
 
 ## Words used elsewhere
 

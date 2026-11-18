@@ -12,6 +12,10 @@ the harness for that run and nothing else.
 
 - The executor talks only to the API, over a local channel. It does not connect to the
   database.
+- Before the executor, the API starts workspace processes and a transfer process, one after
+  another, when the session's workspace has to be prepared. They are child processes too,
+  talk only to the API, and all end before the executor starts. See the
+  [rules](#rules).
 - The API is the only writer of the database, and so the only writer of a run's state. The
   executor reports what happens; the API stores it and decides the state.
 - While the API runs, it knows an executor ended because its process exited. No heartbeat
@@ -63,15 +67,30 @@ In the diagram, "restart" stands for a restart of the API and for the death of a
 
 ## Rules
 
+- **A workspace process prepares the workspace, while the run is `setting_up`.** The API
+  starts it before the run's executor, as the writing user whatever the run's agent. Every
+  run checks that its session's workspace is ready and has it prepared when it is not, so
+  the first run clones and a later one rebuilds what was lost. A failure while preparing
+  ends the run as `failed`. See [create-session](../flows/create-session.md).
 - **Everything a run started is gone before another run starts.** Ending a run means ending
-  its executor and every process the executor started, and confirming that none is left.
+  its executor, the workspace or transfer process that was preparing, and every
+  process they started, and confirming that none is left.
   Until that is confirmed the run is not ended, and neither its conversation nor its
   workspace takes another run. It holds for a cancellation, for an executor that died and
   for a restart of the API: a process that lost its parent keeps running, and marking its
   run `interrupted` while it runs would let two runs write in the same workspace. How the
   processes are ended and how their end is confirmed is an [open point](#open-points).
 - **One active run per conversation.** A prompt sent while a run of the conversation is not
-  ended is rejected as busy, as R05 requires. Nothing is queued.
+  ended is rejected as busy, as R05 requires. Nothing is queued. A prompt whose id the API
+  already has is not a new prompt: it gets the acceptance and the run of the first time,
+  whatever state that run is in.
+- **A restore or a push holds the workspace as a run does.** A workspace process that
+  restores code or pushes, and the transfer process of a push, work outside a run. While
+  they work, their session takes no prompt, which is rejected as busy, and neither a clear
+  nor a deletion. They are ended and confirmed gone as a run's processes are. After a
+  restart, the API has to recognize a restore or a push that was in progress, end or
+  reconcile it, and confirm that the workspace can be used again, before the workspace
+  takes any work. See [restart](../flows/restart.md).
 - **One writing run per workspace.** Whether a run writes is known before it starts: its
   agent has tools that write, or it has none. Two runs that write in the same workspace
   would work against each other. Inside one run, several subagents may work in the
@@ -95,13 +114,21 @@ In the diagram, "restart" stands for a restart of the API and for the death of a
   with the final answer, and the API stores both before it ends the run. A conversation
   whose messages are stored and whose snapshot is lost shows the chat, and has lost what the
   next prompt needs. See [prompt-and-reconnect](../flows/prompt-and-reconnect.md).
+- **A run whose snapshot cannot be stored ends as `failed`.** The event with its answer is
+  kept, so the user still reads it.
 
 ## What is left after a run that does not complete
 
 After `failed`, `cancelled` or `interrupted`, the user sees everything up to the last event,
 and at most one more message that says what went wrong. Nothing is removed.
 
-The next run can recover the conversation, and compacts it when it is very large.
+The code the run changed stays in the workspace. Nothing is undone by itself: the harness's
+history lists the run with what it changed, and the user decides whether to restore it; see
+[changes-and-push](../flows/changes-and-push.md).
+
+The next run starts from the last snapshot that was stored, the one a completed run left,
+and its model is told that the earlier run did not complete. It can recover the
+conversation, and compacts it when it is very large.
 
 ## Alternatives considered
 
@@ -121,15 +148,11 @@ Not decided. Each is an input to the next design steps.
 - **How a run's processes are ended and confirmed gone.** It has to reach a process that
   lost its parent, and work after a restart of the API, when the API no longer holds the
   executors it started.
-- **Who prepares the workspace.** Cloning the repository and adding the worktree need git
-  credentials. Whether the API or the executor does it during `setting_up`, and with which
-  credentials, is not decided.
+- **How a restore or a push cut short by a restart is ended and reconciled.** The API
+  recognizes it from the steps it stores; see [restart](../flows/restart.md). What it then
+  does with each step is not decided.
 - **The channel between the API and the executor.** What carries the events one way and the
   answers and the cancellation the other.
-- **What the model is told.** Whether the next prompt tells the model that the earlier run
-  did not complete.
-- **Code a run changed before it stopped.** It might stay in the workspace until the user
-  restores it (R09); this was assumed in the discussion, not confirmed.
 - **Reasons within `failed`.** Whether a failed run names a kind of failure, such as the
   provider or the workspace, or only carries a message.
 

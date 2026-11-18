@@ -6,7 +6,7 @@ from a second device. The terms are in the [glossary](../glossary.md). None of i
 yet.
 
 The flow starts with a session that already exists. Creating a session and setting up its
-workspace is a flow of its own, not designed yet; see [the list of flows](README.md).
+workspace is a flow of its own: [create-session](create-session.md).
 
 ## The flow
 
@@ -18,8 +18,9 @@ sequenceDiagram
     participant E as Executor
     participant S as Second device
 
-    C->>A: prompt, as a command
-    A->>A: authenticates, checks that the conversation has no active run
+    C->>A: prompt, as a command, with an id the client generates
+    A->>A: authenticates, looks for the prompt's id
+    A->>A: checks that the conversation has no active run
     A->>D: stores what the user sent, creates the run
     A-->>C: accepted, with the run
     C->>A: subscribes to the conversation's events
@@ -44,15 +45,18 @@ sequenceDiagram
     A-->>S: final answer
 ```
 
-1. **The client sends the prompt as a command.** The API authenticates it, and rejects it as
-   busy when the conversation already has a run that is not ended (R05; see the
-   [run lifecycle](../design/run-lifecycle.md)).
+1. **The client sends the prompt as a command**, with an id the client generates. The API
+   authenticates it and looks at that id first: a prompt whose id it already has is the same
+   prompt sent again, and gets the acceptance and the run of the first time. Only then does
+   it reject a prompt as busy, when the conversation already has a run that is not ended
+   (R05; see the [run lifecycle](../design/run-lifecycle.md)).
 2. **The API stores and acknowledges.** It stores what the user sent and creates the run. The
    client gets only an acknowledgement, with the run. It does not wait for the run to end.
 3. **The client subscribes to the conversation's events.** Everything else arrives through
    that subscription, the final answer included.
-4. **The API starts the executor of the run**, as a child process, and gives it the
-   snapshot the run before left, if there is one. The executor restores the agent from it,
+4. **The API starts the executor of the run**, as a child process, once the session's
+   workspace is ready (see [create-session](create-session.md)), and gives it the snapshot
+   the run before left, if there is one. The executor restores the agent from it,
    so the agent continues from what it already knew, runs the harness and reports each event
    to the API.
 5. **Each event is stored, then delivered.** The API gives the event its number, in order
@@ -102,18 +106,8 @@ for later.
   server-sent stream reconnects by itself saying the last event it received.
   [harness-api#9](https://github.com/Mikode13/harness-api/issues/9) says resumable SSE too.
   The maintainer also considered sockets and left the choice for later.
-- **A key that makes a prompt safe to send twice.** A client that does not get the
-  acknowledgement may send the prompt again. A key the client generates, so that the same
-  prompt sent twice starts one run, was proposed and is in
-  [harness-api#4](https://github.com/Mikode13/harness-api/issues/4).
 - **What the conversation keeps of the prompt.** The prompt is what the user writes plus the
   context the product adds. Whether the conversation keeps the whole prompt or only the
   user's text is open in the [glossary](../glossary.md).
-- **What a run that does not complete leaves as its snapshot.** A run that failed, was
-  cancelled or was interrupted may have no snapshot to hand over. Whether the next run
-  starts from the snapshot before it, and what it is told, was not discussed.
-- **What happens when the snapshot cannot be stored.** The answer exists and the continuity
-  does not. Which state the run ends in then was not discussed.
-- **Who sets up the workspace** before the harness starts working, while the run is
-  `setting_up`. It is open in the [run lifecycle](../design/run-lifecycle.md#open-points).
-- **The channel between the API and the executor.** Open in the same place.
+- **The channel between the API and the executor.** It is open in the
+  [run lifecycle](../design/run-lifecycle.md#open-points).

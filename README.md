@@ -66,8 +66,10 @@ here, never the reverse. The harness's documents never describe the product.
 - `flows/`: one file per flow, with its diagram; [`flows/README.md`](flows/README.md) lists
   them.
 - `design/`: the design documents: [`run-lifecycle.md`](design/run-lifecycle.md),
-  [`events.md`](design/events.md), [`security.md`](design/security.md) and
-  [`harness-needs.md`](design/harness-needs.md).
+  [`events.md`](design/events.md), [`security.md`](design/security.md),
+  [`harness-needs.md`](design/harness-needs.md) and
+  [`workspace-and-git.md`](design/workspace-and-git.md), which puts together how a session's
+  workspace and git work.
 - [`docs/decisions.md`](docs/decisions.md): the product's decisions, which cross its
   projects.
 - [`docs/learnings.md`](docs/learnings.md): what designing, building or running the product

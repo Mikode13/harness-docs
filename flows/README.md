@@ -9,20 +9,23 @@ A flow shows the path where nothing goes wrong. What happens when a run is cance
 or is interrupted is in the [run lifecycle](../design/run-lifecycle.md), and each such case
 gets a flow of its own below.
 
+How a session's workspace and git work across the flows, from preparing it to pushing, is put
+together in [workspace-and-git](../design/workspace-and-git.md).
+
 None of this is built yet.
 
 ## The flows of the first slice
 
-| #   | Flow                                                     | Status                                                                            |
-| --- | -------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| 1   | Send a prompt, execute and reconnect from another device | Written: [prompt-and-reconnect.md](prompt-and-reconnect.md)                       |
-| 2   | Ask and answer from another device                       | Written: [ask-and-answer.md](ask-and-answer.md)                                   |
-| 3   | Cancel                                                   | Decided in the [run lifecycle](../design/run-lifecycle.md); diagram pending       |
-| 4   | Restart of the server                                    | Decided in the [run lifecycle](../design/run-lifecycle.md); diagram pending       |
-| 5   | Create a session and set up its workspace                | Not designed; next                                                                |
-| 6   | Clear and delete                                         | Rules decided in the [run lifecycle](../design/run-lifecycle.md); diagram pending |
-| 7   | See changes, restore code and push the branch            | Not designed                                                                      |
-| 8   | Authenticate a device                                    | Decided in [security](../design/security.md); diagram pending                     |
+| #   | Flow                                                     | Status                                                      |
+| --- | -------------------------------------------------------- | ----------------------------------------------------------- |
+| 1   | Send a prompt, execute and reconnect from another device | Written: [prompt-and-reconnect.md](prompt-and-reconnect.md) |
+| 2   | Ask and answer from another device                       | Written: [ask-and-answer.md](ask-and-answer.md)             |
+| 3   | Cancel                                                   | Written: [cancel.md](cancel.md)                             |
+| 4   | Restart of the server                                    | Written: [restart.md](restart.md)                           |
+| 5   | Create a session and set up its workspace                | Written: [create-session.md](create-session.md)             |
+| 6   | Clear and delete                                         | Written: [clear-and-delete.md](clear-and-delete.md)         |
+| 7   | See changes, restore code and push the branch            | Written: [changes-and-push.md](changes-and-push.md)         |
+| 8   | Authenticate a device                                    | Written: [authenticate.md](authenticate.md)                 |
 
 Flows beyond the first slice, such as changing the agent or model, delegation, memory and
 plans, are designed after these.
