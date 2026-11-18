@@ -42,7 +42,8 @@ sequenceDiagram
    `setting_up`, `running`, `waiting_for_input` or `cancelling`.
 3. **It also recognizes the restores and the pushes that were in progress.** A workspace
    process restores and pushes outside a run, so it is not among those runs, and it may
-   still be writing in a workspace.
+   still be writing in a workspace. The API stores each step of a restore or a push before
+   it starts its process, so it reads them as it reads the runs.
 4. **For each, it ends what is left and confirms that nothing is.** The executor, or the
    workspace process and its transfer process, and every process they started. Until that
    is confirmed the run is not ended and the restore or the push is not over, and the
@@ -83,8 +84,8 @@ itself: the user sees it in the history and decides whether to restore it; see
 
 Not decided.
 
-- **How a restore or a push in progress is recognized after a restart**, and what
-  reconciling a push takes: it may have reached one project and not another. It is an open
+- **What reconciling a push cut short takes**: it may have reached one project and not
+  another, and the step that was cut short may have pushed or not. It is an open
   point of the [run lifecycle](../design/run-lifecycle.md#open-points).
 - **How the processes of a run are ended and confirmed gone** after a restart, when the API
   no longer holds the executors it started. It is an open point of the

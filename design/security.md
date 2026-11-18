@@ -93,7 +93,8 @@ others:
     the same time and none waits for another, so the git of a worktree's repository never
     runs while a process holds the credential. They hand over nothing but the clean
     repository's path, which the API names for that operation, and each tells the API how
-    its step ended.
+    its step ended. The API stores each step before it starts its process, and how it
+    ended.
   - **The name a branch is published under comes from the API**, which keeps it from the
     first push. It is not read from the worktree's configuration.
   - **A clean repository is made for one operation and removed when the operation ends**,

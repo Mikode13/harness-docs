@@ -148,9 +148,9 @@ Not decided. Each is an input to the next design steps.
 - **How a run's processes are ended and confirmed gone.** It has to reach a process that
   lost its parent, and work after a restart of the API, when the API no longer holds the
   executors it started.
-- **How a restore or a push in progress is recognized after a restart**, and how it is
-  ended or reconciled. It is not a run, so the list of runs that are not ended does not
-  hold it.
+- **How a restore or a push cut short by a restart is ended and reconciled.** The API
+  recognizes it from the steps it stores; see [restart](../flows/restart.md). What it then
+  does with each step is not decided.
 - **The channel between the API and the executor.** What carries the events one way and the
   answers and the cancellation the other.
 - **Reasons within `failed`.** Whether a failed run names a kind of failure, such as the

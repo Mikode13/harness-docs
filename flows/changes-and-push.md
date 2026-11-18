@@ -79,9 +79,9 @@ sequenceDiagram
 - **A workspace process and a transfer process push**, as they prepare a workspace: both
   started by the API, as the writing user, and only the transfer process with the
   credential.
-- **A push waits until no run of the session is active**, as a restore does. A run that is
-  working may be committing, and one piece of work at a time uses a workspace; see the
-  [run lifecycle](../design/run-lifecycle.md#rules).
+- **A push is rejected as busy while a run of the session is not ended**, as a restore is.
+  Nothing is queued. A run that is working may be committing, and one piece of work at a
+  time uses a workspace; see the [run lifecycle](../design/run-lifecycle.md#rules).
 - **A push is reported project by project.** When it succeeds in one and fails in another,
   nothing is undone, and pushing again pushes what is missing.
 - **A restore and a push cannot be cancelled.** The harness and git carry them out to their
@@ -161,8 +161,9 @@ Not decided.
   open point of the [glossary](../glossary.md#open-points).
 - **A restore or a push that the API's restart cut short.** The rule is in the
   [run lifecycle](../design/run-lifecycle.md#rules) and the steps in
-  [restart](restart.md): the API has to recognize it, end or reconcile it, and confirm that
-  the workspace can be used again. How is not decided.
+  [restart](restart.md): the API recognizes it from the steps it stores, has to end or
+  reconcile it, and confirm that the workspace can be used again. How it reconciles is not
+  decided.
 - **What the name is proposed from**, the session's title, the plan or the changes, and
   which model proposes it. The projects' own rules for branch names have to hold.
 - **Whether the commit question can be asked at another moment**, per phase or with the
