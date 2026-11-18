@@ -150,8 +150,9 @@ A git repository that a workspace process makes for one operation with the git c
 and removes when the operation ends, and that no command a model started has written in.
 A transfer process uses the credential only there. The workspace process brings a branch
 into it from a worktree's repository to be pushed, and passes on what was downloaded into it
-to the worktree's repository.
-See [security](design/security.md#git-credentials).
+to the worktree's repository. Every git command on it runs with no user or system git
+configuration and an environment the API sets, so that nothing of the writing user's home is
+copied into it. See [security](design/security.md#git-credentials).
 
 ### Event
 

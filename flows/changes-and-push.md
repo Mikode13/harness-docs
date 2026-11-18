@@ -99,11 +99,12 @@ sequenceDiagram
 - **So a push runs from a clean repository, not from the worktree.** The workspace process
   makes a repository of its own and brings the session's branch into it from the worktree's
   repository as a local path. A transfer process pushes from there with the credential, and
-  does nothing else, with no user or system git configuration and an environment the API
-  sets. No process that holds the credential runs git in the worktree's
-  repository. The clean repository is made for that push and removed after it, so it is one
-  more local copy for each push. The three steps are three processes, one after another;
-  see [security](../design/security.md#git-credentials).
+  does nothing else. Every git command on the clean repository, the workspace processes'
+  included, runs with no user or system git configuration and an environment the API sets.
+  No process that holds the credential runs git in the worktree's repository. The clean
+  repository is made for that push and removed after it, so it is one more local copy for
+  each push. The three steps are three processes, one after another; see
+  [security](../design/security.md#git-credentials).
 - **After a push, a workspace process records the upstream in the worktree's
   repository**, without the credential, for each project that was pushed. The push did not
   run there, and the upstream is what the harness reads to refuse a reset of commits that

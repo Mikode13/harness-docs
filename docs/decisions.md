@@ -540,9 +540,10 @@ worktree's repository never runs while a process holds the credential. After a r
 knows which of the three steps was cut short. A transfer starts three processes instead of
 one.
 
-## A transfer process runs git with nothing of the user's
+## Git runs on a clean repository with nothing of the user's
 
-**Decision:** The API starts a transfer process with an environment it sets whole, not
+**Decision:** Every git command on a clean repository, the transfer process's and those of the
+workspace processes that make, fill and empty it, runs in an environment the API sets whole, not
 inherited: no user or system git configuration (`GIT_CONFIG_GLOBAL=/dev/null`,
 `GIT_CONFIG_NOSYSTEM=1`), an empty home made for that operation, a `PATH` of system
 directories only, and the system's git by its full path, which the agent users cannot write.
@@ -554,15 +555,20 @@ hooks path or an `insteadOf`. That is the way the maintainer did not accept on 2
 the clean repository did not close it. It follows from his rule that a git operation with the
 credential obeys no configuration a command could have changed. The experiment is in
 [`learnings.md`](learnings.md), under "A clean repository is not enough while git reads the
-user's home".
+user's home". A second review the same day pointed out that the workspace process that makes
+the clean repository read that home too, and an `init.templateDir` there copied a hook and a
+configuration into the clean repository, which the transfer process then ran and obeyed.
 
 **Alternatives considered:**
 
+- **Turning hooks off in the transfer process.** Tried: a hook copied from a template no
+  longer ran, but a configuration copied with it still sent the push to another repository.
 - **Listing it under the accepted risk until the transfer process runs as another user.** The
   accepted risk is about another session reading the credential while a transfer runs. This
   way reaches every later push of any session, and closing it takes a few variables.
 
-**Consequences:** Nothing in the writing user's home reaches a transfer: neither its git
+**Consequences:** Nothing in the writing user's home reaches a clean repository or a
+transfer: neither its git
 configuration nor a program earlier in its `PATH`. The git a transfer runs is the system's,
 updated with the system. Other files git reads from a home, such as attributes, are empty in
 a new home.

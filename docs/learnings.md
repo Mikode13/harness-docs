@@ -122,10 +122,21 @@ with `env -i`, `PATH=/usr/bin:/bin`, an empty home, `GIT_CONFIG_GLOBAL=/dev/null
 `GIT_CONFIG_NOSYSTEM=1` and `/usr/bin/git` reached the registered repository, and no hook
 ran.
 
-**What it changed:** [security](../design/security.md#git-credentials) says that a transfer
-process reads no configuration but the clean repository's and runs in an environment the API
-sets. The entry "A transfer process runs git with nothing of the user's" of
+A second review the same day pointed out the step before: the workspace process makes the clean
+repository with that home. A `.gitconfig` there with an `init.templateDir` pointing to a
+directory with a `pre-push` hook and a `config` with an `insteadOf` was used to make the clean
+repository and fetch the branch into it. A push from it in the controlled environment above
+went to the other repository, and the hook ran with the credential's variable. Pushing with
+`-c core.hooksPath=/dev/null` stopped the hook and still went to the other repository, since
+the configuration had been copied. Making the clean repository in the controlled environment
+too, the push reached the registered repository and no hook ran.
+
+**What it changed:** [security](../design/security.md#git-credentials) says that
+every git command on a clean repository, the one that makes it included, reads no
+configuration but that repository's and runs in an environment the API sets. The entry "Git
+runs on a clean repository with nothing of the user's" of
 [`decisions.md`](decisions.md) records it.
 
 **Lesson:** Git's configuration is not only the repository's. "Trusts nothing a command could
-have changed" covers every file git reads, and the user's home is one a command can change.
+have changed" covers every file git reads, and the user's home is one a command can change. It
+also covers every step that writes what the credentialed step will read, not only that step.
