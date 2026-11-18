@@ -550,14 +550,14 @@ inherited: no user or system git configuration (`GIT_CONFIG_GLOBAL=/dev/null`,
 directories only, and the system's git by its full path, which the agent users cannot write.
 [`design/security.md`](../design/security.md#git-credentials) states it.
 
-**Context:** Pointed out by the automated review on 2026-11-18. A transfer process runs as the
-writing user, and git reads that user's `~/.gitconfig`, where a command of a model can leave a
-hooks path or an `insteadOf`. That is the way the maintainer did not accept on 2026-11-16, and
-the clean repository did not close it. It follows from his rule that a git operation with the
-credential obeys no configuration a command could have changed. The experiment is in
-[`learnings.md`](learnings.md), under "A clean repository is not enough while git reads the
-user's home". A second review the same day pointed out that the workspace process that makes
-the clean repository read that home too, and an `init.templateDir` there copied a hook and a
+**Context:** Confirmed by the maintainer on 2026-11-18, after the automated review pointed it out. A
+transfer process runs as the writing user, and git reads that user's `~/.gitconfig`, where a command
+of a model can leave a hooks path or an `insteadOf`. That is the way the maintainer did not accept
+on 2026-11-16, and the clean repository did not close it. It follows from his rule that a git
+operation with the credential obeys no configuration a command could have changed. The experiment is
+in [`learnings.md`](learnings.md), under "A clean repository is not enough while git reads the
+user's home". A second review the same day pointed out that the workspace process that makes the
+clean repository read that home too, and an `init.templateDir` there copied a hook and a
 configuration into the clean repository, which the transfer process then ran and obeyed.
 
 **Alternatives considered:**
