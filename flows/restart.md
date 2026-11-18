@@ -51,10 +51,11 @@ sequenceDiagram
 5. **Each run becomes `interrupted`, and its pending ask is closed.** The API lost its
    channel to the executor that asked, so an answer could not reach it.
 6. **Each restore or push is reconciled**, so that the workspace is in a state the product
-   knows and can be used again. The harness finishes a move through its history that its
-   process did not finish, with the next move or run. A push is three steps the API
-   started one at a time, so it knows which one was cut short; a clean repository left
-   behind is removed, never reused. What else a push needs is not decided.
+   knows and can be used again. A push is three steps the API started one at a time, so
+   it knows which one was cut short, and a clean repository left behind is removed, never
+   reused. What else reconciling a restore or a push takes is not decided; for a restore,
+   the harness finishes a move through its history that its process did not finish with
+   the next move or run, and whether that is enough is part of that open point.
 7. **A client that reconnects gets what it missed**, as in
    [prompt-and-reconnect](prompt-and-reconnect.md), and sees that the run was interrupted.
 8. **The user decides how to go on.** Nothing is run again by itself: a prompt that had
@@ -84,8 +85,9 @@ itself: the user sees it in the history and decides whether to restore it; see
 
 Not decided.
 
-- **What reconciling a push cut short takes**: it may have reached one project and not
-  another, and the step that was cut short may have pushed or not. It is an open
+- **What reconciling a restore or a push cut short takes.** A push may have reached one
+  project and not another, and the step that was cut short may have pushed or not. For a
+  restore, whether what the harness does with the next move or run is enough. It is an open
   point of the [run lifecycle](../design/run-lifecycle.md#open-points).
 - **How the processes of a run are ended and confirmed gone** after a restart, when the API
   no longer holds the executors it started. It is an open point of the
