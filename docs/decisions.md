@@ -452,8 +452,8 @@ credential trusts nothing in the worktree had no mechanism. He took the extra st
 preventing is better than repairing and it costs little time, and will look for another way if
 that time becomes a problem. The name and the upstream follow from rules already settled: a
 push obeys no configuration a command could have changed, and the harness reads the upstream
-to refuse a reset of commits that were pushed. The next entry moves the credential from the
-workspace process to a transfer process.
+to refuse a reset of commits that were pushed; the maintainer confirmed both on 2026-11-18.
+The next entry moves the credential from the workspace process to a transfer process.
 
 **Alternatives considered:**
 
@@ -486,13 +486,13 @@ process that holds the credential runs git in a worktree's repository.
 the term.
 
 **Context:** Decided by the maintainer on 2026-11-17, after the automated review of the clean
-repository. The rule covered the git commands that use the credential, but the workspace
-process held it and also ran git in the worktree's repository: to add a worktree, to restore
-through the harness's history, to record an upstream. Those commands run a hook or obey a
-setting such as `core.fsmonitor` that a command of an earlier run of the same session left,
-and what they run is a child of a process that holds the credential. That is the way inside
-one session that was not accepted, and it would still be open after the accepted risk between
-sessions is closed.
+repository, and the name "transfer process" confirmed on 2026-11-18. The rule covered the git
+commands that use the credential, but the workspace process held it and also ran git in the
+worktree's repository: to add a worktree, to restore through the harness's history, to record an
+upstream. Those commands run a hook or obey a setting such as `core.fsmonitor` that a command of
+an earlier run of the same session left, and what they run is a child of a process that holds
+the credential. That is the way inside one session that was not accepted, and it would still be
+open after the accepted risk between sessions is closed.
 
 **Alternatives considered:**
 
@@ -521,7 +521,8 @@ every worktree; one that a failure or a restart left behind is removed, never re
 **Context:** The maintainer left the design to Claude on 2026-11-17, after the entry "Only a
 transfer process holds the git credential" left open how the two processes hand over the clean
 repository. Every process of the product already talks only to the API, and the API already
-starts each process and stores what it reports.
+starts each process and stores what it reports. The maintainer confirmed the design on
+2026-11-18.
 
 **Alternatives considered:**
 

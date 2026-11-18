@@ -9,6 +9,9 @@ A flow shows the path where nothing goes wrong. What happens when a run is cance
 or is interrupted is in the [run lifecycle](../design/run-lifecycle.md), and each such case
 gets a flow of its own below.
 
+How a session's workspace and git work across the flows, from preparing it to pushing, is put
+together in [workspace-and-git](../design/workspace-and-git.md).
+
 None of this is built yet.
 
 ## The flows of the first slice
