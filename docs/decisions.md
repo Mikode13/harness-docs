@@ -429,7 +429,9 @@ pointed out.
 **Consequences:** A leaked token gives what it can do in the registered repositories until it
 is revoked, since it does not expire by itself as an app's would. A server that is not on the
 internet leaves fewer ways to reach it. Registering a project includes giving the token access
-to its repository.
+to its repository. The entry "Only a transfer process holds the git credential" moves the
+clone, the fetch and the push to a transfer process, so the workspace process no longer holds
+the token.
 
 ## Git runs with the credential only in a clean repository
 
