@@ -75,6 +75,14 @@ others:
   - **To clone or fetch**, a transfer process downloads the commits into the clean
     repository, and the workspace process passes them on to the worktree's repository as a
     local path.
+  - **A transfer process reads no configuration but the clean repository's.** It runs as
+    the writing user, whose home a command of a model can write in: a `~/.gitconfig` with a
+    hooks path or an `insteadOf` would reach the push from a clean repository too. So the
+    API starts it with an environment it sets whole, not inherited: no user or system git
+    configuration (`GIT_CONFIG_GLOBAL=/dev/null`, `GIT_CONFIG_NOSYSTEM=1`), an empty home
+    made for that operation, a `PATH` of system directories only, and the system's git by
+    its full path, which the agent users cannot write. See
+    [learnings](../docs/learnings.md#a-clean-repository-is-not-enough-while-git-reads-the-users-home).
   - **The API runs the three steps one after another, each a process of its own.** A
     workspace process gets the clean repository ready and ends; a transfer process does
     the transfer and ends; a workspace process finishes and ends. No two of them run at

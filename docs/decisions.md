@@ -538,3 +538,30 @@ worktree's repository is not designed. The git of a
 worktree's repository never runs while a process holds the credential. After a restart the API
 knows which of the three steps was cut short. A transfer starts three processes instead of
 one.
+
+## A transfer process runs git with nothing of the user's
+
+**Decision:** The API starts a transfer process with an environment it sets whole, not
+inherited: no user or system git configuration (`GIT_CONFIG_GLOBAL=/dev/null`,
+`GIT_CONFIG_NOSYSTEM=1`), an empty home made for that operation, a `PATH` of system
+directories only, and the system's git by its full path, which the agent users cannot write.
+[`design/security.md`](../design/security.md#git-credentials) states it.
+
+**Context:** Pointed out by the automated review on 2026-11-18. A transfer process runs as the
+writing user, and git reads that user's `~/.gitconfig`, where a command of a model can leave a
+hooks path or an `insteadOf`. That is the way the maintainer did not accept on 2026-11-16, and
+the clean repository did not close it. It follows from his rule that a git operation with the
+credential obeys no configuration a command could have changed. The experiment is in
+[`learnings.md`](learnings.md), under "A clean repository is not enough while git reads the
+user's home".
+
+**Alternatives considered:**
+
+- **Listing it under the accepted risk until the transfer process runs as another user.** The
+  accepted risk is about another session reading the credential while a transfer runs. This
+  way reaches every later push of any session, and closing it takes a few variables.
+
+**Consequences:** Nothing in the writing user's home reaches a transfer: neither its git
+configuration nor a program earlier in its `PATH`. The git a transfer runs is the system's,
+updated with the system. Other files git reads from a home, such as attributes, are empty in
+a new home.

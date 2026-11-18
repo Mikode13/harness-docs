@@ -148,8 +148,9 @@ sequenceDiagram
   destination. So git runs with the credential only in a clean repository, one the
   workspace process makes for that operation, removes after it, and no command of a model
   has written in. What a transfer process downloads there reaches the worktree's repository
-  as a local copy, which the workspace process makes without the credential. See
-  [security](../design/security.md#git-credentials).
+  as a local copy, which the workspace process makes without the credential. A transfer
+  process reads no git configuration of the user's or the system's, and gets an environment
+  the API sets. See [security](../design/security.md#git-credentials).
 - **A command a model starts could still reach it, and that is accepted for now.** Only a
   transfer process holds the credential, and it works for a session only while that session
   has no executor. But the transfer process of one session and the commands a model starts

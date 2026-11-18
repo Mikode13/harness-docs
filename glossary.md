@@ -139,8 +139,9 @@ agent.
 
 A process the API starts for one clone, fetch or push, between the workspace process that
 gets a clean repository ready and the one that finishes, and the only process that is given
-the git credential. It runs git only in a clean repository,
-as the writing user, and ends when the transfer does. It runs nothing else: no git command
+the git credential. It runs git only in a clean repository, as the writing user, with no
+user or system git configuration and an environment the API sets, and ends when the transfer
+does. It runs nothing else: no git command
 in a worktree's repository and no agent. See [security](design/security.md#git-credentials).
 
 ### Clean repository

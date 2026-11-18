@@ -106,3 +106,26 @@ push runs from one. The entry "Git runs with the credential only in a clean repo
 **Lesson:** A repository's configuration is input to every git command that runs in it.
 Where that input cannot be trusted, the command runs somewhere else; switching off the parts
 known to be dangerous leaves the ones nobody listed.
+
+## A clean repository is not enough while git reads the user's home
+
+**What happened:** On 2026-11-18 the automated review pointed out that a transfer process runs
+git as the writing user, so git reads that user's own configuration as well as the clean
+repository's. A command of a model runs as the same user and can write there.
+
+**Evidence:** In scratch repositories on Linux, with git 2.43, a home standing for the writing
+user's was given a `.gitconfig` with a `core.hooksPath` to a `pre-push` hook and a
+`url.<other>.insteadOf` for the registered repository's address. A push from a clean
+repository, with that home, ended without an error, with the branch in the other repository,
+and the hook ran and read the variable that stood for the credential. The same push started
+with `env -i`, `PATH=/usr/bin:/bin`, an empty home, `GIT_CONFIG_GLOBAL=/dev/null`,
+`GIT_CONFIG_NOSYSTEM=1` and `/usr/bin/git` reached the registered repository, and no hook
+ran.
+
+**What it changed:** [security](../design/security.md#git-credentials) says that a transfer
+process reads no configuration but the clean repository's and runs in an environment the API
+sets. The entry "A transfer process runs git with nothing of the user's" of
+[`decisions.md`](decisions.md) records it.
+
+**Lesson:** Git's configuration is not only the repository's. "Trusts nothing a command could
+have changed" covers every file git reads, and the user's home is one a command can change.
