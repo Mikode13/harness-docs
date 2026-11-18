@@ -467,9 +467,9 @@ workspace process to a transfer process.
 
 **Consequences:** Each operation with the credential makes one more local copy. Git still
 reads the worktree's repository when the branch is brought from it, without the credential in
-that command. A clone or a fetch downloads the whole repository each time. The design stays
-as it is when the workspace process runs as another user; keeping a clean repository between
-operations is looked at again then, when it is a question of speed only.
+that command. A clone or a fetch downloads the whole repository each time. Keeping a clean
+repository between operations is looked at again when it is made and owned by a user the
+model's commands do not run as, when it is a question of speed only.
 
 ## Only a transfer process holds the git credential
 
@@ -527,7 +527,12 @@ starts each process and stores what it reports.
 - **The workspace process starting the transfer process itself.** The credential would pass
   through the workspace process, which runs git in the worktree's repository.
 
-**Consequences:** No process waits for another and no two talk to each other. The git of a
+**Consequences:** No process waits for another and no two talk to each other. While the risk
+on the credential is accepted, the workspace process makes the clean repository as the writing
+user. Closing that risk takes more than running the transfer process as another user: that
+user has to make and own the clean repository, or another session's command could plant a hook
+in it, so the first step moves to that user too, and how it brings a branch in from a
+worktree's repository is not designed. The git of a
 worktree's repository never runs while a process holds the credential. After a restart the API
 knows which of the three steps was cut short. A transfer starts three processes instead of
 one.

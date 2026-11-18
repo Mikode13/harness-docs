@@ -145,6 +145,10 @@ is created.
 
 Not decided.
 
+- **How the model writes a pull request's title and description.** Which model, and whether
+  it is a run of the session's conversation, which would hold the workspace and show in the
+  conversation, or a call to a model outside any run. Until that is decided the flow has no
+  step for it.
 - **A name for a point the code is restored to.** R09 calls it a retained checkpoint; in the
   harness it is a run of its history. The product has no term for it yet.
 - **Whether the code history belongs to the session**, and so survives a clear. It is an

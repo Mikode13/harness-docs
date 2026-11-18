@@ -91,7 +91,8 @@ others:
     One kept between operations would be on disk while the session's runs work, as the same
     user, and a command could leave a hook in it for a later push. While it exists, a
     command of another session could write in it; such a command can already read the
-    credential from the process, which is the accepted risk below.
+    credential from the process, which is the accepted risk below. That reason holds only
+    while the risk is accepted.
 - **The credential is a fine-grained personal access token**, limited to the registered
   repositories, with what pushing and opening a pull request need.
 - **No process that holds the credential runs git in a worktree's repository.** A workspace
@@ -119,7 +120,11 @@ A command a model starts could reach the credential in two ways. Only the first 
 
 The maintainer accepted the first on 2026-11-16 for the first slice, limited by a credential
 that reaches only the registered repositories. It is a known gap, not the design: it will be
-closed by running the transfer process as a user the model's commands do not run as. A
+closed by running the transfer process as a user the model's commands do not run as, and
+by having that user make and own the clean repository, so that no command of a model can
+write in it while it exists. Moving the transfer process alone would leave the clean
+repository writable by another session's commands, and a hook planted there would run with
+the credential. A
 prompt injection could make a model start such a command. So could code that a model's
 commands run without any injection: a project's tests and tooling, and their dependencies,
 run as the writing user from the first slice.
@@ -130,15 +135,15 @@ Not decided.
 
 - **How the service user starts a process as another user.** The API runs as the service
   user and its executors run as the agent users.
-- **Whether a clean repository is kept between operations** once the processes that use it
-  run as a user the model's commands do not run as. It is then a question of speed only: a
+- **Whether a clean repository is kept between operations** once it is made and owned by a
+  user the model's commands do not run as. It is then a question of speed only: a
   clone or a fetch downloads the whole repository each time.
 - **When the accepted risk on the git credential ends, and how.** Closing it before the
   product reads the web (R14 of [mvp.md](../mvp.md)) was proposed. That bound covers an
   injection from the web, and not the code that a model's commands run, such as the
-  dependencies of a project's tests, which is there from the first slice. How the workspace
-  process runs as another user, with the worktrees shared between both users, is not
-  designed.
+  dependencies of a project's tests, which is there from the first slice. How the
+  transfer process's user makes the clean repository and brings a branch into it from a
+  worktree's repository, which belongs to the writing user, is not designed.
 - **What exactly the writing agent may do** beyond writing in its workspace. The maintainer
   described it as the user "with more capability to do operations".
 - **A threat model.** The server holds the keys of the model providers and git credentials,

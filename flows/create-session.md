@@ -158,7 +158,8 @@ sequenceDiagram
   the code of a dependency that a project's tests run. The
   maintainer accepts this risk for the first slice, with a credential that reaches only the
   registered repositories. It is not the intended design and will change: the transfer
-  process will run as a user the model's commands do not run as. What a command leaves in
+  process will run as a user the model's commands do not run as, and that user will make
+  and own the clean repository. What a command leaves in
   its own worktree for a later push to run is not part of the accepted risk; the rule
   above closes it. See [security](../design/security.md#git-credentials).
 
@@ -173,8 +174,9 @@ Not decided.
 - **When the accepted risk on the credential ends.** Doing it before the product reads the
   web (R14 of [mvp.md](../mvp.md)), which is where an injection would come from, was
   proposed. It would not cover the code that a model's commands run, such as the
-  dependencies of a project's tests, which is there from the first slice. How the workspace
-  process runs as another user, with the worktrees shared between both, is not designed.
+  dependencies of a project's tests, which is there from the first slice. How the
+  transfer process's user makes the clean repository and brings a branch into it from the
+  worktree's repository is not designed.
 - **What a rebuilt workspace starts from.** When the worktree of a session is lost and a run
   prepares it again: the session's own branch if the clone or the remote still has it, or
   the default branch, and how the user learns that work that was not pushed is gone.
