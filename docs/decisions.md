@@ -213,7 +213,8 @@ harness needs, then the API.
 created by the first prompt sent to it: the API creates a session it does not find, takes the
 prompt as one more of a session that exists, and rejects a prompt to a session that is deleted.
 A prompt whose id the API already has is the same prompt sent again and starts no second run:
-the API checks the id before anything else and answers with the first acceptance and run.
+the API checks the id first after authenticating the request, and answers with the first
+acceptance and run.
 The API gives a new session a default title, the first prompt's text cut short, and a title
 the user set is never replaced. [`flows/create-session.md`](../flows/create-session.md) holds
 the flow.

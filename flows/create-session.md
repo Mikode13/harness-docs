@@ -24,6 +24,7 @@ sequenceDiagram
     Note over C: the user confirms or changes the projects, and writes
 
     C->>A: first prompt: session id, prompt id, projects or none, text
+    A->>A: authenticates
     A->>D: looks for the prompt's id, then for the session
     A->>D: creates the session with its default title and its projects
     A->>D: stores what the user sent, creates the run as setting_up
@@ -50,7 +51,7 @@ sequenceDiagram
    the client also generates, the projects chosen or an explicit "none", and the text.
 4. **The API looks at the prompt's id first.** A prompt whose id it already has is the same
    prompt sent again: the API answers with the acceptance and the run it gave the first
-   time, before any other check, so a retry is never rejected as busy.
+   time, before any other check but authentication, so a retry is never rejected as busy.
 5. **Then the API looks for the session.** There are three cases:
    - it does not exist: the API creates it, and goes on;
    - it exists: the prompt is one more prompt of that session, as in

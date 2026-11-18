@@ -146,6 +146,10 @@ is created.
 
 Not decided.
 
+- **A bound on a restore or a push that hangs.** Neither can be cancelled, and while one
+  works its session takes no prompt, clear or deletion. A transfer that stalls on the git
+  host would keep the session busy until the API restarts. Whether the API ends one after a
+  time, as it would after a restart, and what that time is, is not decided.
 - **How the model writes a pull request's title and description.** Which model, and whether
   it is a run of the session's conversation, which would hold the workspace and show in the
   conversation, or a call to a model outside any run. Until that is decided the flow has no
