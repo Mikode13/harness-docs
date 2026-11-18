@@ -151,6 +151,10 @@ Not decided.
   works its session takes no prompt, clear or deletion. A transfer that stalls on the git
   host would keep the session busy until the API restarts. Whether the API ends one after a
   time, as it would after a restart, and what that time is, is not decided.
+- **A name taken in only some projects of a session.** The name is the same in every project,
+  and a first push fails where the remote already has it. When it succeeds in one project and
+  fails in another, whether the user chooses a new name for every project or only for the one
+  that failed, and whether the check is per project or per session, is not decided.
 - **How the model writes a pull request's title and description.** Which model, and whether
   it is a run of the session's conversation, which would hold the workspace and show in the
   conversation, or a call to a model outside any run. Until that is decided the flow has no
