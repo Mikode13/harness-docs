@@ -46,7 +46,7 @@ credential.
   the commands a model starts and everything they run, such as a project's tests and their
   dependencies.
 - **A sandbox sees only its session's workspace.** Its worktrees with what they need of their
-  repository, and, during a transfer, the clean repository of that
+  repository, and, during the workspace steps of a transfer, the clean repository of that
   transfer. Not the server's files, not another session's worktrees, and not the processes of
   the server or of other sandboxes.
 - **An agent with no tools that write gets the worktrees mounted read-only.** The operating
@@ -55,8 +55,13 @@ credential.
   No code of a model runs there.
 - **It is configured as a sandbox, not only as a container**: rootless, never privileged and
   with no added capabilities; the container engine's socket is never mounted into it; it mounts
-  only the session's workspace and, during a transfer, its clean
+  only the session's workspace and, during the workspace steps of a transfer, its clean
   repository; and it has limits on processor, memory and processes.
+- **A model's commands cannot change the sandbox's own programs.** The image's filesystem is
+  read-only, and everything in the sandbox runs as a user that is not root inside it. Only the
+  mounted workspace, the clean repository of a transfer and a temporary home can be written.
+  So the git and the code of a workspace process are the image's, and a command cannot replace
+  them to leave a hook or a configuration in a clean repository.
 
 What it does not protect, and is accepted: inside its session, a model can still damage its
 own worktrees and read the keys of the model providers that the executor uses. A container
@@ -121,6 +126,11 @@ see [where a run executes](run-lifecycle.md#where-a-run-executes).
     repository's path, which the API names for that operation, and each tells the API how
     its step ended. The API stores each step before it starts its process, and how it
     ended.
+  - **Nothing runs in the session's sandbox while a transfer process works.** Before a
+    transfer starts, every process the workspace step started is ended and confirmed gone, as
+    a run's are, so that nothing left behind, such as a process a hook started, can write in
+    the clean repository while the credential is in use. The clean repository is mounted
+    into the sandbox only during the workspace steps, and not while the transfer works.
   - **The name a branch is published under comes from the API**, which keeps it from the
     first push. It is not read from the worktree's configuration.
   - **A clean repository is made for one operation and removed when the operation ends**,
@@ -163,20 +173,6 @@ the server ships without it.
 ## Open points
 
 Not decided.
-
-- **Proposed, to confirm: a model's commands cannot change the sandbox's own programs.** The
-  image's filesystem would be read-only, and everything in the sandbox would run as a user
-  that is not root inside it, so that only the mounted workspace, the clean repository of a
-  transfer and a temporary home can be written. Otherwise a command could replace the git or
-  the code of a workspace process to leave a hook or a configuration in a clean repository,
-  which the transfer process would then run or obey with the credential. Raised by the
-  automated review on 2026-11-19.
-- **Proposed, to confirm: nothing runs in the session's sandbox while a transfer process
-  works.** Before a transfer, every process the workspace step started would be ended and
-  confirmed gone, as a run's are, and the clean repository would be mounted into the sandbox
-  only during the workspace steps. Otherwise a process left behind, such as one a hook
-  started, could write in the clean repository while the credential is in use. Raised by the
-  automated review on 2026-11-19.
 
 - **Docker or Podman**, and whether a sandbox lives for a session or for a run. The mounts
   differ between an agent that writes and one that does not.

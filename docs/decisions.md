@@ -696,3 +696,25 @@ accepted on 2026-11-16. Inside its session, a model can still damage its worktre
 the keys of the model providers the executor uses. The server needs Docker or Podman and an
 image with what the projects need. Which of the two, whether a sandbox lives for a session or
 for a run, what it mounts, its network and its image are not decided.
+
+## The sandbox keeps a transfer out of a model's reach
+
+**Decision:** A sandbox's image is read-only, and everything in it runs as a user that is not
+root, so that only the mounted workspace, the clean repository of a transfer and a temporary
+home can be written. Nothing runs in a session's sandbox while a transfer process works: before
+a transfer, every process the workspace step started is ended and confirmed gone, as a run's
+are, and the clean repository is mounted into the sandbox only during the workspace steps.
+[`design/security.md`](../design/security.md#a-sandbox-for-each-session) states it.
+
+**Context:** Confirmed by the maintainer on 2026-11-19, after the automated review raised both
+once the workspace steps of a transfer ran in a sandbox. Without the first, a model's command
+could replace the git or the code of a workspace process and leave a hook or a configuration in
+a clean repository. Without the second, a process left behind, such as one a hook started,
+could write in the clean repository while the transfer process uses it with the credential.
+Either would reach the credential through the clean repository, which the entries "A transfer
+is three processes, one after another" and "A sandbox for each session" are meant to keep out
+of a model's reach.
+
+**Consequences:** The image has to hold everything the workspace processes and the projects'
+commands need, since nothing can be installed into it at run time. A transfer waits until the
+sandbox is empty, which the same mechanism that ends a run's processes confirms.
