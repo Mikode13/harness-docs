@@ -119,8 +119,8 @@ sequenceDiagram
 Each worktree of a session is on a branch of its own, which git requires when the worktree
 is created.
 
-- **In the worktree it has a provisional name** that carries the id of the session, so it
-  cannot collide, and it keeps that name for as long as the worktree exists.
+- **In the worktree it has a provisional name** that carries the ids of the session and of
+  its user, so it cannot collide, and it keeps that name for as long as the worktree exists.
 - **It is published under another name, chosen at the first push.** The client proposes
   one, the user confirms or changes it, and the branch is pushed under that name, which
   becomes its upstream. When a session is created nobody knows yet whether the work is a

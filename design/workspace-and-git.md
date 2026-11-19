@@ -79,7 +79,7 @@ stateDiagram-v2
 - **It is prepared late.** Nothing is cloned until a run needs it, and every run checks; see
   [create-session](../flows/create-session.md#preparing-the-workspace).
 - **It is fixed when the session is created**: the projects the user chose, each on a branch
-  of its own whose provisional name carries the session's id.
+  of its own whose provisional name carries the ids of the session and of its user.
 - **A clear changes nothing in git.** The conversation is archived; the worktrees stay on their
   branch. See [clear-and-delete](../flows/clear-and-delete.md#clear).
 - **What a deletion does to the workspace** is not decided; see
