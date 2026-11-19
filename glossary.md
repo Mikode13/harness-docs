@@ -155,7 +155,7 @@ is the only one it talks to.
 ### Sandbox
 
 The container a session's executor and workspace processes run in, with everything a model's
-commands start. It sees only its session's worktrees, and nothing of the server or of other
+commands start. It sees only its session's workspace, and nothing of the server or of other
 sessions. See [security](design/security.md#a-sandbox-for-each-session).
 
 ### Workspace process

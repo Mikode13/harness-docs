@@ -586,13 +586,13 @@ a new home.
 
 ## The harness's local store belongs to the CLI
 
-**Decision:** The harness is used in two ways that are not related for now: as a local
-library, from the CLI, and through the API on the server. Used locally, the CLI keeps the
-conversations and the configuration of agents and workflows in a store of its own, a SQLite
-database or a JSON file, in harness-cli or in a package of its own that the CLI uses, never in
-the harness. The CLI tells local use from use through the server. It runs on Linux and macOS,
-as the harness does. [harness-cli#21](https://github.com/Mikode13/harness-cli/issues/21)
-tracks it.
+**Decision:** The harness is used in two ways that are not related for now: as a local library,
+from the CLI, and through the API on the server. Used locally, the CLI keeps the conversations
+and the configuration of agents and workflows in a store of its own, a SQLite database or a JSON
+file, in harness-cli or in a package of its own that the CLI uses, never in the harness. The CLI
+tells local use from use through the server. Local use runs on Linux and macOS, as the harness
+does; the CLI used through the API also runs on Windows.
+[harness-cli#21](https://github.com/Mikode13/harness-cli/issues/21) tracks it.
 
 **Context:** Decided by the maintainer on 2026-11-19. The harness gives events and a snapshot,
 and its consumers do with them what they need: send them through an API, store them in a
@@ -646,10 +646,11 @@ data model.
 **Decision:** Every entity has an id of its own. A user has one key, a configuration of agents
 and workflows, and sessions. A session works in roots, one per project, and holds its
 conversations. Events belong to the conversation, in one numbered order, and an event a run
-reported names its run. A conversation has one run per prompt, and the agent, or workflow, and
-the model are chosen per run. What a run changed, its snapshot and its usage belong to the run.
-A restore or a push is a workspace operation with its steps. The tables belong to harness-api.
-[`design/data-model.md`](../design/data-model.md) holds it.
+reported names its run. A conversation has one run per prompt, and each run records the agent,
+or workflow, and the model it used; how they are chosen belongs to the configuration. Ids a
+client generates are unique within their user. What a run changed, its snapshot and its usage
+belong to the run. A restore or a push is a workspace operation with its steps. The tables
+belong to harness-api. [`design/data-model.md`](../design/data-model.md) holds it.
 
 **Context:** The maintainer described the entities on 2026-11-19 from the tables he is used to:
 a user with an id, a key and an optional name, and depending on it configuration, sessions,
@@ -665,12 +666,12 @@ and the migrations live in harness-api. The engine and the format of the ids are
 
 **Decision:** Everything a model can run is run in a sandbox: a container of its own for each
 session. A session's executor and its workspace processes run in it, with the commands a model
-starts and everything they run. A sandbox sees only its session's worktrees, mounted read-only
-for an agent with no tools that write. A transfer process runs outside every sandbox. A sandbox
-is rootless, never privileged and with no added capabilities, never has the container engine's
-socket mounted, and has limits on processor, memory and processes. The server keeps the
-maintainer's user and a service user that runs the API and starts the sandboxes and the
-transfer processes. [`design/security.md`](../design/security.md#a-sandbox-for-each-session)
+starts and everything they run. A sandbox sees only its session's workspace, the worktrees
+mounted read-only for an agent with no tools that write. A transfer process runs outside every
+sandbox. A sandbox is rootless, never privileged and with no added capabilities, never has the
+container engine's socket mounted, and has limits on processor, memory and processes. The server
+keeps the maintainer's user and a service user that runs the API and starts the sandboxes and
+the transfer processes. [`design/security.md`](../design/security.md#a-sandbox-for-each-session)
 states it.
 
 **Context:** Decided by the maintainer on 2026-11-19, for the MVP. With several users, the code

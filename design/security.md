@@ -45,15 +45,18 @@ credential.
 - **A session's executor and its workspace processes run in the session's sandbox.** So do
   the commands a model starts and everything they run, such as a project's tests and their
   dependencies.
-- **A sandbox sees only its session's worktrees.** Not the server's files, not another
+- **A sandbox sees only its session's workspace.** Its worktrees with what they need of their
+  repository, and, during a transfer, the clean repository of that transfer. Not the server's
+  files, not another
   session's worktrees, and not the processes of the server or of other sandboxes.
 - **An agent with no tools that write gets the worktrees mounted read-only.** The operating
   system refuses a write, as well as the harness, as the read-only user did before.
 - **A transfer process runs outside every sandbox**, on the server, with the git credential.
   No code of a model runs there.
 - **It is configured as a sandbox, not only as a container**: rootless, never privileged and
-  with no added capabilities; the container engine's socket is never mounted into it; it
-  mounts only the session's worktrees; and it has limits on processor, memory and processes.
+  with no added capabilities; the container engine's socket is never mounted into it; it mounts
+  only the session's workspace and, during a transfer, its clean repository; and it has limits
+  on processor, memory and processes.
 
 What it does not protect, and is accepted: inside its session, a model can still damage its
 own worktrees and read the keys of the model providers that the executor uses. A container
@@ -97,18 +100,17 @@ see [where a run executes](run-lifecycle.md#where-a-run-executes).
   - **To clone or fetch**, a transfer process downloads the commits into the clean
     repository, and the workspace process passes them on to the worktree's repository as a
     local path.
-  - **Every git command on a clean repository reads no configuration but that
-    repository's.** The workspace processes that make, fill and empty it run in the
-    session's sandbox, whose home a command of a model can write in, and the transfer process
-    reads it afterwards. A
+  - **Every git command on a clean repository reads no configuration but that repository's.**
+    The workspace processes that make, fill and empty it run in the session's sandbox, whose
+    home a command of a model can write in, and the transfer process reads it afterwards. A
     `~/.gitconfig` with a hooks path or an `insteadOf` would reach a push from a clean
-    repository, and an `init.templateDir` would copy a hook and a configuration into the
-    clean repository when it is made. So each of those git commands runs in an environment
-    the API sets whole, not inherited: no user or system git configuration
+    repository, and an `init.templateDir` would copy a hook and a configuration into the clean
+    repository when it is made. So each of those git commands runs in an environment the API
+    sets whole, not inherited: no user or system git configuration
     (`GIT_CONFIG_GLOBAL=/dev/null`, `GIT_CONFIG_NOSYSTEM=1`), an empty home made for that
-    operation, a `PATH` of system directories only, and the system's git by its full path,
-    which no code in a sandbox can write. The git a workspace process runs in a worktree's
-    repository needs none of this, since no process then holds the credential. See
+    operation, a `PATH` of system directories only, and the system's git by its full path, which
+    no code in a sandbox can write. The git a workspace process runs in a worktree's repository
+    needs none of this, since no process then holds the credential. See
     [learnings](../docs/learnings.md#a-clean-repository-is-not-enough-while-git-reads-the-users-home).
   - **The API runs the three steps one after another, each a process of its own.** A
     workspace process gets the clean repository ready and ends; a transfer process does

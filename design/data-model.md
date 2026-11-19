@@ -34,7 +34,10 @@ erDiagram
     RUN ||--o{ USAGE : "records"
 ```
 
-Every entity has an id of its own.
+Every entity has an id of its own. The ids a client generates, a session's and a prompt's,
+are unique only within their user, so a session or a prompt is known by its user and its id;
+anything named after a session's id, such as the provisional name of its branch, includes its
+user too. See [authenticate](../flows/authenticate.md).
 
 | Entity              | What it is                                                                                                                                                | Where it is decided                                                            |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
@@ -57,9 +60,10 @@ Every entity has an id of its own.
 - **Events belong to the conversation, not to the run.** Everything a client shows of a
   conversation takes its number from one count; some events are of no run, such as what the
   user sent or a change of state. An event that a run reported also names its run.
-- **A conversation has many runs, one for each prompt.** The agent, or the workflow, and the
-  model are chosen for each run, not for the conversation, so one conversation can mix agents
-  of different providers. That is what the harness is for.
+- **A conversation has many runs, one for each prompt.** Each run records the agent, or the
+  workflow, and the model it used. One conversation can mix agents of different providers;
+  the maintainer said so, and it is what the harness is for. How they are chosen belongs to
+  the design of the configuration, R10 of [mvp.md](../mvp.md).
 - **What a run changed belongs to the run.** A workflow is configuration: which agents and
   which stages. A run carries it out, and the files changed are the run's.
 - **An event names its author when a user wrote it**, and its run when a run reported it.

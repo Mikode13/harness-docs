@@ -118,9 +118,9 @@ sequenceDiagram
 - **A worktree starts from the repository's default branch**, unless the user takes the
   branch the CLI offers: the one the folder is on, when the remote has it. Changes in the
   folder that were not pushed do not reach the server, and the CLI says so.
-- **A worktree is on a branch of its own, with a provisional name** that carries the id of
-  the session, and keeps it. The branch is published under a name chosen at the first push;
-  see [changes-and-push](changes-and-push.md#the-name-of-the-branch).
+- **A worktree is on a branch of its own, with a provisional name** that carries the id of the
+  session and of its user, and keeps it. The branch is published under a name chosen at the
+  first push; see [changes-and-push](changes-and-push.md#the-name-of-the-branch).
 
 ### Preparing the workspace
 
@@ -149,13 +149,13 @@ sequenceDiagram
   and a transfer process uses it only to clone, fetch and push. That narrows where it can be
   read.
 - **A git operation with the credential trusts nothing in the worktree**: no hook, no
-  configuration a command could have changed, and the registered repository as its
-  destination. So git runs with the credential only in a clean repository, one the
-  workspace process makes for that operation, removes after it, and no command of a model
-  has written in. What a transfer process downloads there reaches the worktree's repository
-  as a local copy, which the workspace process makes without the credential. Every git
-  command on the clean repository, the one that makes it included, reads no git
-  configuration of the user's or the system's, and gets an environment the API sets. See [security](../design/security.md#git-credentials).
+  configuration a command could have changed, and the registered repository as its destination.
+  So git runs with the credential only in a clean repository, one the workspace process makes
+  for that operation, removes after it, and no command of a model has written in. What a
+  transfer process downloads there reaches the worktree's repository as a local copy, which the
+  workspace process makes without the credential. Every git command on the clean repository, the
+  one that makes it included, reads no git configuration of the user's or the system's, and gets
+  an environment the API sets. See [security](../design/security.md#git-credentials).
 - **No command a model starts can reach it.** A model's commands run in their session's
   sandbox, and a transfer process outside every sandbox. Before the sandbox was decided,
   code of another session could read the credential from a transfer process, and that was
