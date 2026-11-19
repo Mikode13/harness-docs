@@ -52,8 +52,9 @@ sequenceDiagram
 4. **The API looks at the prompt's id first.** A prompt whose id it already has, from the
    same user, is the same prompt sent again: the API answers with the acceptance and the run
    it gave the first time, before any other check but authentication, so a retry is never
-   rejected as busy. A prompt id or a session id that belongs to another user is rejected;
-   see [authenticate](authenticate.md).
+   rejected as busy. The ids a client generates are unique for each user, so another
+   user's prompt or session with the same id is never found; see
+   [authenticate](authenticate.md).
 5. **Then the API looks for the session.** There are three cases:
    - it does not exist: the API creates it, owned by the user, and goes on;
    - it exists: the prompt is one more prompt of that session, as in

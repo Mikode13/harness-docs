@@ -27,11 +27,15 @@ sequenceDiagram
 3. **The request is that user's.** What it reads and changes is the user's, and what it
    costs is recorded for that user.
 4. **Every id a request names must be the user's.** A session, a conversation, a prompt, a
-   run or an ask that belongs to another user is rejected, the same way as one
-   that does not exist, so a request learns nothing about other users. This holds for every
-   flow: sending a prompt, answering an ask, clearing, deleting, restoring, pushing and
+   run or an ask must belong to a session the user owns; once a session can have members, to
+   one the user is a member of. Anything else is rejected. This holds for every flow:
+   sending a prompt, answering an ask, clearing, deleting, restoring, pushing and
    subscribing.
-5. **A user's devices share that user's key.** There is no key per device.
+5. **The ids a client generates are unique for each user.** The client generates the ids of a
+   session and of a prompt, so two users could send the same one. Each user's ids are apart
+   from every other user's: the same id from two users names two things, never a conflict,
+   and a request cannot learn whether an id exists for another user.
+6. **A user's devices share that user's key.** There is no key per device.
 
 The server is reached only from a private network in the first slice; see
 [security](../design/security.md#a-private-network).
