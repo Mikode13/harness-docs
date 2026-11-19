@@ -178,4 +178,4 @@ Each is listed, and stays open, in the document the link points to.
 - What reconciling a restore or a push cut short takes: [restart](../flows/restart.md#open-points).
 - What a deletion does to the workspace:
   [clear-and-delete](../flows/clear-and-delete.md#open-points).
-- When the accepted risk ends: [security](security.md#open-points).
+- What a sandbox mounts, its network and its image: [security](security.md#open-points).

@@ -636,10 +636,10 @@ one; it will be rare, so the model only keeps the door open.
 - **Users with passwords**, more than a few known people need.
 
 **Consequences:** The MVP is no longer for one person: its constraint now names a few people.
-The agent users of the operating system and the git credential, which is the maintainer's
-account, are shared by every user; which projects each user may work in, and what the
-accepted risk on the credential means with other people's sessions, are open points of the
-data model.
+The git credential, which is the maintainer's account, is shared by every user, and which
+projects each user may work in is an open point of the data model. The agent users of the
+operating system were shared too, until the entry "A sandbox for each session" gave each
+session a sandbox of its own and closed the accepted risk on the credential.
 
 ## The shape of the data model
 
