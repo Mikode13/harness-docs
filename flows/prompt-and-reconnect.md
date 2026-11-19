@@ -54,7 +54,8 @@ sequenceDiagram
    client gets only an acknowledgement, with the run. It does not wait for the run to end.
 3. **The client subscribes to the conversation's events.** Everything else arrives through
    that subscription, the final answer included.
-4. **The API starts the executor of the run**, as a child process, once the session's
+4. **The API starts the executor of the run** in the session's sandbox, with the worktrees
+   read-only for an agent that does not write, once the session's
    workspace is ready (see [create-session](create-session.md)), and gives it the snapshot
    the run before left, if there is one. The executor restores the agent from it,
    so the agent continues from what it already knew, runs the harness and reports each event

@@ -71,8 +71,8 @@ sequenceDiagram
    downloads each project into it; a workspace process clones from it, adds a worktree for
    the session and removes the clean repository. The API says what is happening with
    events of state, such as that it is cloning.
-8. **The API starts the executor of the run**, as the user its agent calls for: an agent
-   that only reads gets a workspace it did not have to write.
+8. **The API starts the executor of the run** in the session's sandbox, with the worktrees
+   read-only for an agent that only reads: it gets a workspace it did not have to write.
 9. **The run goes on** as `running`, as in [prompt-and-reconnect](prompt-and-reconnect.md).
 
 ## Rules

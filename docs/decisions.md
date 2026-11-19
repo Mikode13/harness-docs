@@ -656,8 +656,9 @@ belong to harness-api. [`design/data-model.md`](../design/data-model.md) holds i
 a user with an id, a key and an optional name, and depending on it configuration, sessions,
 runs, events, plans and memories; a run with its workflow and the files it changed. Claude
 fitted it to what the flows had settled: events in one order per conversation, the user's
-message as an event, and a workflow as configuration that a run carries out. He did not
-object, and added the user's key, one owner per session and traceability.
+message as an event, and a workflow as configuration that a run carries out. He answered without
+objecting, which he has said means agreement, and added the user's key, one owner per session
+and traceability.
 
 **Consequences:** The conceptual model is product-level and lives here; the schema, the indexes
 and the migrations live in harness-api. The engine and the format of the ids are not decided.

@@ -165,7 +165,7 @@ Not decided. Each is an input to the next design steps.
   task, with `queued` where this document says `setting_up`, and without `cancelling`.
 - **[#6](https://github.com/Mikode13/harness-api/issues/6)** describes "a separately
   runnable backend executor" that claims queued tasks from PostgreSQL. Here the API starts
-  an executor per run as its child, and the executor does not reach the database. The issue
+  an executor per run in the session's sandbox, and the executor does not reach the database. The issue
   keeps its text until it is refined. Its other rules stand: a cancellation waits for the
   commands to end before it reports `cancelled`, a dead executor's work becomes
   `interrupted`, and a started prompt is never replayed by itself.
