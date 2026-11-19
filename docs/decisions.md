@@ -524,11 +524,8 @@ workspace process finishes: it clones or fetches from the clean repository and a
 or records the upstream of what was pushed, and removes the clean repository. They hand over
 nothing but the clean repository's path, which the API names for that operation, and each tells
 the API how its step ended. The API stores each step before it starts its process, and how it
-ended. Nothing runs in the session's sandbox while the transfer works: what the first step
-started is ended and confirmed gone, and the clean repository is mounted into the sandbox only
-for the workspace steps, a requirement the automated review added on 2026-11-19 once the steps
-ran in a sandbox. A clean repository has a new path each time, outside every worktree; one that
-a failure or a restart left behind is removed, never reused.
+ended. A clean repository has a new path each time, outside every worktree; one that a failure
+or a restart left behind is removed, never reused.
 
 **Context:** The maintainer left the design to Claude on 2026-11-17, after the entry "Only a
 transfer process holds the git credential" left open how the two processes hand over the clean
@@ -672,9 +669,7 @@ session. A session's executor and its workspace processes run in it, with the co
 starts and everything they run. A sandbox sees only its session's workspace, the worktrees
 mounted read-only for an agent with no tools that write. A transfer process runs outside every
 sandbox. A sandbox is rootless, never privileged and with no added capabilities, never has the
-container engine's socket mounted, and has limits on processor, memory and processes. Its image is
-read-only and everything in it runs as a user that is not root, so a model's command cannot
-replace the git or the code that a workspace process runs. The server
+container engine's socket mounted, and has limits on processor, memory and processes. The server
 keeps the maintainer's user and a service user that runs the API and starts the sandboxes and
 the transfer processes. [`design/security.md`](../design/security.md#a-sandbox-for-each-session)
 states it.

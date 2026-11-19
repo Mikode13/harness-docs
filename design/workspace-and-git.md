@@ -37,7 +37,7 @@ flowchart LR
 ```
 
 - **A sandbox** is the container a session's executor and workspace processes run in. It sees
-  only its session's workspace and, during the workspace steps of a transfer, its clean
+  only its session's workspace and, during a transfer, its clean
   repository. See [security](security.md#a-sandbox-for-each-session).
 - **A worktree** is a copy of a project's repository, on a branch of its own. A workspace has
   one per project, its [roots](../glossary.md#root).
@@ -94,9 +94,9 @@ stateDiagram-v2
 
 Every clone, fetch and push is three processes the API starts one after another, each ending
 before the next starts. They hand over only the clean repository's path, which the API names,
-and the API stores each step before it starts it. Before the transfer step, everything the
-first step started in the sandbox is ended and confirmed gone, and the clean repository is
-mounted into the sandbox only for the workspace steps.
+and the API stores each step before it starts it. What keeps a model's code from the clean
+repository while a transfer works is proposed and not confirmed; see the
+[open points of security](security.md#open-points).
 
 ### Preparing a workspace
 
