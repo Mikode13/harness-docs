@@ -65,7 +65,8 @@ sequenceDiagram
 6. **The API gives the session its default title**, stores what the user sent, creates the
    run as `setting_up` and acknowledges.
 7. **The workspace is prepared in three steps**, before the run's executor, each a process
-   the API starts as the writing user and that ends before the next. A workspace process
+   the API starts and that ends before the next: the workspace processes in the session's
+   sandbox, the transfer process outside it. A workspace process
    gets a clean repository ready for each project; a transfer process, with the credential,
    downloads each project into it; a workspace process clones from it, adds a worktree for
    the session and removes the clean repository. The API says what is happening with
@@ -126,9 +127,9 @@ sequenceDiagram
 - **A workspace process prepares it, inside the run and before the executor starts.** The
   API does not touch the disk. The run is `setting_up` meanwhile, and the user sees what is
   happening through events of state.
-- **It always runs as the writing user**, whatever the run's agent. The executor of an agent
-  with no tools that write runs as the read-only user, which cannot clone or add a worktree
-  and is never given the credential.
+- **It runs in the session's sandbox with the worktrees writable**, whatever the run's
+  agent. The executor of an agent with no tools that write gets them read-only, and is never
+  given the credential.
 - **Every run checks, not only the first.** A run whose session has projects and no
   workspace ready has it prepared. So a session whose first run failed while cloning tries
   again with the next prompt, and a workspace that was lost is rebuilt.
@@ -155,19 +156,11 @@ sequenceDiagram
   as a local copy, which the workspace process makes without the credential. Every git
   command on the clean repository, the one that makes it included, reads no git
   configuration of the user's or the system's, and gets an environment the API sets. See [security](../design/security.md#git-credentials).
-- **A command a model starts could still reach it, and that is accepted for now.** Only a
-  transfer process holds the credential, and it works for a session only while that session
-  has no executor. But the transfer process of one session and code a model left in another
-  session run as the same user at the same time, so that code could read the credential
-  from that process: a command the model starts, for example after a prompt injection, the
-  code of a dependency that a project's tests run, or a hook the model left that its
-  session's workspace process runs. The
-  maintainer accepts this risk for the first slice, with a credential that reaches only the
-  registered repositories. It is not the intended design and will change: the transfer
-  process will run as a user the model's commands do not run as, and that user will make
-  and own the clean repository. What a command leaves in
-  its own worktree for a later push to run is not part of the accepted risk; the rule
-  above closes it. See [security](../design/security.md#git-credentials).
+- **No command a model starts can reach it.** A model's commands run in their session's
+  sandbox, and a transfer process outside every sandbox. Before the sandbox was decided,
+  code of another session could read the credential from a transfer process, and that was
+  accepted for the first slice. See
+  [security](../design/security.md#the-accepted-risk-closed-by-the-sandbox).
 
 ## Open points
 
@@ -177,12 +170,6 @@ Not decided.
   deliberate step either way, since the credential has to reach that repository.
 - **Whether a session created with "none" can get a project later.** An ask that stops the
   run and asks where to work was considered, and left for later.
-- **When the accepted risk on the credential ends.** Doing it before the product reads the
-  web (R14 of [mvp.md](../mvp.md)), which is where an injection would come from, was
-  proposed. It would not cover the code that a model's commands run, such as the
-  dependencies of a project's tests, which is there from the first slice. How the
-  transfer process's user makes the clean repository and brings a branch into it from the
-  worktree's repository is not designed.
 - **What a rebuilt workspace starts from.** When the worktree of a session is lost and a run
   prepares it again: the session's own branch if the clone or the remote still has it, or
   the default branch, and how the user learns that work that was not pushed is gone.

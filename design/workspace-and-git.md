@@ -43,18 +43,18 @@ flowchart LR
 
 ## Who does what
 
-| Process           | Started by | Runs as                   | Holds the credential | Runs git in                          |
-| ----------------- | ---------- | ------------------------- | -------------------- | ------------------------------------ |
-| Executor          | The API    | The run's agent user      | Never                | The worktree, through the model      |
-| Workspace process | The API    | The writing user          | Never                | The worktree, and a clean repository |
-| Transfer process  | The API    | The writing user, for now | Yes, for one step    | A clean repository only              |
+| Process           | Started by | Runs as                  | Holds the credential | Runs git in                          |
+| ----------------- | ---------- | ------------------------ | -------------------- | ------------------------------------ |
+| Executor          | The API    | In the session's sandbox | Never                | The worktree, through the model      |
+| Workspace process | The API    | In the session's sandbox | Never                | The worktree, and a clean repository |
+| Transfer process  | The API    | Outside every sandbox    | Yes, for one step    | A clean repository only              |
 
 - **An executor** runs the harness for a run. Its agent works in the worktree, and the
   commands the model starts run there.
 - **A workspace process** prepares the workspace inside a run, before the executor, and outside
   any run restores code and does the local parts of a push.
 - **A transfer process** does one clone, fetch or push with the credential, in a clean
-  repository, with nothing of the writing user's: no user or system git configuration, an
+  repository, with nothing of the sandbox's home: no user or system git configuration, an
   empty home, a fixed `PATH` and the system's git. See
   [security](security.md#git-credentials).
 - **No two of them work on a session at once.** A restore or a push is rejected while a run of
@@ -141,7 +141,7 @@ sequenceDiagram
 
 ## Why it is built this way
 
-A command a model starts runs as the writing user and can leave things for git to run later: a
+A command a model starts runs in its session's sandbox and can leave things for git to run later: a
 hook, a changed configuration, a file in the user's home. Each rule closes one way that was
 found, most of them reproduced:
 
@@ -154,12 +154,10 @@ found, most of them reproduced:
 | An `init.templateDir` copied into a new repository         | The clean repository is made in that same environment           |
 | A clean repository kept and written in                     | A new one for each operation, removed after it, never reused    |
 
-The evidence is in [learnings](../docs/learnings.md). What is left is accepted for now: code
-of another session, running while a transfer process works and as the same user, could read
-the credential from that process. It can be a command its model starts, or a hook its model
-left that its own workspace process runs. It ends when the transfer process runs as another user
-that also makes and owns the clean repository; when is not decided. See
-[an accepted risk](security.md#an-accepted-risk-for-now).
+The evidence is in [learnings](../docs/learnings.md). Code of another session, which could
+read the credential from a transfer process while both ran as the same user, was an accepted
+risk until the sandbox of each session closed it; see
+[security](security.md#the-accepted-risk-closed-by-the-sandbox).
 
 ## Open points
 

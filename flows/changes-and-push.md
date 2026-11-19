@@ -77,8 +77,8 @@ sequenceDiagram
 ```
 
 - **A workspace process and a transfer process push**, as they prepare a workspace: both
-  started by the API, as the writing user, and only the transfer process with the
-  credential.
+  started by the API, the workspace process in the session's sandbox and the transfer
+  process outside it, with the credential.
 - **A push is rejected as busy while a run of the session is not ended**, as a restore is.
   Nothing is queued. A run that is working may be committing, and one piece of work at a
   time uses a workspace; see the [run lifecycle](../design/run-lifecycle.md#rules).
@@ -110,9 +110,9 @@ sequenceDiagram
   run there, and the upstream is what the harness reads to refuse a reset of commits that
   were pushed.
 - **They are commands of the client, not commands a model runs.** So they happen when the
-  user asks, and no model decides to push. That a command a model starts could still reach
-  the credential is a risk accepted for now; see
-  [security](../design/security.md#git-credentials).
+  user asks, and no model decides to push. No command a model starts can reach the
+  credential: it runs in a sandbox, and the transfer process outside; see
+  [security](../design/security.md#a-sandbox-for-each-session).
 
 ### The name of the branch
 

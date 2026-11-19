@@ -99,9 +99,6 @@ Not decided.
 - **Which projects each user may work in.** The git credential is the maintainer's own
   account, so a push by another user is made as the maintainer; see
   [security](security.md#git-credentials).
-- **Other users and the accepted risk.** The agent users of the operating system are shared by
-  every user, so the accepted risk on the git credential now reaches the sessions of other
-  people; see [security](security.md#an-accepted-risk-for-now).
 - **Memories and plans.** They belong to a user, and to a group once there are groups. They are
   R12 of [mvp.md](../mvp.md), and are designed with their flows.
 - **Members of a session.** How several people take part in one conversation, and whose

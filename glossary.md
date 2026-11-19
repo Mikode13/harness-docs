@@ -149,14 +149,20 @@ latency, recorded for the user whose request started it. See
 
 ### Executor
 
-The process that runs the harness for one run. The API starts it as a child process and is
-the only one it talks to.
+The process that runs the harness for one run. The API starts it in the session's sandbox and
+is the only one it talks to.
+
+### Sandbox
+
+The container a session's executor and workspace processes run in, with everything a model's
+commands start. It sees only its session's worktrees, and nothing of the server or of other
+sessions. See [security](design/security.md#a-sandbox-for-each-session).
 
 ### Workspace process
 
 A process the API starts to work on a session's workspace outside a run's executor: it
 prepares the workspace inside a run, before the run's executor starts, and outside any run it
-restores code and pushes a branch. It runs as the writing user, talks only to the API, and is
+restores code and pushes a branch. It runs in the session's sandbox, talks only to the API, and is
 never given the git credential: a clone, a fetch or a push it needs is done by a transfer
 process. An operation that needs one has a workspace process before it and another after it.
 
@@ -167,20 +173,20 @@ agent.
 
 A process the API starts for one clone, fetch or push, between the workspace process that
 gets a clean repository ready and the one that finishes, and the only process that is given
-the git credential. It runs git only in a clean repository, as the writing user, with no
+the git credential. It runs git only in a clean repository, outside every sandbox, with no
 user or system git configuration and an environment the API sets, and ends when the transfer
 does. It runs nothing else: no git command
 in a worktree's repository and no agent. See [security](design/security.md#git-credentials).
 
 ### Clean repository
 
-A git repository that a workspace process makes for one operation with the git credential
-and removes when the operation ends, and that no command a model started has written in.
-A transfer process uses the credential only there. The workspace process brings a branch
-into it from a worktree's repository to be pushed, and passes on what was downloaded into it
-to the worktree's repository. Every git command on it runs with no user or system git
-configuration and an environment the API sets, so that nothing of the writing user's home is
-copied into it. See [security](design/security.md#git-credentials).
+A git repository that a workspace process makes for one operation with the git credential and
+removes when the operation ends, and that no command a model started has written in. A transfer
+process uses the credential only there. The workspace process brings a branch into it from a
+worktree's repository to be pushed, and passes on what was downloaded into it to the worktree's
+repository. Every git command on it runs with no user or system git configuration and an
+environment the API sets, so that nothing a model's command left in the sandbox's home is copied
+into it. See [security](design/security.md#git-credentials).
 
 ### Event
 

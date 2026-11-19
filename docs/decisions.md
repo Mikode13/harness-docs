@@ -48,6 +48,9 @@ decided.
 
 ## A run executes in a child process of the API, one per run
 
+_Where it runs is superseded by the entry "A sandbox for each session": the executor runs in the
+session's sandbox. One executor per run, talking only to the API, stands._
+
 **Decision:** The API starts one executor per run, as a child process. The executor runs the
 harness for that run, talks only to the API over a local channel, and does not connect to the
 database. The API is the only writer of the database and of a run's state.
@@ -166,7 +169,7 @@ they are out for now.
 ## One API key, and three users of the operating system
 
 _The one key is superseded by the entry "An API key for each user, kept as a hash and able to
-be disabled"; the users of the operating system stand._
+be disabled", and the two agent users by the entry "A sandbox for each session"._
 
 **Decision:** The API accepts one key of the product's own, shared by the maintainer's
 devices, and only that key works. On the server the product runs as three users besides the
@@ -297,6 +300,9 @@ The entry "Only a transfer process holds the git credential" takes the credentia
 the workspace process.
 
 ## A model's command can reach the git credential: accepted for now, to be changed
+
+_Closed by the entry "A sandbox for each session": no code of a model runs outside a sandbox,
+and a transfer process runs outside every sandbox._
 
 **Decision:** For the first slice, the risk that a command a model starts reads the git
 credential is accepted. It is limited by a credential that reaches only the registered
@@ -654,3 +660,38 @@ object, and added the user's key, one owner per session and traceability.
 
 **Consequences:** The conceptual model is product-level and lives here; the schema, the indexes
 and the migrations live in harness-api. The engine and the format of the ids are not decided.
+
+## A sandbox for each session
+
+**Decision:** Everything a model can run is run in a sandbox: a container of its own for each
+session. A session's executor and its workspace processes run in it, with the commands a model
+starts and everything they run. A sandbox sees only its session's worktrees, mounted read-only
+for an agent with no tools that write. A transfer process runs outside every sandbox. A sandbox
+is rootless, never privileged and with no added capabilities, never has the container engine's
+socket mounted, and has limits on processor, memory and processes. The server keeps the
+maintainer's user and a service user that runs the API and starts the sandboxes and the
+transfer processes. [`design/security.md`](../design/security.md#a-sandbox-for-each-session)
+states it.
+
+**Context:** Decided by the maintainer on 2026-11-19, for the MVP. With several users, the code
+of one user's session ran as the same agent user as everyone else's, and could read another
+user's worktrees, the processes of their runs, the keys of the model providers in them, and
+the git credential during a transfer. A pair of operating-system users for each product user
+was proposed first, and cost less; the sandbox was chosen because it also closes the accepted
+risk on the git credential and gives a way to end everything a run started.
+
+**Alternatives considered:**
+
+- **A read-only and a writing user of the operating system for each user of the product.**
+  Cheaper today, and it separates users, but it leaves the sessions of one user able to reach
+  each other, the risk on the credential open, and the ending of a process tree to be solved.
+- **A virtual machine for each session**, such as with gVisor or microVMs. It isolates more,
+  since a container shares the server's kernel, and costs more. It is looked at if the product
+  opens to people the maintainer does not know.
+
+**Consequences:** It replaces the two agent users decided on 2026-11-15, the executor as a
+plain child process of the API decided on 2026-11-14, and the risk on the git credential
+accepted on 2026-11-16. Inside its session, a model can still damage its worktrees and read
+the keys of the model providers the executor uses. The server needs Docker or Podman and an
+image with what the projects need. Which of the two, whether a sandbox lives for a session or
+for a run, what it mounts, its network and its image are not decided.
