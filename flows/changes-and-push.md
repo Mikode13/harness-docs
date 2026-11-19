@@ -12,7 +12,8 @@ never does.
 ## What the harness already does
 
 The product reuses these as they are, as R09 requires, and defines no second history of the
-code.
+code. It keeps in its database a copy of what the history says each run changed, for clients
+to read; the history stays the only one that restores.
 
 - **Commit.** The harness commits only when the user answers that it should. By default it
   asks once, when the last phase of a run is approved. A committer agent writes the message.
@@ -35,10 +36,19 @@ The harness's question about committing reaches the clients as any other ask, an
 answered from any device; see [ask-and-answer](ask-and-answer.md). The product uses the
 harness's default, one question at the end of the run.
 
-### Seeing changes and restoring are commands of the client
+### Seeing changes reads the database
 
-- **The user asks from a client.** For a restore, the API starts a workspace process, which
-  calls the harness's history.
+- **A client reads a run's changes from the database**: the files it changed and their diff,
+  kept for each run; see [data-model](../design/data-model.md). It touches no workspace, so
+  it can be read at any time, while a run works included.
+- **How a run's changed files reach the database is not decided.** The executor reporting
+  them from the harness's history when the run ends was proposed; see the
+  [open points](#open-points).
+
+### Restoring is a command of the client
+
+- **The user asks from a client.** The API starts a workspace process, which calls the
+  harness's history.
 - **Only while no run of the session is active**, since one writer works in a workspace at a
   time; see the [run lifecycle](../design/run-lifecycle.md#rules). While a restore or a push
   works, the session takes no prompt, and neither a clear nor a deletion.
@@ -146,6 +156,9 @@ is created.
 ## Open points
 
 Not decided.
+
+- **How a run's changed files and their diff reach the database.** The executor could report
+  them from the harness's history when the run ends, with its final answer and snapshot.
 
 - **A bound on a restore or a push that hangs.** Neither can be cancelled, and while one
   works its session takes no prompt, clear or deletion. A transfer that stalls on the git
