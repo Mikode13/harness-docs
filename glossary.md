@@ -13,15 +13,17 @@ flowchart TD
     workspace --> root[Root]
     session --> active[Active conversation]
     session -.-> archived[Archived conversations]
+    active --> event[Event]
     active --> prompt[Prompt]
     prompt --> run[Run]
-    run --> event[Event]
+    run -.-> event
 ```
 
-A user owns sessions. A session may have a workspace, of one or more roots, and has one
-active conversation and any number of archived ones. Each prompt sent in a conversation
-starts a run, so a conversation has many runs, and a run reports events. The context is not
-in the diagram: it is what a run is given from the conversation on a call to the model.
+A user owns sessions. A session may have a workspace, of one or more roots, and has one active
+conversation and any number of archived ones. Each prompt sent in a conversation starts a run,
+so a conversation has many runs. Events belong to the conversation, in one order: a run reports
+most of them, and some, such as what the user sent, are of no run. The context is not in the
+diagram: it is what a run is given from the conversation on a call to the model.
 
 ## Settled terms
 
@@ -52,8 +54,8 @@ It is not the harness's `Session`; see the last section.
 
 ### Conversation
 
-The set of messages inside a session: what the user sends and the events the API
-returns. It is always whole: nothing in it is dropped or rewritten to save context. A session
+The set of messages inside a session: its events, in one order, what the user sends
+included. It is always whole: nothing in it is dropped or rewritten to save context. A session
 has one active conversation at a time.
 
 It is not the context. The context may summarize the conversation; the conversation stays
@@ -182,8 +184,10 @@ copied into it. See [security](design/security.md#git-credentials).
 
 ### Event
 
-What the API returns while a run works, inside the conversation: a tool's activity, a text
-answer, an ask, or anything else it reports. Every event is stored in the database.
+What a client shows of a conversation, in its order: what the user sent, and what a run
+reports, such as a tool's activity, a text answer or an ask, or a change of state. It belongs
+to the conversation, and names the run that reported it or the user who wrote it when there
+is one. Every event is stored in the database; see [events](design/events.md).
 
 Whether the messages the model needs are kept as a record apart from the events is an open
 point below.
