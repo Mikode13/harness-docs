@@ -64,7 +64,9 @@ credential.
   them to leave a hook or a configuration in a clean repository.
 
 What it does not protect, and is accepted: inside its session, a model can still damage its
-own worktrees and read the keys of the model providers that the executor uses. A container
+own worktrees and read the keys of the model providers that the executor uses. Those are the
+keys of the session's own user, since each user brings their own; see
+[each user's credentials](#each-users-credentials). A container
 shares the server's kernel, so it isolates less than a virtual machine; for a few people the
 maintainer knows that is enough, and something stronger is looked at if the product opens
 to people he does not know.
@@ -76,6 +78,18 @@ starts the sandboxes and the transfer processes. The service user can use the da
 sandbox can read the database credentials, and the executor does not connect to the database;
 see [where a run executes](run-lifecycle.md#where-a-run-executes).
 
+## Each user's credentials
+
+Each user brings their own credentials: a git credential and the keys of the model providers,
+such as OpenAI and Anthropic. The maintainer decided it on 2026-11-19. A run uses the
+credentials of the user whose session it is, so a model can reach, at most, the keys of the
+user it works for, and a push is made as that user.
+
+- **The API keeps them in the database**, encrypted; how is an open point.
+- **They never enter a worktree, a clean repository or a file in a sandbox.** The keys of the
+  model providers reach the executor of a run of their user; the git credential reaches only
+  a transfer process.
+
 ## Git credentials
 
 - **The API holds the credential and passes it only to a transfer process**, never to an
@@ -83,11 +97,12 @@ see [where a run executes](run-lifecycle.md#where-a-run-executes).
   workspace process prepares a workspace, restores code and pushes, in the session's sandbox.
   When it needs a clone, a fetch or a push, the API starts a transfer process for that one
   step, outside every sandbox, with the credential.
-- **For now it is the maintainer's own account.** A separate git account only for agents is
-  the aim, and waits because of its cost.
-- **The credential is never written to disk** nor to the git configuration of a worktree,
-  and a transfer process uses it only to clone, fetch and push. That narrows where it can be
-  read.
+- **It is the user's own**, a fine-grained personal access token of their git account; see
+  [each user's credentials](#each-users-credentials). A separate git account only for
+  agents was the maintainer's aim for his own, and waits because of its cost.
+- **The credential is never written to disk outside the database**, nor to the git configuration
+  of a worktree, and a transfer process uses it only to clone, fetch and push. That narrows
+  where it can be read.
 - **A git operation with the credential trusts nothing in the worktree.** A command a model
   started could have left a hook there, or changed the repository's configuration: where it
   pushes to, a helper that is handed the credential. So such an operation runs no hook,
@@ -173,6 +188,10 @@ the server ships without it.
 ## Open points
 
 Not decided.
+
+- **How the API encrypts the users' credentials**, and where the key that decrypts them is
+  kept, apart from the database.
+- **How a user gives and changes their credentials.**
 
 - **Docker or Podman**, and whether a sandbox lives for a session or for a run. The mounts
   differ between an agent that writes and one that does not, and the clean repository is

@@ -424,6 +424,9 @@ its conversations. How a project is registered is not decided.
 
 ## A fine-grained token on a private network, for the first slice
 
+_Whose token it is is superseded by the entry "Each user brings their own credentials": each
+user's own fine-grained token, not the maintainer's for everyone. The private network stands._
+
 **Decision:** The git credential is a fine-grained personal access token of the maintainer's
 account, limited to the registered repositories, with what pushing and opening a pull request
 need. The workspace process uses it to clone, fetch and push, and the API uses it to open a
@@ -655,8 +658,9 @@ one; it will be rare, so the model only keeps the door open.
 - **Users with passwords**, more than a few known people need.
 
 **Consequences:** The MVP is no longer for one person: its constraint now names a few people.
-The git credential, which is the maintainer's account, is shared by every user, and which
-projects each user may work in is an open point of the data model. The agent users of the
+The git credential was the maintainer's account, shared by every user, until the entry "Each
+user brings their own credentials"; which projects each user may work in is an open point of
+the data model. The agent users of the
 operating system were shared too, until the entry "A sandbox for each session" gave each
 session a sandbox of its own and closed the accepted risk on the credential.
 
@@ -741,3 +745,28 @@ of a model's reach.
 **Consequences:** The image has to hold everything the workspace processes and the projects'
 commands need, since nothing can be installed into it at run time. A transfer waits until the
 sandbox is empty, which the same mechanism that ends a run's processes confirms.
+
+## Each user brings their own credentials
+
+**Decision:** Each user brings their own credentials: a git credential, a fine-grained personal
+access token of their own account, and the keys of the model providers, such as OpenAI and
+Anthropic. The API keeps them in the database, encrypted. A run uses the credentials of the user
+whose session it is: the keys reach that run's executor, and the git credential only a transfer
+process. [`design/security.md`](../design/security.md#each-users-credentials) states it.
+
+**Context:** Decided by the maintainer on 2026-11-19. The automated review pointed out that,
+inside its session, a model can read the keys of the model providers that the executor uses,
+and that with several users those keys were the maintainer's for everyone. With each user's
+own, a model reaches at most the keys of the user it works for, and a push is made as that
+user. In the same message he did not object to the shape of the data model, which he has said
+means agreement.
+
+**Alternatives considered:**
+
+- **The maintainer's keys for everyone, with the sandbox's network limited.** It narrows where
+  a leaked key can be sent, but every user's session could still read the maintainer's keys.
+
+**Consequences:** The credentials are now kept in the database rather than only held by the
+API, so how they are encrypted, and where the key that decrypts them lives, has to be designed.
+A user cannot work until they have given their credentials. Which repositories a user reaches
+follows from their own token.

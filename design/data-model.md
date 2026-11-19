@@ -17,6 +17,7 @@ nothing: it gives its consumers events and a snapshot, and each stores what it n
 ```mermaid
 erDiagram
     USER ||--|| API_KEY : "has"
+    USER ||--o{ CREDENTIAL : "brings"
     USER ||--o{ CONFIGURATION : "keeps"
     USER ||--o{ SESSION : "owns"
     USER ||--o{ USAGE : "spends"
@@ -43,6 +44,7 @@ user too. See [authenticate](../flows/authenticate.md).
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | User                | A person who may use the product. An id and an optional name.                                                                                                       | [Users and keys](#users-and-keys)                                              |
 | API key             | The key a user's requests carry. One per user, kept as a hash, and it can be disabled.                                                                              | [security](security.md#an-api-key-for-each-user)                               |
+| Credential          | A user's own git credential or key of a model provider, kept encrypted. A run uses its user's.                                                                      | [security](security.md#each-users-credentials)                                 |
 | Configuration       | A user's agents and workflows, so that they are set without code.                                                                                                   | Its content is not designed.                                                   |
 | Project             | A repository registered on the server.                                                                                                                              | [create-session](../flows/create-session.md#which-projects-a-session-works-in) |
 | Session             | What a user lists, opens, renames and deletes. Its title, and whether the user set it, so that nothing replaces it; its projects; and whether deleted.              | [create-session](../flows/create-session.md)                                   |
@@ -103,9 +105,9 @@ Not decided.
   [authenticate](../flows/authenticate.md).
 - **How the maintainer creates, changes and disables a key.** Through the API was described;
   the commands are not designed.
-- **Which projects each user may work in.** The git credential is the maintainer's own
-  account, so a push by another user is made as the maintainer; see
-  [security](security.md#git-credentials).
+- **Which projects each user may work in.** Each user's git credential reaches the
+  repositories that user's account can; how a project is registered for a user is not
+  decided.
 - **Memories and plans.** They belong to a user, and to a group once there are groups. They are
   R12 of [mvp.md](../mvp.md), and are designed with their flows.
 - **Members of a session.** How several people take part in one conversation, and whose

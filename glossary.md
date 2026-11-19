@@ -129,6 +129,12 @@ The execution a prompt starts, inside a conversation. A conversation has many ru
 prompt, and at most one of them works at a time. A run has a state;
 [run-lifecycle.md](design/run-lifecycle.md) defines the states.
 
+### Credential
+
+A user's own git credential, or key of a model provider such as OpenAI or Anthropic. Each
+user brings their own, the API keeps them encrypted, and a run uses its user's. See
+[security](design/security.md#each-users-credentials).
+
 ### Configuration
 
 A user's agents and workflows, kept so that they are set without code.

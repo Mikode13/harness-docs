@@ -142,12 +142,11 @@ sequenceDiagram
 
 - **The API holds the credential and passes it only to a transfer process**, never to an
   executor nor to the workspace process, which runs git in the worktree's repository.
-- **For now it is the maintainer's own account**, through a fine-grained personal access
-  token limited to the registered repositories. A separate git account only for agents is
-  the aim, and waits because of its cost.
-- **The credential is never written to disk** nor to the git configuration of a worktree,
-  and a transfer process uses it only to clone, fetch and push. That narrows where it can be
-  read.
+- **It is the session's user's own**, a fine-grained personal access token of their git
+  account; see [security](../design/security.md#each-users-credentials).
+- **The credential is never written to disk outside the database** nor to the git configuration
+  of a worktree, and a transfer process uses it only to clone, fetch and push. That narrows
+  where it can be read.
 - **A git operation with the credential trusts nothing in the worktree**: no hook, no
   configuration a command could have changed, and the registered repository as its destination.
   So git runs with the credential only in a clean repository, one the workspace process makes
