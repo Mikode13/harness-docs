@@ -47,8 +47,8 @@ credential.
   dependencies.
 - **A sandbox sees only its session's workspace.** Its worktrees with what they need of their
   repository, and, during a transfer, the clean repository of that transfer. Not the server's
-  files, not another
-  session's worktrees, and not the processes of the server or of other sandboxes.
+  files, not another session's worktrees, and not the processes of the server or of other
+  sandboxes.
 - **An agent with no tools that write gets the worktrees mounted read-only.** The operating
   system refuses a write, as well as the harness, as the read-only user did before.
 - **A transfer process runs outside every sandbox**, on the server, with the git credential.
