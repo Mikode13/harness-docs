@@ -174,4 +174,3 @@ Not decided.
   plan, as the harness allows, and where that is chosen.
 - **What happens to a session's worktree and branch once its pull request is merged.** It
   belongs with the flow for clearing and deleting; see [the list of flows](README.md).
-- **Where the changes a client sees are read from.** It is decided with the database.

@@ -649,8 +649,11 @@ conversations. Events belong to the conversation, in one numbered order, and an 
 reported names its run. A conversation has one run per prompt, and each run records the agent,
 or workflow, and the model it used; how they are chosen belongs to the configuration. Ids a
 client generates are unique within their user. What a run changed, its snapshot and its usage
-belong to the run. A restore or a push is a workspace operation with its steps. The tables
-belong to harness-api. [`design/data-model.md`](../design/data-model.md) holds it.
+belong to the run. The files a run changed and their diff are kept in the database, so a client
+reads a run's changes from there, while undoing them stays with the harness's history next to
+the worktree, as the maintainer accepted on 2026-11-14. A restore or a push is a workspace
+operation with its steps. The tables belong to harness-api.
+[`design/data-model.md`](../design/data-model.md) holds it.
 
 **Context:** The maintainer described the entities on 2026-11-19 from the tables he is used to:
 a user with an id, a key and an optional name, and depending on it configuration, sessions,

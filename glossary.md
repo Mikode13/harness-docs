@@ -135,7 +135,8 @@ A user's agents and workflows, kept so that they are set without code.
 
 ### Changed file
 
-A file a run changed. It belongs to the run, so that a client can show what each run did.
+A file a run changed, with its diff. It belongs to the run and is kept in the database, so
+that a client can show what each run did; undoing it stays with the harness's history.
 
 ### Workspace operation
 
