@@ -268,6 +268,10 @@ pushed do not reach the server, and the CLI has to say so.
 
 ## A workspace process prepares the workspace before the executor, with the git credential
 
+_Where it runs is superseded by the entry "A sandbox for each session": a workspace process runs
+in the session's sandbox, not as the writing user, and the entry "Only a transfer process holds
+the git credential" takes the credential from it._
+
 **Decision:** A workspace process prepares a session's workspace inside the run, while it is
 `setting_up`, before the run's executor starts: it clones each project and adds a worktree for
 the session, and reports it with events of state. The API starts it as the writing user,
@@ -445,6 +449,10 @@ the token.
 
 ## Git runs with the credential only in a clean repository
 
+_The entry "A sandbox for each session" closed the risk this entry expected another user to
+close: the clean repository is made in the session's sandbox, and keeping one between operations
+is not a question of speed only; see the open points of `design/security.md`._
+
 **Decision:** The workspace process gives the credential only to git commands that run in a
 repository it made itself, which no command of a model has written in. To push, it brings the
 session's branch into that repository from the worktree's repository, as a local path and
@@ -485,6 +493,9 @@ model's commands do not run as, when it is a question of speed only.
 
 ## Only a transfer process holds the git credential
 
+_Where it runs is superseded by the entry "A sandbox for each session": a transfer process runs
+outside every sandbox, not as the writing user._
+
 **Decision:** The API gives the git credential only to a transfer process: one it starts for a
 single clone, fetch or push that a workspace process needs, as the writing user. A transfer
 process runs git only in a clean repository and does nothing else. The workspace process is
@@ -515,6 +526,10 @@ or a restart ends a transfer process as it ends a workspace process. The next en
 workspace process and a transfer process hand over the clean repository.
 
 ## A transfer is three processes, one after another
+
+_The entries "A sandbox for each session" and "The sandbox keeps a transfer out of a model's
+reach" supersede its view of how the risk closes: the workspace steps run in the session's
+sandbox, the transfer outside it, with nothing running in the sandbox meanwhile._
 
 **Decision:** The API runs a clone, a fetch or a push as three steps, each a process it starts
 and that ends before the next starts. A workspace process gets a clean repository ready: an
@@ -552,6 +567,10 @@ the accepted risk. After a restart the API knows which of the three steps was cu
 transfer starts three processes instead of one.
 
 ## Git runs on a clean repository with nothing of the user's
+
+_The agent users it names were replaced by the entry "A sandbox for each session"; the
+controlled environment stands, and the system's git is the sandbox image's, which the entry "The
+sandbox keeps a transfer out of a model's reach" makes read-only._
 
 **Decision:** Every git command on a clean repository, the transfer process's and those of the
 workspace processes that make, fill and empty it, runs in an environment the API sets whole, not
