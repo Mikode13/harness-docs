@@ -67,7 +67,7 @@ here, never the reverse. The harness's documents never describe the product.
   them.
 - `design/`: the design documents: [`run-lifecycle.md`](design/run-lifecycle.md),
   [`events.md`](design/events.md), [`security.md`](design/security.md),
-  [`harness-needs.md`](design/harness-needs.md) and
+  [`harness-needs.md`](design/harness-needs.md), [`data-model.md`](design/data-model.md) and
   [`workspace-and-git.md`](design/workspace-and-git.md), which puts together how a session's
   workspace and git work.
 - [`docs/decisions.md`](docs/decisions.md): the product's decisions, which cross its

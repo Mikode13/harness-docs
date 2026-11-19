@@ -27,8 +27,14 @@ in the diagram: it is what a run is given from the conversation on a call to the
 
 ### User
 
-Owns a list of sessions. The MVP is for personal use, so there is one user; see the
-constraints in [mvp.md](mvp.md).
+A person who may use the product: one of a few people the maintainer knows. A user has one
+API key and owns a list of sessions. See the constraints in [mvp.md](mvp.md).
+
+### API key
+
+What every request of a user carries, and how the API knows whose it is. Each user has one,
+kept as a hash, and the maintainer can disable it. See
+[security](design/security.md#an-api-key-for-each-user).
 
 ### Session
 
@@ -118,6 +124,25 @@ It is not only the user's text. What the user writes is one part of the prompt.
 The execution a prompt starts, inside a conversation. A conversation has many runs, one per
 prompt, and at most one of them works at a time. A run has a state;
 [run-lifecycle.md](design/run-lifecycle.md) defines the states.
+
+### Configuration
+
+A user's agents and workflows, kept so that they are set without code.
+
+### Changed file
+
+A file a run changed. It belongs to the run, so that a client can show what each run did.
+
+### Workspace operation
+
+A restore or a push: work on a session's workspace outside any run, which holds the workspace
+as a run does.
+
+### Usage
+
+What a run spent and where its time went, such as in tools, in the model's thinking or in
+latency, recorded for the user whose request started it. See
+[data-model](design/data-model.md#traceability).
 
 ### Executor
 

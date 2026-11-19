@@ -2,7 +2,8 @@
 
 Who may use the product, as which user of the operating system each part of it runs, where
 the server can be reached from, and how the git credential is kept from what a model runs.
-The maintainer closed the API key and the users on 2026-11-15, the private network on
+The maintainer closed the users of the operating system on 2026-11-15, an API key for each
+user on 2026-11-19, the private network on
 2026-11-17, and the git credential on 2026-11-16, 2026-11-17 and 2026-11-18; the sections say
 which. The rest of the product's security is not designed; the open points say what is
 missing. None of it is built yet.
@@ -13,18 +14,23 @@ In the first slice the server is reached only from a private network, not from t
 The maintainer decided it on 2026-11-17. It also leaves fewer ways for the accepted risk on
 the git credential, below, to be used.
 
-## One API key
+## An API key for each user
 
-The API accepts one key of the product's own, and only that key works. The maintainer's
-devices share it. It exists so that nobody else can use the harness through the server.
+Each user has one key, and only the keys of users work. They exist so that nobody else, a bot
+included, can use the product's infrastructure through the server. The maintainer decided it
+on 2026-11-19, replacing the one key of 2026-11-15.
 
-The MVP is for personal use, with one user; see the constraints in [mvp.md](../mvp.md).
+- **A few people the maintainer knows have a user each.** There is no sign-up and no
+  password: the maintainer creates a user and its key.
+- **A key is kept as a hash**, never as it was given.
+- **A key can be disabled.** A key that is misused is disabled, and its requests are rejected.
+  What each user does is recorded so that misuse can be seen; see
+  [data-model](data-model.md#traceability).
+- **A user's devices share that user's key.** A key per device was proposed, so that a lost
+  mobile could have its key revoked alone, and declined: losing a device is not a concern for
+  the maintainer.
 
-A key per device was proposed, so that a lost mobile could have its key revoked alone. The
-maintainer declined it: losing a device and having that key taken is not a concern for him,
-so one key is enough.
-
-With one key, the API cannot tell one device from another by its key. It does not need to:
+The API cannot tell one device of a user from another by its key. It does not need to:
 an ask is not sent to a device, and a device gets events because its subscription is open.
 See [ask-and-answer](../flows/ask-and-answer.md).
 

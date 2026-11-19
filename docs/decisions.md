@@ -165,6 +165,9 @@ they are out for now.
 
 ## One API key, and three users of the operating system
 
+_The one key is superseded by the entry "An API key for each user, kept as a hash and able to
+be disabled"; the users of the operating system stand._
+
 **Decision:** The API accepts one key of the product's own, shared by the maintainer's
 devices, and only that key works. On the server the product runs as three users besides the
 maintainer's own, which has sudo: a service user that runs the API and starts the executors,
@@ -574,3 +577,77 @@ transfer: neither its git
 configuration nor a program earlier in its `PATH`. The git a transfer runs is the system's,
 updated with the system. Other files git reads from a home, such as attributes, are empty in
 a new home.
+
+## The harness's local store belongs to the CLI
+
+**Decision:** The harness is used in two ways that are not related for now: as a local
+library, from the CLI, and through the API on the server. Used locally, the CLI keeps the
+conversations and the configuration of agents and workflows in a store of its own, a SQLite
+database or a JSON file, in harness-cli or in a package of its own that the CLI uses, never in
+the harness. The CLI tells local use from use through the server. It runs on Linux and macOS,
+as the harness does. [harness-cli#21](https://github.com/Mikode13/harness-cli/issues/21)
+tracks it.
+
+**Context:** Decided by the maintainer on 2026-11-19. The harness gives events and a snapshot,
+and its consumers do with them what they need: send them through an API, store them in a
+database or in a local file. The harness's own decision of 2026-11-15, that a consumer stores
+what it saves ([harness#178](https://github.com/Mikode13/harness/pull/178)), keeps the store
+out of it.
+
+**Alternatives considered:**
+
+- **A store inside the harness.** It would reverse that decision, and make the harness know
+  where its consumers keep things.
+
+**Consequences:** The API and the CLI each keep their own store, with no relation between them
+for now. The harness needs the events of
+[harness#177](https://github.com/Mikode13/harness/issues/177) and the snapshot of
+[harness#111](https://github.com/Mikode13/harness/issues/111) for both.
+
+## An API key for each user, kept as a hash and able to be disabled
+
+**Decision:** A few people the maintainer knows each have a user and one key. There is no
+sign-up and no password: the maintainer creates a user and its key, and disables a key that is
+misused. A key is kept as a hash. What each user does and what it costs is recorded, to see
+misuse and to find where the time goes. A session has one owner; what a user sends is an
+event that names its author, so that chats with several people can be added later.
+[`design/security.md`](../design/security.md#an-api-key-for-each-user) and
+[`design/data-model.md`](../design/data-model.md) state it.
+
+**Context:** Decided by the maintainer on 2026-11-19, while setting the shape of the data
+model. He wants to give access to a few people without letting bots or anyone else use the
+infrastructure, and to switch off a key that gets out of hand. He wanted a group chat with a
+colleague that day and could not have one; it will be rare, so the model only keeps the door
+open.
+
+**Alternatives considered:**
+
+- **One key for the product**, decided on 2026-11-15. It cannot tell people apart, or switch
+  one of them off.
+- **Users with passwords**, more than a few known people need.
+
+**Consequences:** The MVP is no longer for one person: its constraint now names a few people.
+The agent users of the operating system and the git credential, which is the maintainer's
+account, are shared by every user; which projects each user may work in, and what the
+accepted risk on the credential means with other people's sessions, are open points of the
+data model.
+
+## The shape of the data model
+
+**Decision:** Every entity has an id of its own. A user has one key, a configuration of agents
+and workflows, and sessions. A session works in roots, one per project, and holds its
+conversations. Events belong to the conversation, in one numbered order, and an event a run
+reported names its run. A conversation has one run per prompt, and the agent, or workflow, and
+the model are chosen per run. What a run changed, its snapshot and its usage belong to the run.
+A restore or a push is a workspace operation with its steps. The tables belong to harness-api.
+[`design/data-model.md`](../design/data-model.md) holds it.
+
+**Context:** The maintainer described the entities on 2026-11-19 from the tables he is used to:
+a user with an id, a key and an optional name, and depending on it configuration, sessions,
+runs, events, plans and memories; a run with its workflow and the files it changed. Claude
+fitted it to what the flows had settled: events in one order per conversation, the user's
+message as an event, and a workflow as configuration that a run carries out. He did not
+object, and added the user's key, one owner per session and traceability.
+
+**Consequences:** The conceptual model is product-level and lives here; the schema, the indexes
+and the migrations live in harness-api. The engine and the format of the ids are not decided.
