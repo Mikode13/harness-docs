@@ -174,9 +174,12 @@ Not decided.
 - **The image of a sandbox**: what it holds, such as Node, pnpm and git, and how a project
   that needs another runtime is served.
 - **The user a transfer process runs as**, outside every sandbox.
-- **Whether a clean repository is kept between operations**, now that no model's code runs
-  outside a sandbox. It is then a question of speed only: a
-  clone or a fetch downloads the whole repository each time.
+- **Whether a clean repository is kept between operations.** A clone or a fetch downloads the
+  whole repository each time, so keeping one would be faster. It is not a question of speed
+  only: a clean repository is made and filled in its session's sandbox, so one that is kept
+  could get a hook or a configuration from a command of a later run, which the next transfer
+  would run or obey with the credential. Keeping one needs a place that no sandbox can write
+  in.
 - **A threat model.** The server holds the keys of the model providers and git credentials,
   runs commands a model starts, which the harness trusts and does not sandbox, and, with
   R14 of [mvp.md](../mvp.md), reads content from the public web. The sandbox of each session

@@ -97,7 +97,10 @@ Not decided.
   database such as PostgreSQL fits searching archived conversations (R13 of
   [mvp.md](../mvp.md)) and was assumed by the older issues of harness-api.
 - **The format of the ids.** The client already generates the ids of a session and of a
-  prompt; see [create-session](../flows/create-session.md).
+  prompt, and they are unique only within their user: a session and a prompt are known by
+  their user and their id, and so is anything named after a session's id, such as its
+  branch's provisional name. See [create-session](../flows/create-session.md) and
+  [authenticate](../flows/authenticate.md).
 - **How the maintainer creates, changes and disables a key.** Through the API was described;
   the commands are not designed.
 - **Which projects each user may work in.** The git credential is the maintainer's own
