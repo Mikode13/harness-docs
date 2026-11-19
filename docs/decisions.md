@@ -669,7 +669,9 @@ session. A session's executor and its workspace processes run in it, with the co
 starts and everything they run. A sandbox sees only its session's workspace, the worktrees
 mounted read-only for an agent with no tools that write. A transfer process runs outside every
 sandbox. A sandbox is rootless, never privileged and with no added capabilities, never has the
-container engine's socket mounted, and has limits on processor, memory and processes. The server
+container engine's socket mounted, and has limits on processor, memory and processes. Its image is
+read-only and everything in it runs as a user that is not root, so a model's command cannot
+replace the git or the code that a workspace process runs. The server
 keeps the maintainer's user and a service user that runs the API and starts the sandboxes and
 the transfer processes. [`design/security.md`](../design/security.md#a-sandbox-for-each-session)
 states it.

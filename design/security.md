@@ -57,6 +57,11 @@ credential.
   with no added capabilities; the container engine's socket is never mounted into it; it mounts
   only the session's workspace and, during a transfer, its clean repository; and it has limits
   on processor, memory and processes.
+- **A model's commands cannot change the sandbox's own programs.** The image's filesystem is
+  read-only, and everything in the sandbox runs as a user that is not root inside it. Only the
+  mounted workspace, the clean repository of a transfer and a temporary home can be written.
+  So the git and the code of a workspace process are the image's, and a command cannot replace
+  them to leave a hook or a configuration in a clean repository.
 
 What it does not protect, and is accepted: inside its session, a model can still damage its
 own worktrees and read the keys of the model providers that the executor uses. A container
