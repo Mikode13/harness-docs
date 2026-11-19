@@ -12,14 +12,16 @@ points, and this document adds none. None of it is built yet. The terms are in t
 flowchart LR
     subgraph server[The server]
         api[API]
-        subgraph ws[Workspace of a session]
-            clone[(Clone of a project)]
-            wt[Worktree, on the session's branch]
+        subgraph sandbox[Sandbox of a session]
+            exe[Executor]
+            wp[Workspace process]
+            subgraph ws[Workspace of the session]
+                clone[(Clone of a project)]
+                wt[Worktree, on the session's branch]
+            end
+            clean[(Clean repository, for one operation)]
         end
-        clean[(Clean repository, for one operation)]
-        exe[Executor]
-        wp[Workspace process]
-        tp[Transfer process]
+        tp[Transfer process, outside every sandbox]
     end
     host[(Registered repository, on the git host)]
 
@@ -34,6 +36,9 @@ flowchart LR
     api -->|opens a pull request, with the credential| host
 ```
 
+- **A sandbox** is the container a session's executor and workspace processes run in. It sees
+  only its session's workspace and, during a transfer, its clean repository. See
+  [security](security.md#a-sandbox-for-each-session).
 - **A worktree** is a copy of a project's repository, on a branch of its own. A workspace has
   one per project, its [roots](../glossary.md#root).
 - **A clean repository** is made for one clone, fetch or push, and removed when it ends. No
@@ -96,8 +101,8 @@ and the API stores each step before it starts it.
 ```mermaid
 sequenceDiagram
     participant A as API
-    participant W as Workspace process
-    participant T as Transfer process
+    participant W as Workspace process, in the sandbox
+    participant T as Transfer process, outside it
     participant G as Git host
 
     A->>W: 1. get a clean repository ready
@@ -116,8 +121,8 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant A as API
-    participant W as Workspace process
-    participant T as Transfer process
+    participant W as Workspace process, in the sandbox
+    participant T as Transfer process, outside it
     participant G as Git host
 
     A->>W: 1. bring the session's branch into a clean repository

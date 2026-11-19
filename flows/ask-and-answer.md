@@ -13,7 +13,7 @@ sequenceDiagram
     participant M as Mobile
     participant A as API
     participant D as Database
-    participant E as Executor
+    participant E as Executor, in the sandbox
 
     Note over L: subscribed to the conversation
     Note over M: off

@@ -15,11 +15,11 @@ sequenceDiagram
     participant C as Client
     participant A as API
     participant D as Database
-    participant E as Executor
+    participant E as Executor, in the sandbox
     participant S as Second device
 
     C->>A: prompt, as a command, with an id the client generates
-    A->>A: authenticates, looks for the prompt's id
+    A->>A: authenticates, looks for the prompt's id among the user's
     A->>A: checks that the conversation has no active run
     A->>D: stores what the user sent, creates the run
     A-->>C: accepted, with the run

@@ -10,6 +10,7 @@ type uses the same word for something else, the last section says so.
 flowchart TD
     user[User] --> session[Session]
     session -.-> workspace[Workspace]
+    session -.-> sandbox[Sandbox]
     workspace --> root[Root]
     session --> active[Active conversation]
     session -.-> archived[Archived conversations]
@@ -19,11 +20,12 @@ flowchart TD
     run -.-> event
 ```
 
-A user owns sessions. A session may have a workspace, of one or more roots, and has one active
-conversation and any number of archived ones. Each prompt sent in a conversation starts a run,
-so a conversation has many runs. Events belong to the conversation, in one order: a run reports
-most of them, and some, such as what the user sent, are of no run. The context is not in the
-diagram: it is what a run is given from the conversation on a call to the model.
+A user owns sessions. A session may have a workspace, of one or more roots, and a sandbox its
+runs execute in, and has one active conversation and any number of archived ones. Each prompt
+sent in a conversation starts a run, so a conversation has many runs. Events belong to the
+conversation, in one order: a run reports most of them, and some, such as what the user sent,
+are of no run. The context is not in the diagram: it is what a run is given from the
+conversation on a call to the model.
 
 ## Settled terms
 

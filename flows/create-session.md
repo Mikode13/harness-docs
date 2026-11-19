@@ -14,9 +14,9 @@ sequenceDiagram
     participant C as Client
     participant A as API
     participant D as Database
-    participant W as Workspace process
-    participant T as Transfer process
-    participant E as Executor
+    participant W as Workspace process, in the sandbox
+    participant T as Transfer process, outside it
+    participant E as Executor, in the sandbox
     participant G as Git host
 
     Note over C: "new": an empty chat, only in the client
@@ -25,8 +25,8 @@ sequenceDiagram
 
     C->>A: first prompt: session id, prompt id, projects or none, text
     A->>A: authenticates
-    A->>D: looks for the prompt's id, then for the session
-    A->>D: creates the session with its default title and its projects
+    A->>D: looks for the prompt's id, then for the session, both the user's
+    A->>D: creates the session, owned by the user, with its default title and its projects
     A->>D: stores what the user sent, creates the run as setting_up
     A-->>C: accepted, with the session and the run
 

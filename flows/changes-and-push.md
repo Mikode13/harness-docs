@@ -53,8 +53,8 @@ harness's default, one question at the end of the run.
 sequenceDiagram
     participant C as Client
     participant A as API
-    participant W as Workspace process
-    participant T as Transfer process
+    participant W as Workspace process, in the sandbox
+    participant T as Transfer process, outside it
     participant G as Git host
 
     C->>C: proposes a name for the branch, or asks for one

@@ -16,7 +16,7 @@ sequenceDiagram
     participant C as Client
     participant A as API
     participant D as Database
-    participant P as Executors, workspace and transfer processes
+    participant P as Sandboxes and transfer processes
 
     Note over A: stops
     Note over C: its subscription drops
@@ -25,7 +25,7 @@ sequenceDiagram
     Note over A: starts again
     A->>D: reads the runs that are not ended
     A->>D: reads the restores and pushes that were in progress
-    A->>P: ends what is left of each of them
+    A->>P: ends what is left of each of them, in its sandbox or outside
     A->>A: confirms that nothing of each is left
     A->>D: each run is interrupted, its pending ask is closed
     A->>A: reconciles each restore or push, the workspace can be used again

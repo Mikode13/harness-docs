@@ -12,7 +12,7 @@ sequenceDiagram
     participant C as Client
     participant A as API
     participant D as Database
-    participant E as Executor
+    participant E as Executor, in the sandbox
     participant S as Another device
 
     C->>A: cancel, as a command
