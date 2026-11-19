@@ -609,9 +609,10 @@ for now. The harness needs the events of
 **Decision:** A few people the maintainer knows each have a user and one key. There is no
 sign-up and no password: the maintainer creates a user and its key, and disables a key that is
 misused. A key is kept as a hash. What each user does and what it costs is recorded, to see
-misuse and to find where the time goes. A session has one owner; what a user sends is an
-event that names its author, so that chats with several people can be added later.
-[`design/security.md`](../design/security.md#an-api-key-for-each-user) and
+misuse and to find where the time goes. Every id a request names must be the requesting user's;
+one that belongs to another user is rejected as if it did not exist. A session has one owner;
+what a user sends is an event that names its author, so that chats with several people can be
+added later. [`design/security.md`](../design/security.md#an-api-key-for-each-user) and
 [`design/data-model.md`](../design/data-model.md) state it.
 
 **Context:** Decided by the maintainer on 2026-11-19, while setting the shape of the data

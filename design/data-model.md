@@ -20,13 +20,15 @@ erDiagram
     USER ||--o{ CONFIGURATION : "keeps"
     USER ||--o{ SESSION : "owns"
     USER ||--o{ USAGE : "spends"
+    USER |o--o{ EVENT : "writes"
     SESSION ||--o{ ROOT : "works in"
     PROJECT ||--o{ ROOT : "is checked out as"
     SESSION ||--|{ CONVERSATION : "holds"
-    SESSION ||--o{ WORKSPACE_OPERATION : "is restored or pushed by"
+    SESSION ||--o{ WORKSPACE_OPERATION : "is prepared, restored or pushed by"
+    RUN |o--o{ WORKSPACE_OPERATION : "prepares the workspace in"
     CONVERSATION ||--o{ EVENT : "orders"
     CONVERSATION ||--o{ RUN : "has"
-    RUN ||--o{ EVENT : "reports"
+    RUN |o--o{ EVENT : "reports"
     RUN ||--o| SNAPSHOT : "leaves"
     RUN ||--o{ CHANGED_FILE : "changed"
     RUN ||--o{ USAGE : "records"
@@ -34,21 +36,21 @@ erDiagram
 
 Every entity has an id of its own.
 
-| Entity              | What it is                                                                                                                           | Where it is decided                                                            |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| User                | A person who may use the product. An id and an optional name.                                                                        | [Users and keys](#users-and-keys)                                              |
-| API key             | The key a user's requests carry. One per user, kept as a hash, and it can be disabled.                                               | [security](security.md#an-api-key-for-each-user)                               |
-| Configuration       | A user's agents and workflows, so that they are set without code.                                                                    | Its content is not designed.                                                   |
-| Project             | A repository registered on the server.                                                                                               | [create-session](../flows/create-session.md#which-projects-a-session-works-in) |
-| Session             | What a user lists, opens, renames and deletes. Its title, its projects, and whether deleted.                                         | [create-session](../flows/create-session.md)                                   |
-| Root                | A project checked out for a session: its worktree, the branch's provisional name, the name it was published under, and its upstream. | [changes-and-push](../flows/changes-and-push.md#the-name-of-the-branch)        |
-| Conversation        | The active one of a session, or an archived one.                                                                                     | [clear-and-delete](../flows/clear-and-delete.md)                               |
-| Event               | What a client shows of a conversation, numbered in one order, with the version of its schema.                                        | [events](events.md)                                                            |
-| Run                 | What one prompt started: the prompt's id, its state, and the agent or workflow and the model it used.                                | [run lifecycle](run-lifecycle.md)                                              |
-| Snapshot            | What the next run's agent continues from, kept as the harness gives it.                                                              | [prompt-and-reconnect](../flows/prompt-and-reconnect.md)                       |
-| Changed file        | A file a run changed, so that a client shows a run's changes.                                                                        | [changes-and-push](../flows/changes-and-push.md)                               |
-| Workspace operation | A restore or a push, with each of its steps, so that a restart finds one cut short.                                                  | [restart](../flows/restart.md)                                                 |
-| Usage               | What a run spent and where its time went, for each user.                                                                             | [Traceability](#traceability)                                                  |
+| Entity              | What it is                                                                                                                                                | Where it is decided                                                            |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| User                | A person who may use the product. An id and an optional name.                                                                                             | [Users and keys](#users-and-keys)                                              |
+| API key             | The key a user's requests carry. One per user, kept as a hash, and it can be disabled.                                                                    | [security](security.md#an-api-key-for-each-user)                               |
+| Configuration       | A user's agents and workflows, so that they are set without code.                                                                                         | Its content is not designed.                                                   |
+| Project             | A repository registered on the server.                                                                                                                    | [create-session](../flows/create-session.md#which-projects-a-session-works-in) |
+| Session             | What a user lists, opens, renames and deletes. Its title, its projects, and whether deleted.                                                              | [create-session](../flows/create-session.md)                                   |
+| Root                | A project checked out for a session: its worktree, the branch's provisional name, the name it was published under, and its upstream.                      | [changes-and-push](../flows/changes-and-push.md#the-name-of-the-branch)        |
+| Conversation        | The active one of a session, or an archived one.                                                                                                          | [clear-and-delete](../flows/clear-and-delete.md)                               |
+| Event               | What a client shows of a conversation, numbered in one order, with the version of its schema.                                                             | [events](events.md)                                                            |
+| Run                 | What one prompt started: the prompt's id, its state, and the agent or workflow and the model it used.                                                     | [run lifecycle](run-lifecycle.md)                                              |
+| Snapshot            | What the next run's agent continues from, kept as the harness gives it.                                                                                   | [prompt-and-reconnect](../flows/prompt-and-reconnect.md)                       |
+| Changed file        | A file a run changed, so that a client shows a run's changes.                                                                                             | [changes-and-push](../flows/changes-and-push.md)                               |
+| Workspace operation | A preparation, a restore or a push, with each of its steps, so that a restart finds one cut short. A preparation belongs to the run that is `setting_up`. | [restart](../flows/restart.md)                                                 |
+| Usage               | What a run spent and where its time went, for each user.                                                                                                  | [Traceability](#traceability)                                                  |
 
 ## How the parts relate
 
@@ -60,6 +62,8 @@ Every entity has an id of its own.
   of different providers. That is what the harness is for.
 - **What a run changed belongs to the run.** A workflow is configuration: which agents and
   which stages. A run carries it out, and the files changed are the run's.
+- **An event names its author when a user wrote it**, and its run when a run reported it.
+  Neither is there for every event.
 - **A run leaves at most one snapshot.** The next run starts from the last one stored; see the
   [run lifecycle](run-lifecycle.md#what-is-left-after-a-run-that-does-not-complete).
 
@@ -90,8 +94,8 @@ Not decided.
   [mvp.md](../mvp.md)) and was assumed by the older issues of harness-api.
 - **The format of the ids.** The client already generates the ids of a session and of a
   prompt; see [create-session](../flows/create-session.md).
-- **Who creates a key, and how.** The maintainer, through the API, was described; the command
-  is not designed.
+- **How the maintainer creates, changes and disables a key.** Through the API was described;
+  the commands are not designed.
 - **Which projects each user may work in.** The git credential is the maintainer's own
   account, so a push by another user is made as the maintainer; see
   [security](security.md#git-credentials).

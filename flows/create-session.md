@@ -49,11 +49,13 @@ sequenceDiagram
    sending. See [which projects](#which-projects-a-session-works-in).
 3. **The first prompt carries everything.** The id of the session, an id for the prompt that
    the client also generates, the projects chosen or an explicit "none", and the text.
-4. **The API looks at the prompt's id first.** A prompt whose id it already has is the same
-   prompt sent again: the API answers with the acceptance and the run it gave the first
-   time, before any other check but authentication, so a retry is never rejected as busy.
+4. **The API looks at the prompt's id first.** A prompt whose id it already has, from the
+   same user, is the same prompt sent again: the API answers with the acceptance and the run
+   it gave the first time, before any other check but authentication, so a retry is never
+   rejected as busy. A prompt id or a session id that belongs to another user is rejected;
+   see [authenticate](authenticate.md).
 5. **Then the API looks for the session.** There are three cases:
-   - it does not exist: the API creates it, and goes on;
+   - it does not exist: the API creates it, owned by the user, and goes on;
    - it exists: the prompt is one more prompt of that session, as in
      [prompt-and-reconnect](prompt-and-reconnect.md);
    - it exists and is deleted: the API rejects the prompt. It neither brings the session

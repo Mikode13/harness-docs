@@ -135,8 +135,9 @@ A file a run changed. It belongs to the run, so that a client can show what each
 
 ### Workspace operation
 
-A restore or a push: work on a session's workspace outside any run, which holds the workspace
-as a run does.
+Work on a session's workspace that the API carries out in steps and stores step by step: the
+preparation of a workspace, inside a run that is `setting_up`, or a restore or a push, outside
+any run, which holds the workspace as a run does.
 
 ### Usage
 

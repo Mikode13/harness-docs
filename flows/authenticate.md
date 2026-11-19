@@ -26,7 +26,12 @@ sequenceDiagram
    use the product's infrastructure through the server.
 3. **The request is that user's.** What it reads and changes is the user's, and what it
    costs is recorded for that user.
-4. **A user's devices share that user's key.** There is no key per device.
+4. **Every id a request names must be the user's.** A session, a conversation, a prompt, a
+   run, an ask or a project that belongs to another user is rejected, the same way as one
+   that does not exist, so a request learns nothing about other users. This holds for every
+   flow: sending a prompt, answering an ask, clearing, deleting, restoring, pushing and
+   subscribing.
+5. **A user's devices share that user's key.** There is no key per device.
 
 The server is reached only from a private network in the first slice; see
 [security](../design/security.md#a-private-network).
