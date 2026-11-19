@@ -175,7 +175,10 @@ the server ships without it.
 Not decided.
 
 - **Docker or Podman**, and whether a sandbox lives for a session or for a run. The mounts
-  differ between an agent that writes and one that does not.
+  differ between an agent that writes and one that does not, and the clean repository is
+  mounted only during the workspace steps of a transfer. A running container cannot usually
+  gain or drop a mount, so this favours a sandbox started for each step or run, or a mount
+  shared into a longer-lived one.
 - **What a sandbox mounts**, since a worktree needs its repository: with one clone for each
   repository shared by its sessions, mounting it would show other sessions' branches.
 - **The network of a sandbox.** By default a container reaches the internet and could send
