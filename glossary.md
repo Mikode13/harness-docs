@@ -249,8 +249,9 @@ as the harness gives it.
   conversation keeps the whole prompt or only that text is not decided either.
 - **Code history belongs to the session.** The code history, which restores code (R09),
   might belong to the session and its workspace, so that it survives a clear.
-- **Terms to name later.** These are named when their flow is designed: agent and workflow
-  definitions (R10), a delegated run (R11), memory and plan (R12) and device (R07). The
+- **Terms to name later.** These are named when their flow is designed: a delegated run (R11),
+  memory and plan (R12) and device (R07). A user's agents and workflows are their
+  [configuration](#configuration); what it holds waits for R10's design. The
   flow for R09 is written and still has no term for a point the code is restored to; see
   [flows/changes-and-push.md](flows/changes-and-push.md#open-points).
 

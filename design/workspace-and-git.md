@@ -43,8 +43,8 @@ flowchart LR
   one per project, its [roots](../glossary.md#root).
 - **A clean repository** is made for one clone, fetch or push, and removed when it ends. No
   command of a model has written in it, and it is the only place git uses the credential.
-- **The registered repository** is the project's repository on the git host. The credential
-  reaches only the registered ones.
+- **The registered repository** is the project's repository on the git host. A user's credential
+  reaches only the repositories that user's token is limited to.
 
 ## Who does what
 
