@@ -770,3 +770,24 @@ means agreement.
 API, so how they are encrypted, and where the key that decrypts them lives, has to be designed.
 A user cannot work until they have given their credentials. Which repositories a user reaches
 follows from their own token.
+
+## The users' credentials are encrypted in the database, with the key outside it
+
+**Decision:** The API keeps each user's credentials in the database, encrypted and never in the
+clear. The key that decrypts them is kept outside the database, in a file on the server that
+only the service user can read or in its environment. They are decrypted only when they are
+used, and passed to an executor or a transfer process without being written anywhere.
+[`design/security.md`](../design/security.md#each-users-credentials) states it.
+
+**Context:** Decided by the maintainer on 2026-11-20, from Claude's proposal for the MVP, after
+the entry "Each user brings their own credentials" left open how they are stored.
+
+**Alternatives considered:**
+
+- **A dedicated secrets manager**, such as HashiCorp Vault or a cloud provider's. It rotates keys
+  and records who reads each secret, and is one more service to run; it is left for when the
+  product grows.
+
+**Consequences:** A copy of the database, or of its backups, does not give the credentials
+without the key. Someone who controls the server does get them; what limits that is an open
+point of security. The cipher and how its key is rotated are not decided.

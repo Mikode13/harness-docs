@@ -85,7 +85,13 @@ such as OpenAI and Anthropic. The maintainer decided it on 2026-11-19. A run use
 credentials of the user whose session it is, so a model can reach, at most, the keys of the
 user it works for, and a push is made as that user.
 
-- **The API keeps them in the database**, encrypted; how is an open point.
+- **The API keeps them in the database, encrypted**, in credentials tied to their user and
+  never in the clear. The maintainer decided it on 2026-11-20.
+- **The key that decrypts them is kept outside the database**: in a file on the server that
+  only the service user can read, or in its environment. A copy of the database alone does
+  not give them.
+- **They are decrypted only when they are used**, and the API passes them to an executor or a
+  transfer process without writing them anywhere.
 - **They never enter a worktree, a clean repository or a file in a sandbox.** The keys of the
   model providers reach the executor of a run of their user; the git credential reaches only
   a transfer process.
@@ -189,8 +195,11 @@ the server ships without it.
 
 Not decided.
 
-- **How the API encrypts the users' credentials**, and where the key that decrypts them is
-  kept, apart from the database.
+- **Which cipher encrypts the users' credentials, and how its key is rotated.**
+- **What protects the credentials if the server itself is taken.** The key outside the
+  database protects against a copy of the database or of its backups, not against someone
+  who controls the server. A dedicated secrets manager, such as HashiCorp Vault, was left
+  for when the product grows.
 - **How a user gives and changes their credentials.**
 
 - **Docker or Podman**, and whether a sandbox lives for a session or for a run. The mounts
