@@ -10,12 +10,25 @@ conversation from a mobile app. The user can change agents or supported models w
 copying the conversation history between products. [`mvp.md`](mvp.md) holds the scope and the
 requirements.
 
-The product has not been built yet. These documents define the target; each project's own
-`docs/architecture.md` describes what that project is today.
+The end-to-end product has not been built yet. These documents define the target; each
+project's own `docs/architecture.md` describes what that project is today.
+
+| Project                         | Available today                                                        | Still planned                                                                  |
+| ------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `harness`                       | Agent SDK adapters, a model API tool loop, workflows and code recovery | Durable conversation snapshots and the product's required observation contract |
+| `harness-cli`                   | Local interactive and single-turn execution through Agent SDKs         | Server mode and an independent local conversation store                        |
+| `harness-api`                   | An HTTP scaffold with `GET /health`                                    | Agent execution, authentication, persistence and client events                 |
+| Contract package and mobile app | Not created                                                            | Shared event types and a mobile client                                         |
+
+The MVP is for the maintainer's personal use. The
+[security design](design/security.md) separates its requirements from a later phase for
+onboarding other users and managing their credentials. The presence of those entities in the
+[data model](design/data-model.md) does not make that later phase an MVP prerequisite.
 
 ## The projects
 
-An arrow means "depends on".
+This is the target dependency graph, not the dependencies installed today. An arrow means
+"depends on".
 
 ```mermaid
 flowchart TD
@@ -28,18 +41,19 @@ flowchart TD
 ```
 
 The dotted arrow is the CLI used locally: it runs agents on the user's machine through the
-harness and keeps its own store, without the API. It stays alongside the CLI's use through
-the API; see [harness-cli#21](https://github.com/Mikode13/harness-cli/issues/21).
+harness without the API. Local execution exists; its own conversation store is planned.
+It will stay alongside the CLI's use through the API, with independent histories; see [harness-cli#21](https://github.com/Mikode13/harness-cli/issues/21).
 
 - `harness` (`@mikode13/harness`, [github.com/Mikode13/harness](https://github.com/Mikode13/harness)):
   the library that runs agents. It knows nothing about any other project.
 - The contract package (not created yet, name not decided): only types, for the product's
   state events. It depends on the harness. The API and the clients depend on it.
 - `harness-api` ([github.com/Mikode13/harness-api](https://github.com/Mikode13/harness-api)):
-  the server. It depends on the harness and on the contract package. Today it is a scaffold.
+  the server. It will depend on the harness and on the contract package. Today it is a
+  health-only scaffold with neither dependency.
 - `harness-cli` ([github.com/Mikode13/harness-cli](https://github.com/Mikode13/harness-cli)):
-  the terminal client, used in two ways that are not related for now. Locally it depends on
-  the harness, runs agents on the user's machine and keeps its own store
+  the terminal client. It currently depends on the harness and runs agents locally.
+  Its own conversation store is planned
   ([harness-cli#21](https://github.com/Mikode13/harness-cli/issues/21)). Through the server it
   will depend on the contract package and talk to the API
   ([harness-cli#18](https://github.com/Mikode13/harness-cli/issues/18)).
@@ -51,6 +65,19 @@ the API; see [harness-cli#21](https://github.com/Mikode13/harness-cli/issues/21)
   is.
 
 Every dependency points towards the harness, and the harness depends on none of them.
+
+## Reading the design
+
+Start with [the MVP scope](mvp.md) and [glossary](glossary.md), then use the
+[flow index](flows/README.md) to follow one user action. The [data model](design/data-model.md)
+shows the conceptual entities; physical tables, indexes and migrations belong to the API.
+[Harness needs](design/harness-needs.md) identifies library capabilities the product still
+requires.
+
+[Security](design/security.md) and [workspace and Git operations](design/workspace-and-git.md)
+describe the execution boundaries and their remaining open points. Web search and reading are
+still being designed in [issue #5](https://github.com/Mikode13/harness-docs/issues/5); the proposed
+fetching and summarization components are not implemented or a settled security guarantee.
 
 ## Where a document lives
 
