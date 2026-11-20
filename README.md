@@ -27,8 +27,9 @@ flowchart TD
     cli -.-> harness
 ```
 
-The dotted arrow is today's dependency of the CLI, which runs agents on the user's machine.
-It ends when the CLI talks to the API.
+The dotted arrow is the CLI used locally: it runs agents on the user's machine through the
+harness and keeps its own store, without the API. It stays alongside the CLI's use through
+the API; see [harness-cli#21](https://github.com/Mikode13/harness-cli/issues/21).
 
 - `harness` (`@mikode13/harness`, [github.com/Mikode13/harness](https://github.com/Mikode13/harness)):
   the library that runs agents. It knows nothing about any other project.
@@ -37,9 +38,11 @@ It ends when the CLI talks to the API.
 - `harness-api` ([github.com/Mikode13/harness-api](https://github.com/Mikode13/harness-api)):
   the server. It depends on the harness and on the contract package. Today it is a scaffold.
 - `harness-cli` ([github.com/Mikode13/harness-cli](https://github.com/Mikode13/harness-cli)):
-  the terminal client. It will depend on the contract package and talk to the API
-  ([harness-cli#18](https://github.com/Mikode13/harness-cli/issues/18)). Today it depends on
-  the harness and runs agents on the user's machine.
+  the terminal client, used in two ways that are not related for now. Locally it depends on
+  the harness, runs agents on the user's machine and keeps its own store
+  ([harness-cli#21](https://github.com/Mikode13/harness-cli/issues/21)). Through the server it
+  will depend on the contract package and talk to the API
+  ([harness-cli#18](https://github.com/Mikode13/harness-cli/issues/18)).
 - The mobile app (not started; [harness-api#13](https://github.com/Mikode13/harness-api/issues/13)):
   a client, like the CLI.
 - `harness-docs`: this repository. Nothing depends on it; the other repositories link to it.
@@ -67,7 +70,7 @@ here, never the reverse. The harness's documents never describe the product.
   them.
 - `design/`: the design documents: [`run-lifecycle.md`](design/run-lifecycle.md),
   [`events.md`](design/events.md), [`security.md`](design/security.md),
-  [`harness-needs.md`](design/harness-needs.md) and
+  [`harness-needs.md`](design/harness-needs.md), [`data-model.md`](design/data-model.md) and
   [`workspace-and-git.md`](design/workspace-and-git.md), which puts together how a session's
   workspace and git work.
 - [`docs/decisions.md`](docs/decisions.md): the product's decisions, which cross its

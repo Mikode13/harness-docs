@@ -25,9 +25,11 @@ tradeoffs and the reason for the selected approach before implementation starts.
 
 ## Constraints and responsibility direction
 
-- Personal use. Team collaboration, organizations, roles and a multi-tenant product are
-  outside the MVP. Access from the user's devices still needs authentication; its method
-  belongs to system design.
+- Personal use: the maintainer is the MVP's only user. A few people he knows, each with a
+  user and a key of their own, come after the MVP, in the second phase of
+  [security](design/security.md#phases). Team collaboration, organizations, roles and a
+  multi-tenant product are outside the MVP; chats with several people are wanted later.
+  Authentication is designed in [security](design/security.md#an-api-key-for-each-user).
 - The harness owns agent execution, LLM interaction, tools and workflow behavior. Product
   persistence and cross-device access belong to the backend. CLI and mobile own human
   interaction. Detailed interfaces and context ownership remain to be designed.

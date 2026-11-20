@@ -10,25 +10,35 @@ type uses the same word for something else, the last section says so.
 flowchart TD
     user[User] --> session[Session]
     session -.-> workspace[Workspace]
+    session -.-> sandbox[Sandbox]
     workspace --> root[Root]
     session --> active[Active conversation]
     session -.-> archived[Archived conversations]
+    active --> event[Event]
     active --> prompt[Prompt]
     prompt --> run[Run]
-    run --> event[Event]
+    run -.-> event
 ```
 
-A user owns sessions. A session may have a workspace, of one or more roots, and has one
-active conversation and any number of archived ones. Each prompt sent in a conversation
-starts a run, so a conversation has many runs, and a run reports events. The context is not
-in the diagram: it is what a run is given from the conversation on a call to the model.
+A user owns sessions. A session may have a workspace, of one or more roots, and a sandbox its
+runs execute in, and has one active conversation and any number of archived ones. Each prompt
+sent in a conversation starts a run, so a conversation has many runs. Events belong to the
+conversation, in one order: a run reports most of them, and some, such as what the user sent,
+are of no run. The context is not in the diagram: it is what a run is given from the
+conversation on a call to the model.
 
 ## Settled terms
 
 ### User
 
-Owns a list of sessions. The MVP is for personal use, so there is one user; see the
-constraints in [mvp.md](mvp.md).
+A person who may use the product: the maintainer in the MVP, and after it a few people he
+knows. A user has one API key and owns a list of sessions. See the constraints in [mvp.md](mvp.md).
+
+### API key
+
+What every request of a user carries, and how the API knows whose it is. Each user has one,
+kept as a hash, and the maintainer can disable it. See
+[security](design/security.md#an-api-key-for-each-user).
 
 ### Session
 
@@ -46,8 +56,8 @@ It is not the harness's `Session`; see the last section.
 
 ### Conversation
 
-The set of messages inside a session: what the user sends and the events the API
-returns. It is always whole: nothing in it is dropped or rewritten to save context. A session
+The set of messages inside a session: its events, in one order, what the user sends
+included. It is always whole: nothing in it is dropped or rewritten to save context. A session
 has one active conversation at a time.
 
 It is not the context. The context may summarize the conversation; the conversation stays
@@ -119,16 +129,49 @@ The execution a prompt starts, inside a conversation. A conversation has many ru
 prompt, and at most one of them works at a time. A run has a state;
 [run-lifecycle.md](design/run-lifecycle.md) defines the states.
 
+### Credential
+
+A user's own git credential, or key of a model provider such as OpenAI or Anthropic. Each
+user brings their own, the API keeps them encrypted, and a run uses its user's. See
+[security](design/security.md#each-users-credentials).
+
+### Configuration
+
+A user's agents and workflows, kept so that they are set without code.
+
+### Changed file
+
+A file a run changed, with its diff. It belongs to the run and is kept in the database, so
+that a client can show what each run did; undoing it stays with the harness's history.
+
+### Workspace operation
+
+Work on a session's workspace that the API carries out in steps and stores step by step: the
+preparation of a workspace, inside a run that is `setting_up`, or a restore or a push, outside
+any run, which holds the workspace as a run does.
+
+### Usage
+
+What a run spent and where its time went, such as in tools, in the model's thinking or in
+latency, recorded for the user whose request started it. See
+[data-model](design/data-model.md#traceability).
+
 ### Executor
 
-The process that runs the harness for one run. The API starts it as a child process and is
-the only one it talks to.
+The process that runs the harness for one run. The API starts it in the session's sandbox and
+is the only one it talks to.
+
+### Sandbox
+
+The container a session's executor and workspace processes run in, with everything a model's
+commands start. It sees only its session's workspace, and nothing of the server or of other
+sessions. See [security](design/security.md#a-sandbox-for-each-session).
 
 ### Workspace process
 
 A process the API starts to work on a session's workspace outside a run's executor: it
 prepares the workspace inside a run, before the run's executor starts, and outside any run it
-restores code and pushes a branch. It runs as the writing user, talks only to the API, and is
+restores code and pushes a branch. It runs in the session's sandbox, talks only to the API, and is
 never given the git credential: a clone, a fetch or a push it needs is done by a transfer
 process. An operation that needs one has a workspace process before it and another after it.
 
@@ -139,25 +182,27 @@ agent.
 
 A process the API starts for one clone, fetch or push, between the workspace process that
 gets a clean repository ready and the one that finishes, and the only process that is given
-the git credential. It runs git only in a clean repository, as the writing user, with no
+the git credential. It runs git only in a clean repository, outside every sandbox, with no
 user or system git configuration and an environment the API sets, and ends when the transfer
 does. It runs nothing else: no git command
 in a worktree's repository and no agent. See [security](design/security.md#git-credentials).
 
 ### Clean repository
 
-A git repository that a workspace process makes for one operation with the git credential
-and removes when the operation ends, and that no command a model started has written in.
-A transfer process uses the credential only there. The workspace process brings a branch
-into it from a worktree's repository to be pushed, and passes on what was downloaded into it
-to the worktree's repository. Every git command on it runs with no user or system git
-configuration and an environment the API sets, so that nothing of the writing user's home is
-copied into it. See [security](design/security.md#git-credentials).
+A git repository that a workspace process makes for one operation with the git credential and
+removes when the operation ends, and that no command a model started has written in. A transfer
+process uses the credential only there. The workspace process brings a branch into it from a
+worktree's repository to be pushed, and passes on what was downloaded into it to the worktree's
+repository. Every git command on it runs with no user or system git configuration and an
+environment the API sets, so that nothing a model's command left in the sandbox's home is copied
+into it. See [security](design/security.md#git-credentials).
 
 ### Event
 
-What the API returns while a run works, inside the conversation: a tool's activity, a text
-answer, an ask, or anything else it reports. Every event is stored in the database.
+What a client shows of a conversation, in its order: what the user sent, and what a run
+reports, such as a tool's activity, a text answer or an ask, or a change of state. It belongs
+to the conversation, and names the run that reported it or the user who wrote it when there
+is one. Every event is stored in the database; see [events](design/events.md).
 
 Whether the messages the model needs are kept as a record apart from the events is an open
 point below.
@@ -204,8 +249,9 @@ as the harness gives it.
   conversation keeps the whole prompt or only that text is not decided either.
 - **Code history belongs to the session.** The code history, which restores code (R09),
   might belong to the session and its workspace, so that it survives a clear.
-- **Terms to name later.** These are named when their flow is designed: agent and workflow
-  definitions (R10), a delegated run (R11), memory and plan (R12) and device (R07). The
+- **Terms to name later.** These are named when their flow is designed: a delegated run (R11),
+  memory and plan (R12) and device (R07). A user's agents and workflows are their
+  [configuration](#configuration); what it holds waits for R10's design. The
   flow for R09 is written and still has no term for a point the code is restored to; see
   [flows/changes-and-push.md](flows/changes-and-push.md#open-points).
 

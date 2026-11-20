@@ -7,21 +7,23 @@ is built yet.
 
 ## Where a run executes
 
-The API starts one executor for each run, as a child process of its own. The executor runs
+The API starts one executor for each run, in the session's sandbox: a container of its own
+for each session; see [security](security.md#a-sandbox-for-each-session). The executor runs
 the harness for that run and nothing else.
 
 - The executor talks only to the API, over a local channel. It does not connect to the
   database.
 - Before the executor, the API starts workspace processes and a transfer process, one after
-  another, when the session's workspace has to be prepared. They are child processes too,
-  talk only to the API, and all end before the executor starts. See the
-  [rules](#rules).
+  another, when the session's workspace has to be prepared. The workspace processes run in the
+  sandbox too and the transfer process outside it; they talk only to the API, and all end before
+  the executor starts. See the [rules](#rules).
 - The API is the only writer of the database, and so the only writer of a run's state. The
   executor reports what happens; the API stores it and decides the state.
 - While the API runs, it knows an executor ended because its process exited. No heartbeat
   is needed for that.
-- Being a child does not make an executor end with the API. On Linux an executor can outlive
-  the API that started it, and a command can outlive the executor that started it. The first
+- An executor does not end with the API. It can outlive the API that started it, and a
+  command can outlive the executor that started it; a sandbox keeps running when the API
+  stops. The first
   of the [rules](#rules) says what that requires.
 
 ## States
@@ -67,11 +69,11 @@ In the diagram, "restart" stands for a restart of the API and for the death of a
 
 ## Rules
 
-- **A workspace process prepares the workspace, while the run is `setting_up`.** The API
-  starts it before the run's executor, as the writing user whatever the run's agent. Every
-  run checks that its session's workspace is ready and has it prepared when it is not, so
-  the first run clones and a later one rebuilds what was lost. A failure while preparing
-  ends the run as `failed`. See [create-session](../flows/create-session.md).
+- **A workspace process prepares the workspace, while the run is `setting_up`.** The API starts
+  it before the run's executor, in the session's sandbox with the worktrees writable, whatever
+  the run's agent. Every run checks that its session's workspace is ready and has it prepared
+  when it is not, so the first run clones and a later one rebuilds what was lost. A failure
+  while preparing ends the run as `failed`. See [create-session](../flows/create-session.md).
 - **Everything a run started is gone before another run starts.** Ending a run means ending
   its executor, the workspace or transfer process that was preparing, and every
   process they started, and confirming that none is left.
@@ -146,8 +148,9 @@ conversation, and compacts it when it is very large.
 Not decided. Each is an input to the next design steps.
 
 - **How a run's processes are ended and confirmed gone.** It has to reach a process that
-  lost its parent, and work after a restart of the API, when the API no longer holds the
-  executors it started.
+  lost its parent, and work after a restart of the API. The sandbox gives a way: stopping
+  what runs in it, which the container engine confirms. Whether a sandbox is stopped, or only
+  the processes of the run in it, depends on whether it lives for a session or for a run.
 - **How a restore or a push cut short by a restart is ended and reconciled.** The API
   recognizes it from the steps it stores; see [restart](../flows/restart.md). What it then
   does with each step is not decided.
@@ -162,7 +165,7 @@ Not decided. Each is an input to the next design steps.
   task, with `queued` where this document says `setting_up`, and without `cancelling`.
 - **[#6](https://github.com/Mikode13/harness-api/issues/6)** describes "a separately
   runnable backend executor" that claims queued tasks from PostgreSQL. Here the API starts
-  an executor per run as its child, and the executor does not reach the database. The issue
+  an executor per run in the session's sandbox, and the executor does not reach the database. The issue
   keeps its text until it is refined. Its other rules stand: a cancellation waits for the
   commands to end before it reports `cancelled`, a dead executor's work becomes
   `interrupted`, and a started prompt is never replayed by itself.

@@ -12,7 +12,8 @@ never does.
 ## What the harness already does
 
 The product reuses these as they are, as R09 requires, and defines no second history of the
-code.
+code. It keeps in its database a copy of what the history says each run changed, for clients
+to read; the history stays the only one that restores.
 
 - **Commit.** The harness commits only when the user answers that it should. By default it
   asks once, when the last phase of a run is approved. A committer agent writes the message.
@@ -35,10 +36,19 @@ The harness's question about committing reaches the clients as any other ask, an
 answered from any device; see [ask-and-answer](ask-and-answer.md). The product uses the
 harness's default, one question at the end of the run.
 
-### Seeing changes and restoring are commands of the client
+### Seeing changes reads the database
 
-- **The user asks from a client.** For a restore, the API starts a workspace process, which
-  calls the harness's history.
+- **A client reads a run's changes from the database**: the files it changed and their diff,
+  kept for each run; see [data-model](../design/data-model.md). It touches no workspace, so
+  it can be read at any time, while a run works included.
+- **How a run's changed files reach the database is not decided.** The executor reporting
+  them from the harness's history when the run ends was proposed; see the
+  [open points](#open-points).
+
+### Restoring is a command of the client
+
+- **The user asks from a client.** The API starts a workspace process, which calls the
+  harness's history.
 - **Only while no run of the session is active**, since one writer works in a workspace at a
   time; see the [run lifecycle](../design/run-lifecycle.md#rules). While a restore or a push
   works, the session takes no prompt, and neither a clear nor a deletion.
@@ -53,8 +63,8 @@ harness's default, one question at the end of the run.
 sequenceDiagram
     participant C as Client
     participant A as API
-    participant W as Workspace process
-    participant T as Transfer process
+    participant W as Workspace process, in the sandbox
+    participant T as Transfer process, outside it
     participant G as Git host
 
     C->>C: proposes a name for the branch, or asks for one
@@ -77,8 +87,8 @@ sequenceDiagram
 ```
 
 - **A workspace process and a transfer process push**, as they prepare a workspace: both
-  started by the API, as the writing user, and only the transfer process with the
-  credential.
+  started by the API, the workspace process in the session's sandbox and the transfer
+  process outside it, with the credential.
 - **A push is rejected as busy while a run of the session is not ended**, as a restore is.
   Nothing is queued. A run that is working may be committing, and one piece of work at a
   time uses a workspace; see the [run lifecycle](../design/run-lifecycle.md#rules).
@@ -110,17 +120,17 @@ sequenceDiagram
   run there, and the upstream is what the harness reads to refuse a reset of commits that
   were pushed.
 - **They are commands of the client, not commands a model runs.** So they happen when the
-  user asks, and no model decides to push. That a command a model starts could still reach
-  the credential is a risk accepted for now; see
-  [security](../design/security.md#git-credentials).
+  user asks, and no model decides to push. No command a model starts can reach the
+  credential: it runs in a sandbox, and the transfer process outside; see
+  [security](../design/security.md#a-sandbox-for-each-session).
 
 ### The name of the branch
 
 Each worktree of a session is on a branch of its own, which git requires when the worktree
 is created.
 
-- **In the worktree it has a provisional name** that carries the id of the session, so it
-  cannot collide, and it keeps that name for as long as the worktree exists.
+- **In the worktree it has a provisional name** that carries the ids of the session and of
+  its user, so it cannot collide, and it keeps that name for as long as the worktree exists.
 - **It is published under another name, chosen at the first push.** The client proposes
   one, the user confirms or changes it, and the branch is pushed under that name, which
   becomes its upstream. When a session is created nobody knows yet whether the work is a
@@ -146,6 +156,9 @@ is created.
 ## Open points
 
 Not decided.
+
+- **How a run's changed files and their diff reach the database.** The executor could report
+  them from the harness's history when the run ends, with its final answer and snapshot.
 
 - **A bound on a restore or a push that hangs.** Neither can be cancelled, and while one
   works its session takes no prompt, clear or deletion. A transfer that stalls on the git
@@ -174,4 +187,3 @@ Not decided.
   plan, as the harness allows, and where that is chosen.
 - **What happens to a session's worktree and branch once its pull request is merged.** It
   belongs with the flow for clearing and deleting; see [the list of flows](README.md).
-- **Where the changes a client sees are read from.** It is decided with the database.

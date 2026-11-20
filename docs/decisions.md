@@ -48,6 +48,9 @@ decided.
 
 ## A run executes in a child process of the API, one per run
 
+_Where it runs is superseded by the entry "A sandbox for each session": the executor runs in the
+session's sandbox. One executor per run, talking only to the API, stands._
+
 **Decision:** The API starts one executor per run, as a child process. The executor runs the
 harness for that run, talks only to the API over a local channel, and does not connect to the
 database. The API is the only writer of the database and of a run's state.
@@ -165,6 +168,9 @@ they are out for now.
 
 ## One API key, and three users of the operating system
 
+_The one key is superseded by the entry "An API key for each user, kept as a hash and able to
+be disabled", and the two agent users by the entry "A sandbox for each session"._
+
 **Decision:** The API accepts one key of the product's own, shared by the maintainer's
 devices, and only that key works. On the server the product runs as three users besides the
 maintainer's own, which has sudo: a service user that runs the API and starts the executors,
@@ -262,6 +268,10 @@ pushed do not reach the server, and the CLI has to say so.
 
 ## A workspace process prepares the workspace before the executor, with the git credential
 
+_Where it runs is superseded by the entry "A sandbox for each session": a workspace process runs
+in the session's sandbox, not as the writing user, and the entry "Only a transfer process holds
+the git credential" takes the credential from it._
+
 **Decision:** A workspace process prepares a session's workspace inside the run, while it is
 `setting_up`, before the run's executor starts: it clones each project and adds a worktree for
 the session, and reports it with events of state. The API starts it as the writing user,
@@ -294,6 +304,9 @@ The entry "Only a transfer process holds the git credential" takes the credentia
 the workspace process.
 
 ## A model's command can reach the git credential: accepted for now, to be changed
+
+_Closed by the entry "A sandbox for each session": no code of a model runs outside a sandbox,
+and a transfer process runs outside every sandbox._
 
 **Decision:** For the first slice, the risk that a command a model starts reads the git
 credential is accepted. It is limited by a credential that reaches only the registered
@@ -411,6 +424,11 @@ its conversations. How a project is registered is not decided.
 
 ## A fine-grained token on a private network, for the first slice
 
+_Whose token it is is superseded by the entry "Each user brings their own credentials": each
+user's own fine-grained token, not the maintainer's for everyone. The private network is
+superseded by the entry "Clients reach the server over HTTPS, and multi-user security waits for
+a second phase"._
+
 **Decision:** The git credential is a fine-grained personal access token of the maintainer's
 account, limited to the registered repositories, with what pushing and opening a pull request
 need. The workspace process uses it to clone, fetch and push, and the API uses it to open a
@@ -435,6 +453,10 @@ clone, the fetch and the push to a transfer process, so the workspace process no
 the token.
 
 ## Git runs with the credential only in a clean repository
+
+_The entry "A sandbox for each session" closed the risk this entry expected another user to
+close: the clean repository is made in the session's sandbox, and keeping one between operations
+is not a question of speed only; see the open points of `design/security.md`._
 
 **Decision:** The workspace process gives the credential only to git commands that run in a
 repository it made itself, which no command of a model has written in. To push, it brings the
@@ -476,6 +498,9 @@ model's commands do not run as, when it is a question of speed only.
 
 ## Only a transfer process holds the git credential
 
+_Where it runs is superseded by the entry "A sandbox for each session": a transfer process runs
+outside every sandbox, not as the writing user._
+
 **Decision:** The API gives the git credential only to a transfer process: one it starts for a
 single clone, fetch or push that a workspace process needs, as the writing user. A transfer
 process runs git only in a clean repository and does nothing else. The workspace process is
@@ -507,16 +532,20 @@ workspace process and a transfer process hand over the clean repository.
 
 ## A transfer is three processes, one after another
 
+_The entries "A sandbox for each session" and "The sandbox keeps a transfer out of a model's
+reach" supersede its view of how the risk closes: the workspace steps run in the session's
+sandbox, the transfer outside it, with nothing running in the sandbox meanwhile._
+
 **Decision:** The API runs a clone, a fetch or a push as three steps, each a process it starts
 and that ends before the next starts. A workspace process gets a clean repository ready: an
 empty one to download into, or one with the session's branch brought in from the worktree's
 repository. A transfer process, with the credential, downloads into it or pushes from it. A
-workspace process finishes: it clones or fetches from the clean repository and adds a
-worktree, or records the upstream of what was pushed, and removes the clean repository. They
-hand over nothing but the clean repository's path, which the API names for that operation, and
-each tells the API how its step ended. The API stores each step before it starts its process,
-and how it ended. A clean repository has a new path each time, outside
-every worktree; one that a failure or a restart left behind is removed, never reused.
+workspace process finishes: it clones or fetches from the clean repository and adds a worktree,
+or records the upstream of what was pushed, and removes the clean repository. They hand over
+nothing but the clean repository's path, which the API names for that operation, and each tells
+the API how its step ended. The API stores each step before it starts its process, and how it
+ended. A clean repository has a new path each time, outside every worktree; one that a failure
+or a restart left behind is removed, never reused.
 
 **Context:** The maintainer left the design to Claude on 2026-11-17, after the entry "Only a
 transfer process holds the git credential" left open how the two processes hand over the clean
@@ -543,6 +572,10 @@ the accepted risk. After a restart the API knows which of the three steps was cu
 transfer starts three processes instead of one.
 
 ## Git runs on a clean repository with nothing of the user's
+
+_The agent users it names were replaced by the entry "A sandbox for each session"; the
+controlled environment stands, and the system's git is the sandbox image's, which the entry "The
+sandbox keeps a transfer out of a model's reach" makes read-only._
 
 **Decision:** Every git command on a clean repository, the transfer process's and those of the
 workspace processes that make, fill and empty it, runs in an environment the API sets whole, not
@@ -574,3 +607,246 @@ transfer: neither its git
 configuration nor a program earlier in its `PATH`. The git a transfer runs is the system's,
 updated with the system. Other files git reads from a home, such as attributes, are empty in
 a new home.
+
+## The harness's local store belongs to the CLI
+
+**Decision:** The harness is used in two ways that are not related for now: as a local library,
+from the CLI, and through the API on the server. Used locally, the CLI keeps the conversations
+and the configuration of agents and workflows in a store of its own, a SQLite database or a JSON
+file, in harness-cli or in a package of its own that the CLI uses, never in the harness. The CLI
+tells local use from use through the server. Local use runs on Linux and macOS, as the harness
+does; the CLI used through the API also runs on Windows.
+[harness-cli#21](https://github.com/Mikode13/harness-cli/issues/21) tracks it.
+
+**Context:** Decided by the maintainer on 2026-11-19. The harness gives events and a snapshot,
+and its consumers do with them what they need: send them through an API, store them in a
+database or in a local file. The harness's own decision of 2026-11-15, that a consumer stores
+what it saves ([harness#178](https://github.com/Mikode13/harness/pull/178)), keeps the store
+out of it.
+
+**Alternatives considered:**
+
+- **A store inside the harness.** It would reverse that decision, and make the harness know
+  where its consumers keep things.
+
+**Consequences:** The API and the CLI each keep their own store, with no relation between them
+for now. The harness needs the events of
+[harness#177](https://github.com/Mikode13/harness/issues/177) and the snapshot of
+[harness#111](https://github.com/Mikode13/harness/issues/111) for both.
+
+## An API key for each user, kept as a hash and able to be disabled
+
+**Decision:** A few people the maintainer knows each have a user and one key. There is no
+sign-up and no password: the maintainer creates a user and its key, and disables a key that is
+misused. A key is kept as a hash. What each user does and what it costs is recorded, to see
+misuse and to find where the time goes. Every id a request names must belong to a session the
+user owns, or is a member of once sessions have members, and the ids a client generates are
+unique for each user, so the same id from two users names two things. A session has one owner;
+what a user sends is an event that names its author, so that chats with several people can be
+added later. [`design/security.md`](../design/security.md#an-api-key-for-each-user) and
+[`design/data-model.md`](../design/data-model.md) state it.
+
+**Context:** Decided by the maintainer on 2026-11-19, while setting the shape of the data model.
+He wants to give access to a few people without letting bots or anyone else use the
+infrastructure, and to switch off a key that gets out of hand. He confirmed the rule on ids the
+same day, after the automated review pointed out that with several users nothing kept one from
+naming another's session. He wanted a group chat with a colleague that day and could not have
+one; it will be rare, so the model only keeps the door open.
+
+**Alternatives considered:**
+
+- **One key for the product**, decided on 2026-11-15. It cannot tell people apart, or switch
+  one of them off.
+- **Users with passwords**, more than a few known people need.
+
+**Consequences:** The product is no longer for one person: a few people are named. On
+2026-11-20 the maintainer placed them after the MVP, in the second phase of security; the MVP's
+only user is him.
+The git credential was the maintainer's account, shared by every user, until the entry "Each
+user brings their own credentials"; which projects each user may work in is an open point of
+the data model. The agent users of the
+operating system were shared too, until the entry "A sandbox for each session" gave each
+session a sandbox of its own and closed the accepted risk on the credential.
+
+## The shape of the data model
+
+**Decision:** Every entity has an id of its own. A user has one key, a configuration of agents
+and workflows, and sessions. A session works in roots, one per project, and holds its
+conversations. Events belong to the conversation, in one numbered order, and an event a run
+reported names its run. A conversation has one run per prompt, and each run records the agent,
+or workflow, and the model it used; how they are chosen belongs to the configuration. Ids a
+client generates are unique within their user. What a run changed, its snapshot and its usage
+belong to the run. The files a run changed and their diff are kept in the database, so a client
+reads a run's changes from there, while undoing them stays with the harness's history next to
+the worktree, as the maintainer accepted on 2026-11-14. A restore or a push is a workspace
+operation with its steps. The tables belong to harness-api.
+[`design/data-model.md`](../design/data-model.md) holds it.
+
+**Context:** The maintainer described the entities on 2026-11-19 from the tables he is used to:
+a user with an id, a key and an optional name, and depending on it configuration, sessions,
+runs, events, plans and memories; a run with its workflow and the files it changed. Claude
+fitted it to what the flows had settled: events in one order per conversation, the user's
+message as an event, and a workflow as configuration that a run carries out. He answered without
+objecting, which he has said means agreement, and added the user's key, one owner per session
+and traceability.
+
+**Consequences:** The conceptual model is product-level and lives here; the schema, the indexes
+and the migrations live in harness-api. The engine and the format of the ids are not decided.
+
+## A sandbox for each session
+
+**Decision:** Everything a model can run is run in a sandbox: a container of its own for each
+session. A session's executor and its workspace processes run in it, with the commands a model
+starts and everything they run. A sandbox sees only its session's workspace, the worktrees
+mounted read-only for an agent with no tools that write. A transfer process runs outside every
+sandbox. A sandbox is rootless, never privileged and with no added capabilities, never has the
+container engine's socket mounted, and has limits on processor, memory and processes. The server
+keeps the maintainer's user and a service user that runs the API and starts the sandboxes and
+the transfer processes. [`design/security.md`](../design/security.md#a-sandbox-for-each-session)
+states it.
+
+**Context:** Decided by the maintainer on 2026-11-19, for the MVP. With several users, the code
+of one user's session ran as the same agent user as everyone else's, and could read another
+user's worktrees, the processes of their runs, the keys of the model providers in them, and
+the git credential during a transfer. A pair of operating-system users for each product user
+was proposed first, and cost less; the sandbox was chosen because it also closes the accepted
+risk on the git credential and gives a way to end everything a run started.
+
+**Alternatives considered:**
+
+- **A read-only and a writing user of the operating system for each user of the product.**
+  Cheaper today, and it separates users, but it leaves the sessions of one user able to reach
+  each other, the risk on the credential open, and the ending of a process tree to be solved.
+- **A virtual machine for each session**, such as with gVisor or microVMs. It isolates more,
+  since a container shares the server's kernel, and costs more. It is looked at if the product
+  opens to people the maintainer does not know.
+
+**Consequences:** It replaces the two agent users decided on 2026-11-15, the executor as a
+plain child process of the API decided on 2026-11-14, and the risk on the git credential
+accepted on 2026-11-16. Inside its session, a model can still damage its worktrees and read
+the keys of the model providers the executor uses. The server needs Docker or Podman and an
+image with what the projects need. Which of the two, whether a sandbox lives for a session or
+for a run, what it mounts, its network and its image are not decided.
+
+## The sandbox keeps a transfer out of a model's reach
+
+**Decision:** A sandbox's image is read-only, and everything in it runs as a user that is not
+root, so that only the mounted workspace, the clean repository of a transfer and a temporary
+home can be written. Nothing runs in a session's sandbox while a transfer process works: before
+a transfer, every process the workspace step started is ended and confirmed gone, as a run's
+are, and the clean repository is mounted into the sandbox only during the workspace steps.
+[`design/security.md`](../design/security.md#a-sandbox-for-each-session) states it.
+
+**Context:** Confirmed by the maintainer on 2026-11-19, after the automated review raised both
+once the workspace steps of a transfer ran in a sandbox. Without the first, a model's command
+could replace the git or the code of a workspace process and leave a hook or a configuration in
+a clean repository. Without the second, a process left behind, such as one a hook started,
+could write in the clean repository while the transfer process uses it with the credential.
+Either would reach the credential through the clean repository, which the entries "A transfer
+is three processes, one after another" and "A sandbox for each session" are meant to keep out
+of a model's reach.
+
+**Consequences:** The image has to hold everything the workspace processes and the projects'
+commands need, since nothing can be installed into it at run time. A transfer waits until the
+sandbox is empty, which the same mechanism that ends a run's processes confirms.
+
+## Each user brings their own credentials
+
+**Decision:** Each user brings their own credentials: a git credential, a fine-grained personal
+access token of their own account, and the keys of the model providers, such as OpenAI and
+Anthropic. The API keeps them in the database, encrypted. A run uses the credentials of the user
+whose session it is: the keys reach that run's executor, and the git credential only a transfer
+process. [`design/security.md`](../design/security.md#each-users-credentials) states it.
+
+**Context:** Decided by the maintainer on 2026-11-19. The automated review pointed out that,
+inside its session, a model can read the keys of the model providers that the executor uses,
+and that with several users those keys were the maintainer's for everyone. With each user's
+own, a model reaches at most the keys of the user it works for, and a push is made as that
+user. In the same message he did not object to the shape of the data model, which he has said
+means agreement.
+
+**Alternatives considered:**
+
+- **The maintainer's keys for everyone, with the sandbox's network limited.** It narrows where
+  a leaked key can be sent, but every user's session could still read the maintainer's keys.
+
+**Consequences:** The credentials are now kept in the database rather than only held by the
+API, so how they are encrypted, and where the key that decrypts them lives, has to be designed.
+A user cannot work until they have given their credentials. Which repositories a user reaches
+follows from their own token.
+
+## The users' credentials are encrypted in the database, with the key outside it
+
+**Decision:** The API keeps each user's credentials in the database, encrypted and never in the
+clear. The key that decrypts them is kept outside the database, in a file on the server that
+only the service user can read or in its environment. They are decrypted only when they are
+used, and passed to an executor or a transfer process without being written anywhere.
+[`design/security.md`](../design/security.md#each-users-credentials) states it.
+
+**Context:** Decided by the maintainer on 2026-11-20, from Claude's proposal for the MVP, after
+the entry "Each user brings their own credentials" left open how they are stored.
+
+**Alternatives considered:**
+
+- **A dedicated secrets manager**, such as HashiCorp Vault or a cloud provider's. It rotates keys
+  and records who reads each secret, and is one more service to run; it is left for when the
+  product grows.
+
+**Consequences:** A copy of the database, or of its backups, does not give the credentials
+without the key. Someone who controls the server does get them; what limits that is an open
+point of security. The cipher and how its key is rotated are not decided.
+
+## What has to survive the server's disk
+
+**Decision:** The API runs on a VPS whose disk is not guaranteed to stay the same. The database
+and the workspaces live on a persistent volume, and the database is also copied regularly
+outside the server. The key that decrypts the users' credentials is kept outside the server as
+well, never next to the copies of the database. Clones and worktrees are rebuilt by the next
+run when they are lost. Work that was not pushed is lost with the disk, and that is accepted.
+The provider is chosen before the API is deployed, and must offer persistent volumes, object
+storage, full virtualization such as KVM, and a firewall.
+[`design/data-model.md`](../design/data-model.md#where-it-is-kept) states it.
+
+**Context:** Decided by the maintainer on 2026-11-20. He raised that a VPS does not guarantee
+that the same disk is always used. A provider has not been chosen, and does not need to be
+before the database is designed.
+
+**Alternatives considered:**
+
+- **A managed database outside the server.** It takes the database off the VPS's disk, and is
+  one more service to pay for; the copies outside the server were preferred for now.
+- **Pushing the session's branch on its own, so that work is never lost.** It goes against the
+  decision that a push is only ever the user's command.
+
+**Consequences:** Losing the whole server costs at most the work that was not pushed and the
+time to restore the last copy of the database. A virtualization that is a container, as some
+cheap VPS offer, is ruled out by the sandbox. How often the database is copied is not decided.
+
+## Clients reach the server over HTTPS, and multi-user security waits for a second phase
+
+**Decision:** Clients reach the API over HTTPS with an API key; the server opens only SSH, with
+keys only, and HTTPS, and the API limits the requests of each address and key. Security is built
+in two phases: in the MVP the maintainer is the only user, and what only matters once other
+people use the product waits until after the MVP, such as each user's own credentials and their
+encryption, the keys of other users, and keeping users apart. It stays in the documents.
+[`design/security.md`](../design/security.md#how-the-server-is-reached) states it.
+
+**Context:** Decided by the maintainer on 2026-11-20. He had first kept a virtual private
+network, against a man in the middle taking a key, and then saw that HTTPS covers that as any
+login does, and that covering every case is not the product's job. He found that the design's
+complexity was growing faster than the product, with focus on unlikely risks; the risks he
+keeps first are a model running commands on the server, covered by the sandbox, and reading
+the web, designed in [harness-docs#5](https://github.com/Mikode13/harness-docs/issues/5).
+
+**Alternatives considered:**
+
+- **A virtual private network**, such as Tailscale or WireGuard, that every device joins. It
+  keeps the API unreachable before authentication, and needs an app on every device.
+- **Building every measure from the start.** It delays the product for users who are not there
+  yet.
+
+**Consequences:** The server needs a domain and a certificate. In the first phase the
+maintainer's own credentials are kept outside the database, in a file only the service user
+reads or in its environment, so neither the database nor its copies hold them. The private
+network of 2026-11-17 is superseded. The push in three processes is reviewed with the code when
+it is implemented, in case it can be simpler. The roadmap places the second phase.
