@@ -37,8 +37,8 @@ sequenceDiagram
    and a request cannot learn whether an id exists for another user.
 6. **A user's devices share that user's key.** There is no key per device.
 
-The server is reached only from a private network in the first slice; see
-[security](../design/security.md#a-private-network).
+Requests travel over HTTPS, so the key is encrypted on the way; see
+[security](../design/security.md#how-the-server-is-reached).
 
 ## What follows from one key per user
 

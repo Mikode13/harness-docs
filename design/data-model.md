@@ -112,8 +112,8 @@ What the server has to offer, whichever provider it is:
   outside the server.
 - **Full virtualization**, such as KVM, and not a container such as OpenVZ or LXC, where a
   rootless container engine usually does not run and the sandbox would not work.
-- **A private network or a firewall**, for the [private network](security.md#a-private-network)
-  of the first slice.
+- **A firewall** that leaves only SSH and HTTPS open; see
+  [security](security.md#how-the-server-is-reached).
 
 ## Open points
 

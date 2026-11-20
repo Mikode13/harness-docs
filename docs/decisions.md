@@ -425,7 +425,9 @@ its conversations. How a project is registered is not decided.
 ## A fine-grained token on a private network, for the first slice
 
 _Whose token it is is superseded by the entry "Each user brings their own credentials": each
-user's own fine-grained token, not the maintainer's for everyone. The private network stands._
+user's own fine-grained token, not the maintainer's for everyone. The private network is
+superseded by the entry "Clients reach the server over HTTPS, and multi-user security waits for
+a second phase"._
 
 **Decision:** The git credential is a fine-grained personal access token of the maintainer's
 account, limited to the registered repositories, with what pushing and opening a pull request
@@ -800,7 +802,7 @@ outside the server. The key that decrypts the users' credentials is kept outside
 well, never next to the copies of the database. Clones and worktrees are rebuilt by the next
 run when they are lost. Work that was not pushed is lost with the disk, and that is accepted.
 The provider is chosen before the API is deployed, and must offer persistent volumes, object
-storage, full virtualization such as KVM, and a private network or a firewall.
+storage, full virtualization such as KVM, and a firewall.
 [`design/data-model.md`](../design/data-model.md#where-it-is-kept) states it.
 
 **Context:** Decided by the maintainer on 2026-11-20. He raised that a VPS does not guarantee
@@ -818,22 +820,29 @@ before the database is designed.
 time to restore the last copy of the database. A virtualization that is a container, as some
 cheap VPS offer, is ruled out by the sandbox. How often the database is copied is not decided.
 
-## Clients reach the server through a virtual private network
+## Clients reach the server over HTTPS, and multi-user security waits for a second phase
 
-**Decision:** Clients reach the server through a virtual private network, which every device
-joins with an app, and nothing of the server is open to the internet.
-[`design/security.md`](../design/security.md#a-private-network) states it.
+**Decision:** Clients reach the API over HTTPS with an API key; the server opens only SSH, with
+keys only, and HTTPS, and the API limits the requests of each address and key. Security is built
+in two phases: at first the maintainer is the only user, and what only matters once other people
+use the product waits until they do, such as each user's own credentials and their encryption,
+the keys of other users, and keeping users apart. It stays in the documents.
+[`design/security.md`](../design/security.md#how-the-server-is-reached) states it.
 
-**Context:** Decided by the maintainer on 2026-11-20. He asked what a private network adds over
-a server with only SSH and HTTPS open, and kept it so that a man in the middle cannot take a
-key. His concern was the model reading the internet, which a private network does not address:
-it limits what comes in, not what goes out. That is designed apart, in
-[harness-docs#5](https://github.com/Mikode13/harness-docs/issues/5).
+**Context:** Decided by the maintainer on 2026-11-20. He had first kept a virtual private
+network, against a man in the middle taking a key, and then saw that HTTPS covers that as any
+login does, and that covering every case is not the product's job. He found that the design's
+complexity was growing faster than the product, with focus on unlikely risks; the risks he
+keeps first are a model running commands on the server, covered by the sandbox, and reading
+the web, designed in [harness-docs#5](https://github.com/Mikode13/harness-docs/issues/5).
 
 **Alternatives considered:**
 
-- **SSH and HTTPS open to the internet**, with keys only for SSH, a certificate and limits on
-  requests. A common setup for a few users; it leaves the API reachable before authentication.
+- **A virtual private network**, such as Tailscale or WireGuard, that every device joins. It
+  keeps the API unreachable before authentication, and needs an app on every device.
+- **Building every measure from the start.** It delays the product for users who are not there
+  yet.
 
-**Consequences:** Every device, the friends' included, needs the network's app. Which network,
-Tailscale or WireGuard set up by hand, is not decided.
+**Consequences:** The server needs a domain and a certificate. The private network of
+2026-11-17 is superseded. The push in three processes is reviewed with the code when it is
+implemented, in case it can be simpler. The roadmap places the second phase.

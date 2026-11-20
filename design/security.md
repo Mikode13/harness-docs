@@ -1,24 +1,31 @@
 # Security
 
-Who may use the product, as which user of the operating system each part of it runs, where
-the server can be reached from, and how the git credential is kept from what a model runs.
-The maintainer closed the users of the operating system on 2026-11-15 and replaced the agent
-users with a sandbox for each session on 2026-11-19, an API key for each
-user on 2026-11-19, the private network on
-2026-11-17, and the git credential on 2026-11-16, 2026-11-17 and 2026-11-18; the sections say
-which. The rest of the product's security is not designed; the open points say what is
-missing. None of it is built yet.
+Who may use the product, as which user of the operating system each part of it runs, how the
+server is reached, and how the git credential is kept from what a model runs. The maintainer
+closed the users of the operating system on 2026-11-15 and replaced the agent users with a
+sandbox for each session on 2026-11-19, an API key for each user on 2026-11-19, how the server
+is reached on 2026-11-20, and the git credential on 2026-11-16, 2026-11-17 and 2026-11-18; the
+sections say which. What only matters once other people use the product is built in a later
+phase; see [phases](#phases). The rest of the product's security is not designed; the open
+points say what is missing. None of it is built yet.
 
-## A private network
+## How the server is reached
 
-In the first slice the server is reached only from a private network, not from the internet.
-The maintainer decided it on 2026-11-17. It leaves fewer ways to reach the server.
+Clients reach the API over HTTPS, with a certificate, and every request carries an API key.
+The server opens only SSH and HTTPS to the internet, and SSH accepts keys only, no passwords.
+The API limits the requests of each address and each key. The maintainer decided it on
+2026-11-20, replacing the private network of 2026-11-17: HTTPS already encrypts the traffic,
+which is what keeps a man in the middle from taking a key, as with any login, and a private
+network added an app on every device for an MVP that does not need it.
 
-Clients reach it through a virtual private network: the laptop, the mobile and each user's
-devices join it with an app, wherever they are, and nothing of the server is open to the
-internet. The maintainer decided it on 2026-11-20. A man in the middle on the internet sees
-only the network's encrypted traffic, so a key cannot be taken on the way; inside the network
-a request still needs a valid API key.
+## Phases
+
+The maintainer decided on 2026-11-20 to build the security in two phases, so that complexity
+comes when it is needed. At first the maintainer is the only user. What only matters once
+other people use the product waits for that: each user's own credentials and their encryption,
+creating and disabling the keys of other users, and keeping one user's ids and sessions apart
+from another's. It stays in these documents; it is built later. The roadmap,
+[harness-docs#4](https://github.com/Mikode13/harness-docs/issues/4), places it.
 
 ## An API key for each user
 
@@ -107,75 +114,68 @@ user it works for, and a push is made as that user.
 - **The API holds the credential and passes it only to a transfer process**, never to an
   executor nor to a workspace process; see [create-session](../flows/create-session.md). A
   workspace process prepares a workspace, restores code and pushes, in the session's sandbox.
-  When it needs a clone, a fetch or a push, the API starts a transfer process for that one
-  step, outside every sandbox, with the credential.
-- **It is the user's own**, a fine-grained personal access token of their git account; see
-  [each user's credentials](#each-users-credentials). A separate git account only for
-  agents was the maintainer's aim for his own, and waits because of its cost.
-- **The credential is never written to disk outside the database**, nor to the git configuration
-  of a worktree, and a transfer process uses it only to clone, fetch and push. That narrows
-  where it can be read.
-- **A git operation with the credential trusts nothing in the worktree.** A command a model
-  started could have left a hook there, or changed the repository's configuration: where it
-  pushes to, a helper that is handed the credential. So such an operation runs no hook,
-  obeys no configuration a command could have changed, and uses the repository registered
-  for the project as its destination. Running it at another time, or as another user, does
-  not replace this: git would still run what was left.
-- **So git runs with the credential only in a clean repository.** The workspace process
-  makes a repository of its own, which no command of a model has written in, and a transfer
-  process uses the credential only there. Turning hooks off and naming the
-  destination in the command is not enough; see
+  When it needs a clone, a fetch or a push, the API starts a transfer process for that one step,
+  outside every sandbox, with the credential. - **It is the user's own**, a fine-grained personal
+  access token of their git account; see [each user's credentials](#each-users-credentials). A
+  separate git account only for agents was the maintainer's aim for his own, and waits because
+  of its cost. - **The credential is never written to disk outside the database**, nor to the git
+  configuration of a worktree, and a transfer process uses it only to clone, fetch and push.
+  That narrows where it can be read. - **A git operation with the credential trusts nothing in
+  the worktree.** A command a model started could have left a hook there, or changed the
+  repository's configuration: where it pushes to, a helper that is handed the credential. So
+  such an operation runs no hook, obeys no configuration a command could have changed, and uses
+  the repository registered for the project as its destination. Running it at another time, or
+  as another user, does not replace this: git would still run what was left. - **So git runs
+  with the credential only in a clean repository.** The workspace process makes a repository of
+  its own, which no command of a model has written in, and a transfer process uses the
+  credential only there. Turning hooks off and naming the destination in the command is not
+  enough; see
   [learnings](../docs/learnings.md#turning-hooks-off-does-not-make-a-repository-safe-to-push-from).
-  - **To push**, the workspace process brings the session's branch into the clean
-    repository from the worktree's repository, as a local path, and a transfer process
-    pushes it from there to the registered repository.
-  - **To clone or fetch**, a transfer process downloads the commits into the clean
-    repository, and the workspace process passes them on to the worktree's repository as a
-    local path.
-  - **Every git command on a clean repository reads no configuration but that repository's.**
-    The workspace processes that make, fill and empty it run in the session's sandbox, whose
-    home a command of a model can write in, and the transfer process reads it afterwards. A
-    `~/.gitconfig` with a hooks path or an `insteadOf` would reach a push from a clean
-    repository, and an `init.templateDir` would copy a hook and a configuration into the clean
-    repository when it is made. So each of those git commands runs in an environment the API
-    sets whole, not inherited: no user or system git configuration
-    (`GIT_CONFIG_GLOBAL=/dev/null`, `GIT_CONFIG_NOSYSTEM=1`), an empty home made for that
-    operation, a `PATH` of system directories only, and the system's git by its full path, which
-    no code in a sandbox can write. The git a workspace process runs in a worktree's repository
-    needs none of this, since no process then holds the credential. See
-    [learnings](../docs/learnings.md#a-clean-repository-is-not-enough-while-git-reads-the-users-home).
-  - **The API runs the three steps one after another, each a process of its own.** A
-    workspace process gets the clean repository ready and ends; a transfer process does
-    the transfer and ends; a workspace process finishes and ends. No two of them run at
-    the same time and none waits for another, so the git of a worktree's repository never
-    runs while a process of that session holds the credential, and no code of another
-    session can reach that process; see the sandbox above. They hand over nothing but the clean
-    repository's path, which the API names for that operation, and each tells the API how
-    its step ended. The API stores each step before it starts its process, and how it
-    ended.
-  - **Nothing runs in the session's sandbox while a transfer process works.** Before a
-    transfer starts, every process the workspace step started is ended and confirmed gone, as
-    a run's are, so that nothing left behind, such as a process a hook started, can write in
-    the clean repository while the credential is in use. The clean repository is mounted
-    into the sandbox only during the workspace steps, and not while the transfer works.
-  - **The name a branch is published under comes from the API**, which keeps it from the
-    first push. It is not read from the worktree's configuration.
-  - **A clean repository is made for one operation and removed when the operation ends**,
-    whether the transfer succeeded or not. It has a new path each time, outside every
-    worktree, and is never used again: one that a failure or a restart left behind is
-    removed by the next step that touches the workspace, never reused.
-    It is mounted only into its session's sandbox, so no other session can write in it. One
-    kept between operations would be there while the session's runs work, and a command
-    could leave a hook in it for a later push.
-- **The credential is a fine-grained personal access token**, limited to the registered
-  repositories, with what pushing and opening a pull request need.
-- **No process that holds the credential runs git in a worktree's repository.** A workspace
-  process runs git there, to add a worktree, to restore code through the harness's history
-  or to record an upstream, and those commands run what a command of a model left: a hook,
-  or a setting such as `core.fsmonitor`. So the workspace process never holds the
-  credential, and a transfer process runs nothing but its step in the clean repository.
-- **The API uses the same credential to open a pull request**, which is a call to the git
-  host and touches no workspace. That is its only use outside a transfer process.
+- **To push**, the workspace process brings the session's branch into the clean repository
+  from the worktree's repository, as a local path, and a transfer process pushes it from there
+  to the registered repository. - **To clone or fetch**, a transfer process downloads the
+  commits into the clean repository, and the workspace process passes them on to the
+  worktree's repository as a local path. - **Every git command on a clean repository reads
+  no configuration but that repository's.** The workspace processes that make, fill and empty
+  it run in the session's sandbox, whose home a command of a model can write in, and the
+  transfer process reads it afterwards. A `~/.gitconfig` with a hooks path or an `insteadOf`
+  would reach a push from a clean repository, and an `init.templateDir` would copy a hook and
+  a configuration into the clean repository when it is made. So each of those git commands
+  runs in an environment the API sets whole, not inherited: no user or system git
+  configuration (`GIT_CONFIG_GLOBAL=/dev/null`, `GIT_CONFIG_NOSYSTEM=1`), an empty home made
+  for that operation, a `PATH` of system directories only, and the system's git by its full
+  path, which no code in a sandbox can write. The git a workspace process runs in a worktree's
+  repository needs none of this, since no process then holds the credential. See
+  [learnings](../docs/learnings.md#a-clean-repository-is-not-enough-while-git-reads-the-users-home).
+- **The API runs the three steps one after another, each a process of its own.** A workspace
+  process gets the clean repository ready and ends; a transfer process does the transfer and
+  ends; a workspace process finishes and ends. No two of them run at the same time and none
+  waits for another, so the git of a worktree's repository never runs while a process of that
+  session holds the credential, and no code of another session can reach that process; see the
+  sandbox above. They hand over nothing but the clean repository's path, which the API names
+  for that operation, and each tells the API how its step ended. The API stores each step
+  before it starts its process, and how it ended. - **Nothing runs in the session's sandbox
+  while a transfer process works.** Before a transfer starts, every process the workspace step
+  started is ended and confirmed gone, as a run's are, so that nothing left behind, such as a
+  process a hook started, can write in the clean repository while the credential is in use.
+  The clean repository is mounted into the sandbox only during the workspace steps, and not
+  while the transfer works. - **The name a branch is published under comes from the API**, which
+  keeps it from the first push. It is not read from the worktree's configuration. - **A
+  clean repository is made for one operation and removed when the operation ends**, whether
+  the transfer succeeded or not. It has a new path each time, outside every worktree, and is
+  never used again: one that a failure or a restart left behind is removed by the next step
+  that touches the workspace, never reused. It is mounted only into its session's sandbox, so
+  no other session can write in it. One kept between operations would be there while the
+  session's runs work, and a command could leave a hook in it for a later push. - **The
+  credential is a fine-grained personal access token**, limited to the registered repositories,
+  with what pushing and opening a pull request need. - **No process that holds the credential runs
+  git in a worktree's repository.** A workspace process runs git there, to add a worktree, to
+  restore code through the harness's history or to record an upstream, and those commands run
+  what a command of a model left: a hook, or a setting such as `core.fsmonitor`. So the
+  workspace process never holds the credential, and a transfer process runs nothing but its step
+  in the clean repository. - **The API uses the same credential to open a pull request**, which is
+  a call to the git host and touches no workspace. That is its only use outside a transfer
+  process.
 
 ### The accepted risk, closed by the sandbox
 
@@ -201,7 +201,8 @@ the server ships without it.
 
 Not decided.
 
-- **Which virtual private network**: Tailscale, or WireGuard set up by hand.
+- **How the push in three processes is built**, or simplified, once it is implemented: it is
+  the most laborious part of the credential's design, and is reviewed with the code in front.
 
 - **Which cipher encrypts the users' credentials, and how its key is rotated.**
 - **What protects the credentials if the server itself is taken.** The key outside the
