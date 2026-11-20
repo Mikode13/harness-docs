@@ -21,8 +21,9 @@ network added an app on every device for an MVP that does not need it.
 ## Phases
 
 The maintainer decided on 2026-11-20 to build the security in two phases, so that complexity
-comes when it is needed. At first the maintainer is the only user. What only matters once
-other people use the product waits for that: each user's own credentials and their encryption,
+comes when it is needed. In the MVP the maintainer is the only user; the second phase comes
+after the MVP, when other people start to use the product. What only matters then waits for
+it: each user's own credentials and their encryption,
 creating and disabling the keys of other users, and keeping one user's ids and sessions apart
 from another's. It stays in these documents; it is built later. The roadmap,
 [harness-docs#4](https://github.com/Mikode13/harness-docs/issues/4), places it.

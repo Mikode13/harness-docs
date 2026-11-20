@@ -31,8 +31,8 @@ conversation on a call to the model.
 
 ### User
 
-A person who may use the product: one of a few people the maintainer knows. A user has one
-API key and owns a list of sessions. See the constraints in [mvp.md](mvp.md).
+A person who may use the product: the maintainer in the MVP, and after it a few people he
+knows. A user has one API key and owns a list of sessions. See the constraints in [mvp.md](mvp.md).
 
 ### API key
 

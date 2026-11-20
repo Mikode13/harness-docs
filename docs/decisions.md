@@ -659,7 +659,9 @@ one; it will be rare, so the model only keeps the door open.
   one of them off.
 - **Users with passwords**, more than a few known people need.
 
-**Consequences:** The MVP is no longer for one person: its constraint now names a few people.
+**Consequences:** The product is no longer for one person: a few people are named. On
+2026-11-20 the maintainer placed them after the MVP, in the second phase of security; the MVP's
+only user is him.
 The git credential was the maintainer's account, shared by every user, until the entry "Each
 user brings their own credentials"; which projects each user may work in is an open point of
 the data model. The agent users of the
@@ -824,9 +826,9 @@ cheap VPS offer, is ruled out by the sandbox. How often the database is copied i
 
 **Decision:** Clients reach the API over HTTPS with an API key; the server opens only SSH, with
 keys only, and HTTPS, and the API limits the requests of each address and key. Security is built
-in two phases: at first the maintainer is the only user, and what only matters once other people
-use the product waits until they do, such as each user's own credentials and their encryption,
-the keys of other users, and keeping users apart. It stays in the documents.
+in two phases: in the MVP the maintainer is the only user, and what only matters once other
+people use the product waits until after the MVP, such as each user's own credentials and their
+encryption, the keys of other users, and keeping users apart. It stays in the documents.
 [`design/security.md`](../design/security.md#how-the-server-is-reached) states it.
 
 **Context:** Decided by the maintainer on 2026-11-20. He had first kept a virtual private
@@ -846,5 +848,5 @@ the web, designed in [harness-docs#5](https://github.com/Mikode13/harness-docs/i
 **Consequences:** The server needs a domain and a certificate. In the first phase the
 maintainer's own credentials are kept outside the database, in a file only the service user
 reads or in its environment, so neither the database nor its copies hold them. The private
-network of 2026-11-17 is superseded. The push in three processes is reviewed with the code when it is
-implemented, in case it can be simpler. The roadmap places the second phase.
+network of 2026-11-17 is superseded. The push in three processes is reviewed with the code when
+it is implemented, in case it can be simpler. The roadmap places the second phase.
