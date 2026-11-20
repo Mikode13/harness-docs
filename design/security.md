@@ -20,23 +20,6 @@ internet. The maintainer decided it on 2026-11-20. A man in the middle on the in
 only the network's encrypted traffic, so a key cannot be taken on the way; inside the network
 a request still needs a valid API key.
 
-## Reading the web
-
-What the model reads from the web, R14 of [mvp.md](../mvp.md), is where an instruction hidden
-in a page would come from. The maintainer decided on 2026-11-20 how it is read:
-
-- **A service of its own fetches and parses the pages**, and returns their text. It runs
-  outside every sandbox, so the content of the web never has a terminal next to it.
-- **The agent that uses it is a subagent with no permissions**: no tools that write and no
-  commands. It reads, and answers the agent that asked.
-- **The subagent is given only its question**, not the conversation's code or secrets, and
-  what it answers is treated as data, not as instructions, by the agent that asked.
-- **The service that reads the web runs isolated**: with no credentials, no access to
-  workspaces, limits on the size and the time of what it reads, and no way to reach the
-  private network, the API or the server's own addresses, such as the provider's metadata.
-
-What else this needs is an [open point](#open-points).
-
 ## An API key for each user
 
 Each user has one key, and only the keys of users work. They exist so that nobody else, a bot
@@ -235,9 +218,8 @@ Not decided.
 - **What a sandbox mounts**, since a worktree needs its repository: with one clone for each
   repository shared by its sessions, mounting it would show other sessions' branches.
 - **The network of a sandbox.** By default a container reaches the internet, so a command
-  could send code or keys out. A fixed list of destinations was declined on 2026-11-20: it has
-  to be kept by hand. Reading the web does not depend on it, since the service of its own
-  reads the web, not the sandbox.
+  could send code or keys out. How the product reads the web, and what the sandbox may reach,
+  are designed in [harness-docs#5](https://github.com/Mikode13/harness-docs/issues/5).
 - **The image of a sandbox**: what it holds, such as Node, pnpm and git, and how a project
   that needs another runtime is served.
 - **The user a transfer process runs as**, outside every sandbox.

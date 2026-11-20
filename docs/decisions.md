@@ -818,30 +818,22 @@ before the database is designed.
 time to restore the last copy of the database. A virtualization that is a container, as some
 cheap VPS offer, is ruled out by the sandbox. How often the database is copied is not decided.
 
-## A virtual private network for the clients, and the web read by a service of its own
+## Clients reach the server through a virtual private network
 
 **Decision:** Clients reach the server through a virtual private network, which every device
-joins with an app, and nothing of the server is open to the internet. What the model reads from
-the web is fetched and parsed by a service of its own, outside every sandbox, and the agent that
-uses it is a subagent with no permissions: no tools that write and no commands.
-[`design/security.md`](../design/security.md#reading-the-web) states both.
+joins with an app, and nothing of the server is open to the internet.
+[`design/security.md`](../design/security.md#a-private-network) states it.
 
 **Context:** Decided by the maintainer on 2026-11-20. He asked what a private network adds over
 a server with only SSH and HTTPS open, and kept it so that a man in the middle cannot take a
-key. His concern is the model reading the internet, which a private network does not address:
-it limits what comes in, not what goes out.
+key. His concern was the model reading the internet, which a private network does not address:
+it limits what comes in, not what goes out. That is designed apart, in
+[harness-docs#5](https://github.com/Mikode13/harness-docs/issues/5).
 
 **Alternatives considered:**
 
 - **SSH and HTTPS open to the internet**, with keys only for SSH, a certificate and limits on
   requests. A common setup for a few users; it leaves the API reachable before authentication.
-- **Reading the web from the sandbox.** A page's hidden instruction would then sit next to a
-  terminal.
 
-**Consequences:** Every device, the friends' included, needs the network's app. The service that
-reads the web is one more service to run. The same day the maintainer accepted two more
-measures: the subagent is given only its question and its answer is treated as data, and the
-service runs isolated, unable to reach the private network, the API or the server's own
-addresses. He declined a fixed list of destinations for the sandbox, which has to be kept by
-hand; the sandbox's network stays an open point. The web tools are tracked in
-[harness#174](https://github.com/Mikode13/harness/issues/174).
+**Consequences:** Every device, the friends' included, needs the network's app. Which network,
+Tailscale or WireGuard set up by hand, is not decided.
