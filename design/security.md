@@ -27,6 +27,12 @@ creating and disabling the keys of other users, and keeping one user's ids and s
 from another's. It stays in these documents; it is built later. The roadmap,
 [harness-docs#4](https://github.com/Mikode13/harness-docs/issues/4), places it.
 
+Until then, the maintainer's own credentials, his git token and his keys of the model
+providers, are kept outside the database: in a file on the server that only the service user
+can read, or in its environment. So neither the database nor its copies outside the server
+hold them, in the clear or otherwise. The encrypted credentials in the database, described
+below, are the second phase's.
+
 ## An API key for each user
 
 Each user has one key, and only the keys of users work. They exist so that nobody else, a bot

@@ -843,6 +843,8 @@ the web, designed in [harness-docs#5](https://github.com/Mikode13/harness-docs/i
 - **Building every measure from the start.** It delays the product for users who are not there
   yet.
 
-**Consequences:** The server needs a domain and a certificate. The private network of
-2026-11-17 is superseded. The push in three processes is reviewed with the code when it is
+**Consequences:** The server needs a domain and a certificate. In the first phase the
+maintainer's own credentials are kept outside the database, in a file only the service user
+reads or in its environment, so neither the database nor its copies hold them. The private
+network of 2026-11-17 is superseded. The push in three processes is reviewed with the code when it is
 implemented, in case it can be simpler. The roadmap places the second phase.

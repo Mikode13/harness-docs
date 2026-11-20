@@ -132,8 +132,9 @@ Not decided.
   [authenticate](../flows/authenticate.md).
 - **How the maintainer creates, changes and disables a key.** Through the API was described;
   the commands are not designed.
-- **Which projects each user may work in.** Each user's git credential reaches the
-  repositories that user's account can; how a project is registered for a user is not
+- **Which projects each user may work in.** Each user's git credential is a fine-grained
+  token limited to the repositories they work in; see
+  [security](security.md#git-credentials). How a project is registered for a user is not
   decided.
 - **Memories and plans.** They belong to a user, and to a group once there are groups. They are
   R12 of [mvp.md](../mvp.md), and are designed with their flows.
