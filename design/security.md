@@ -14,8 +14,23 @@ missing. None of it is built yet.
 In the first slice the server is reached only from a private network, not from the internet.
 The maintainer decided it on 2026-11-17. It leaves fewer ways to reach the server.
 
-How a client reaches it, the maintainer's and each user's devices included, the mobile among
-them, is an [open point](#open-points).
+Clients reach it through a virtual private network: the laptop, the mobile and each user's
+devices join it with an app, wherever they are, and nothing of the server is open to the
+internet. The maintainer decided it on 2026-11-20. A man in the middle on the internet sees
+only the network's encrypted traffic, so a key cannot be taken on the way; inside the network
+a request still needs a valid API key.
+
+## Reading the web
+
+What the model reads from the web, R14 of [mvp.md](../mvp.md), is where an instruction hidden
+in a page would come from. The maintainer decided on 2026-11-20 how it is read:
+
+- **A service of its own fetches and parses the pages**, and returns their text. It runs
+  outside every sandbox, so the content of the web never has a terminal next to it.
+- **The agent that uses it is a subagent with no permissions**: no tools that write and no
+  commands. It reads, and answers the agent that asked.
+
+What else this needs is an [open point](#open-points).
 
 ## An API key for each user
 
@@ -198,9 +213,15 @@ the server ships without it.
 
 Not decided.
 
-- **How the clients join the private network.** A virtual private network such as Tailscale
-  or WireGuard, with an app on the laptop and the mobile and an invitation for each user, was
-  proposed.
+- **Which virtual private network**: Tailscale, or WireGuard set up by hand.
+- **Proposed, to confirm: what else reading the web needs.** A subagent without permissions
+  still passes what it read to an agent that has them, and the rest of the sandbox can still
+  reach the internet. Three measures were proposed: the sandbox reaches only the model
+  providers, the package registries and the git host; the subagent is given only its question,
+  not the conversation's code or secrets, and what it answers is treated as data, not as
+  instructions; and the service that reads the web runs isolated, with no credentials, no
+  access to workspaces, limits on size and time, and no way to reach the private network, the
+  API or the server's own addresses.
 
 - **Which cipher encrypts the users' credentials, and how its key is rotated.**
 - **What protects the credentials if the server itself is taken.** The key outside the
