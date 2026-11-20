@@ -29,6 +29,11 @@ in a page would come from. The maintainer decided on 2026-11-20 how it is read:
   outside every sandbox, so the content of the web never has a terminal next to it.
 - **The agent that uses it is a subagent with no permissions**: no tools that write and no
   commands. It reads, and answers the agent that asked.
+- **The subagent is given only its question**, not the conversation's code or secrets, and
+  what it answers is treated as data, not as instructions, by the agent that asked.
+- **The service that reads the web runs isolated**: with no credentials, no access to
+  workspaces, limits on the size and the time of what it reads, and no way to reach the
+  private network, the API or the server's own addresses, such as the provider's metadata.
 
 What else this needs is an [open point](#open-points).
 
@@ -214,14 +219,6 @@ the server ships without it.
 Not decided.
 
 - **Which virtual private network**: Tailscale, or WireGuard set up by hand.
-- **Proposed, to confirm: what else reading the web needs.** A subagent without permissions
-  still passes what it read to an agent that has them, and the rest of the sandbox can still
-  reach the internet. Three measures were proposed: the sandbox reaches only the model
-  providers, the package registries and the git host; the subagent is given only its question,
-  not the conversation's code or secrets, and what it answers is treated as data, not as
-  instructions; and the service that reads the web runs isolated, with no credentials, no
-  access to workspaces, limits on size and time, and no way to reach the private network, the
-  API or the server's own addresses.
 
 - **Which cipher encrypts the users' credentials, and how its key is rotated.**
 - **What protects the credentials if the server itself is taken.** The key outside the
@@ -237,9 +234,10 @@ Not decided.
   shared into a longer-lived one.
 - **What a sandbox mounts**, since a worktree needs its repository: with one clone for each
   repository shared by its sessions, mounting it would show other sessions' branches.
-- **The network of a sandbox.** By default a container reaches the internet and could send
-  code or keys out. Limiting it to the model providers and the package registries was
-  proposed.
+- **The network of a sandbox.** By default a container reaches the internet, so a command
+  could send code or keys out. A fixed list of destinations was declined on 2026-11-20: it has
+  to be kept by hand. Reading the web does not depend on it, since the service of its own
+  reads the web, not the sandbox.
 - **The image of a sandbox**: what it holds, such as Node, pnpm and git, and how a project
   that needs another runtime is served.
 - **The user a transfer process runs as**, outside every sandbox.

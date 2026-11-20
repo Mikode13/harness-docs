@@ -839,6 +839,9 @@ it limits what comes in, not what goes out.
   terminal.
 
 **Consequences:** Every device, the friends' included, needs the network's app. The service that
-reads the web is one more service to run. What else reading the web needs is proposed and not
-confirmed; see the open points of security. The web tools are tracked in
+reads the web is one more service to run. The same day the maintainer accepted two more
+measures: the subagent is given only its question and its answer is treated as data, and the
+service runs isolated, unable to reach the private network, the API or the server's own
+addresses. He declined a fixed list of destinations for the sandbox, which has to be kept by
+hand; the sandbox's network stays an open point. The web tools are tracked in
 [harness#174](https://github.com/Mikode13/harness/issues/174).
