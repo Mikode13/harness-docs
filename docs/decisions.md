@@ -791,3 +791,29 @@ the entry "Each user brings their own credentials" left open how they are stored
 **Consequences:** A copy of the database, or of its backups, does not give the credentials
 without the key. Someone who controls the server does get them; what limits that is an open
 point of security. The cipher and how its key is rotated are not decided.
+
+## What has to survive the server's disk
+
+**Decision:** The API runs on a VPS whose disk is not guaranteed to stay the same. The database
+and the workspaces live on a persistent volume, and the database is also copied regularly
+outside the server. The key that decrypts the users' credentials is kept outside the server as
+well, never next to the copies of the database. Clones and worktrees are rebuilt by the next
+run when they are lost. Work that was not pushed is lost with the disk, and that is accepted.
+The provider is chosen before the API is deployed, and must offer persistent volumes, object
+storage, full virtualization such as KVM, and a private network or a firewall.
+[`design/data-model.md`](../design/data-model.md#where-it-is-kept) states it.
+
+**Context:** Decided by the maintainer on 2026-11-20. He raised that a VPS does not guarantee
+that the same disk is always used. A provider has not been chosen, and does not need to be
+before the database is designed.
+
+**Alternatives considered:**
+
+- **A managed database outside the server.** It takes the database off the VPS's disk, and is
+  one more service to pay for; the copies outside the server were preferred for now.
+- **Pushing the session's branch on its own, so that work is never lost.** It goes against the
+  decision that a push is only ever the user's command.
+
+**Consequences:** Losing the whole server costs at most the work that was not pushed and the
+time to restore the last copy of the database. A virtualization that is a container, as some
+cheap VPS offer, is ruled out by the sandbox. How often the database is copied is not decided.

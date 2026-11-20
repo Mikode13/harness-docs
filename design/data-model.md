@@ -91,10 +91,37 @@ latency. Usage is recorded for each run and can be read for each user.
 
 What it records, how it is collected and how it is read are not designed.
 
+## Where it is kept
+
+The API runs on a rented server, a VPS, whose disk is not guaranteed to stay the same: the
+machine can be moved or rebuilt. The maintainer decided on 2026-11-20 what has to survive that.
+
+| What                               | If it is lost                                                                              | How it is kept                                                       |
+| ---------------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| The database                       | Everything the product knows is gone.                                                      | On a persistent volume, with regular copies outside the server.      |
+| The key that decrypts credentials  | The database still works; each user gives their credentials again.                         | Also outside the server, never next to the copies of the database.   |
+| Clones and worktrees               | Rebuilt by the next run, from the remote repository.                                       | On a persistent volume, so that it is rare.                          |
+| Work that was not pushed           | Gone: commits that were not pushed and the history to undo them live next to the worktree. | Not kept elsewhere. It is accepted, since a push is never automatic. |
+| Clean repositories, sandbox images | Nothing: they are temporary or rebuilt.                                                    | Nowhere in particular.                                               |
+
+What the server has to offer, whichever provider it is:
+
+- **Persistent volumes** that survive moving or rebuilding the machine, for the database and
+  the workspaces.
+- **Object storage**, from the same provider or another, for the copies of the database
+  outside the server.
+- **Full virtualization**, such as KVM, and not a container such as OpenVZ or LXC, where a
+  rootless container engine usually does not run and the sandbox would not work.
+- **A private network or a firewall**, for the [private network](security.md#a-private-network)
+  of the first slice.
+
 ## Open points
 
 Not decided.
 
+- **The provider of the server.** It is chosen before the API is deployed, against the
+  requirements above.
+- **How often the database is copied, and for how long the copies are kept.**
 - **The database engine.** SQLite fits an API that is the only writer, on one server; a server
   database such as PostgreSQL fits searching archived conversations (R13 of
   [mvp.md](../mvp.md)) and was assumed by the older issues of harness-api.

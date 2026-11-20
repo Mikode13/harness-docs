@@ -14,6 +14,9 @@ missing. None of it is built yet.
 In the first slice the server is reached only from a private network, not from the internet.
 The maintainer decided it on 2026-11-17. It leaves fewer ways to reach the server.
 
+How a client reaches it, the maintainer's and each user's devices included, the mobile among
+them, is an [open point](#open-points).
+
 ## An API key for each user
 
 Each user has one key, and only the keys of users work. They exist so that nobody else, a bot
@@ -194,6 +197,10 @@ the server ships without it.
 ## Open points
 
 Not decided.
+
+- **How the clients join the private network.** A virtual private network such as Tailscale
+  or WireGuard, with an app on the laptop and the mobile and an invitation for each user, was
+  proposed.
 
 - **Which cipher encrypts the users' credentials, and how its key is rotated.**
 - **What protects the credentials if the server itself is taken.** The key outside the

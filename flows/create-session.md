@@ -170,8 +170,9 @@ Not decided.
 - **Whether a session created with "none" can get a project later.** An ask that stops the
   run and asks where to work was considered, and left for later.
 - **What a rebuilt workspace starts from.** When the worktree of a session is lost and a run
-  prepares it again: the session's own branch if the clone or the remote still has it, or
-  the default branch, and how the user learns that work that was not pushed is gone.
+  prepares it again: the session's own branch if the remote still has it, or the default
+  branch, and how the user learns that work that was not pushed is gone. That such work is
+  lost with the disk is accepted; see [data-model](../design/data-model.md#where-it-is-kept).
 - **One clone of a repository for all its sessions.** Whether sessions on the same project
   share a clone and add their worktrees to it, and what two first runs that clone at once
   do, was not discussed.
