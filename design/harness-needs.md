@@ -40,10 +40,11 @@ Two other ways were considered:
 [harness#136](https://github.com/Mikode13/harness/issues/136).
 
 A run of the product can be a workflow, with a planner, an executor and a reviewer; the
-maintainer confirmed on 2026-11-21 that the MVP uses workflows. #111 covers one model-API
-agent and leaves composed flows out, so the snapshot of a workflow needs #136, which builds on
-#111. For the MVP, the snapshot taken when a run completes is enough: the product accepts that
-a run cut short is interrupted, so continuing from a checkpoint inside a run can come later.
+maintainer confirmed on 2026-11-21 that the MVP uses workflows. Issue #111 covers one
+model-API agent and leaves composed flows out, so the snapshot of a workflow needs #136, which
+builds on #111. For the MVP, the snapshot taken when a run completes is enough: the product
+accepts that a run cut short is interrupted, so continuing from a checkpoint inside a run can
+come later.
 
 ### The final answer and the ask as events
 
@@ -59,9 +60,8 @@ stores and forwards events has everything a run produced in one place.
 
 The maintainer agreed to the two families of events on 2026-11-15, and this need was noted
 then. On 2026-11-21 he chose the first of the options #177 gives: a complete record of the
-run, apart from the optional narration of progress, with its own contract. The harness has a rule that a progress
-event never carries what a consumer needs to be correct, so the issue asks for that rule to
-be kept or changed on purpose.
+run, apart from the optional narration of progress, with its own contract. So the harness's
+rule that a progress event never carries what a consumer needs to be correct is kept.
 
 ## Candidates
 
