@@ -871,3 +871,27 @@ in order as rows are added, and a client can make one without asking the server.
 
 **Consequences:** An id tells roughly when it was made, which is not secret here. The server
 needs PostgreSQL, on the persistent volume with copies outside the server.
+
+## The MVP runs workflows, and the harness gives a complete record of a run
+
+**Decision:** A run of the MVP can be a workflow, so the harness has to save and restore a
+workflow's conversations ([harness#136](https://github.com/Mikode13/harness/issues/136)) as well
+as one agent's ([harness#111](https://github.com/Mikode13/harness/issues/111)); for the MVP the
+snapshot taken when a run completes is enough. For
+[harness#177](https://github.com/Mikode13/harness/issues/177), the harness gives a complete,
+ordered record of a run, apart from the optional narration of progress and with its own
+contract. [`design/harness-needs.md`](../design/harness-needs.md) holds both.
+
+**Context:** Decided by the maintainer on 2026-11-21, while checking that the harness's work was
+ready to hand to an agent. #111 alone covers single agents only.
+
+**Alternatives considered:**
+
+- **Single agents only in the MVP.** #111 would be enough, and the product would lose its
+  workflows.
+- **For #177, changing the rule that progress never carries what a consumer needs, or a helper
+  that merges the three channels.** The first breaks a contract consumers rely on; the second
+  leaves the order to be rebuilt.
+
+**Consequences:** The harness's work before the API is #111, then #136, and #177 beside them.
+Continuing a workflow from a checkpoint inside a run waits.

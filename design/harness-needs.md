@@ -35,6 +35,16 @@ Two other ways were considered:
 - **Passing only the text of the earlier messages** to each run, and replacing it later. It
   blocks nothing, but each run starts almost from nothing about the code.
 
+### Save and restore a workflow's conversations
+
+[harness#136](https://github.com/Mikode13/harness/issues/136).
+
+A run of the product can be a workflow, with a planner, an executor and a reviewer; the
+maintainer confirmed on 2026-11-21 that the MVP uses workflows. #111 covers one model-API
+agent and leaves composed flows out, so the snapshot of a workflow needs #136, which builds on
+#111. For the MVP, the snapshot taken when a run completes is enough: the product accepts that
+a run cut short is interrupted, so continuing from a checkpoint inside a run can come later.
+
 ### The final answer and the ask as events
 
 [harness#177](https://github.com/Mikode13/harness/issues/177).
@@ -48,7 +58,8 @@ Both happen inside a run, so they belong with the harness's events; see
 stores and forwards events has everything a run produced in one place.
 
 The maintainer agreed to the two families of events on 2026-11-15, and this need was noted
-then. How the harness offers them is not designed. The harness has a rule that a progress
+then. On 2026-11-21 he chose the first of the options #177 gives: a complete record of the
+run, apart from the optional narration of progress, with its own contract. The harness has a rule that a progress
 event never carries what a consumer needs to be correct, so the issue asks for that rule to
 be kept or changed on purpose.
 
