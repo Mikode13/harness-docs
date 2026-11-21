@@ -850,3 +850,24 @@ maintainer's own credentials are kept outside the database, in a file only the s
 reads or in its environment, so neither the database nor its copies hold them. The private
 network of 2026-11-17 is superseded. The push in three processes is reviewed with the code when
 it is implemented, in case it can be simpler. The roadmap places the second phase.
+
+## PostgreSQL, with ids that start with their time
+
+**Decision:** The API's database is PostgreSQL. Every entity's id is a UUID of version 7, whose
+first part is the time it was made. A client generates the ids of a session and of a prompt in
+the same format, and they stay unique within their user.
+[`design/data-model.md`](../design/data-model.md#the-entities) states it.
+
+**Context:** Decided by the maintainer on 2026-11-21. He wanted ids that begin with their date,
+so that storing them is easier: ids made one after another sort together, which keeps an index
+in order as rows are added, and a client can make one without asking the server.
+
+**Alternatives considered:**
+
+- **SQLite**, which fits an API that is the only writer on one server. PostgreSQL also searches
+  text well, which retrieving archived conversations (R13) needs, and was what the older issues
+  of harness-api assumed.
+- **A random UUID, version 4.** It leaves new rows scattered through an index.
+
+**Consequences:** An id tells roughly when it was made, which is not secret here. The server
+needs PostgreSQL, on the persistent volume with copies outside the server.
