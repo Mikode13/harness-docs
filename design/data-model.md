@@ -37,11 +37,12 @@ erDiagram
 
 The database is PostgreSQL, and every entity has an id of its own: a UUID of version 7, whose
 first part is the time it was made, so ids sort in the order they were created and keep an index
-in order as rows are added. The maintainer decided both on 2026-11-21. The ids a client
-generates, a session's and a prompt's, use the same format and are unique only within their
-user, so a session or a prompt is known by its user and its id; anything named after a session's
-id, such as the provisional name of its branch, includes its user too. See
-[authenticate](../flows/authenticate.md).
+in order as rows are added. The maintainer decided both on 2026-11-21. The time in an id a
+client generates is that client's clock, so the API orders and dates rows by when it stored
+them, never by such an id. The ids a client generates, a session's and a prompt's, use the same
+format and are unique only within their user, so a session or a prompt is known by its user and
+its id; anything named after a session's id, such as the provisional name of its branch,
+includes its user too. See [authenticate](../flows/authenticate.md).
 
 | Entity              | What it is                                                                                                                                                          | Where it is decided                                                            |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
