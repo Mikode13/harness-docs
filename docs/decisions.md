@@ -850,3 +850,48 @@ maintainer's own credentials are kept outside the database, in a file only the s
 reads or in its environment, so neither the database nor its copies hold them. The private
 network of 2026-11-17 is superseded. The push in three processes is reviewed with the code when
 it is implemented, in case it can be simpler. The roadmap places the second phase.
+
+## PostgreSQL, with ids that start with their time
+
+**Decision:** The API's database is PostgreSQL. Every entity's id is a UUID of version 7, whose
+first part is the time it was made. A client generates the ids of a session and of a prompt in
+the same format, and they stay unique within their user.
+[`design/data-model.md`](../design/data-model.md#the-entities) states it.
+
+**Context:** Decided by the maintainer on 2026-11-21. He wanted ids that begin with their date,
+so that storing them is easier: ids made one after another sort together, which keeps an index
+in order as rows are added, and a client can make one without asking the server.
+
+**Alternatives considered:**
+
+- **SQLite**, which fits an API that is the only writer on one server. PostgreSQL also searches
+  text well, which retrieving archived conversations (R13) needs, and was what the older issues
+  of harness-api assumed.
+- **A random UUID, version 4.** It leaves new rows scattered through an index.
+
+**Consequences:** An id tells roughly when it was made, which is not secret here. The server
+needs PostgreSQL, on the persistent volume with copies outside the server.
+
+## The MVP runs workflows, and the harness gives a complete record of a run
+
+**Decision:** A run of the MVP can be a workflow, so the harness has to save and restore a
+workflow's conversations ([harness#136](https://github.com/Mikode13/harness/issues/136)) as well
+as one agent's ([harness#111](https://github.com/Mikode13/harness/issues/111)); for the MVP the
+snapshot taken when a run completes is enough. For
+[harness#177](https://github.com/Mikode13/harness/issues/177), the harness gives a complete,
+ordered record of a run, apart from the optional narration of progress and with its own
+contract. [`design/harness-needs.md`](../design/harness-needs.md) holds both.
+
+**Context:** Decided by the maintainer on 2026-11-21, while checking that the harness's work was
+ready to hand to an agent. #111 alone covers single agents only.
+
+**Alternatives considered:**
+
+- **Single agents only in the MVP.** #111 would be enough, and the product would lose its
+  workflows.
+- **For #177, changing the rule that progress never carries what a consumer needs, or a helper
+  that merges the three channels.** The first breaks a contract consumers rely on; the second
+  leaves the order to be rebuilt.
+
+**Consequences:** The harness's work before the API is #111, then #136, and #177 beside them.
+Continuing a workflow from a checkpoint inside a run waits.

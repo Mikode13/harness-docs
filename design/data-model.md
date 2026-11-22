@@ -35,10 +35,14 @@ erDiagram
     RUN ||--o{ USAGE : "records"
 ```
 
-Every entity has an id of its own. The ids a client generates, a session's and a prompt's,
-are unique only within their user, so a session or a prompt is known by its user and its id;
-anything named after a session's id, such as the provisional name of its branch, includes its
-user too. See [authenticate](../flows/authenticate.md).
+The database is PostgreSQL, and every entity has an id of its own: a UUID of version 7, whose
+first part is the time it was made, so ids sort in the order they were created and keep an index
+in order as rows are added. The maintainer decided both on 2026-11-21. The time in an id a
+client generates is that client's clock, so the API orders and dates rows by when it stored
+them, never by such an id. The ids a client generates, a session's and a prompt's, use the same
+format and are unique only within their user, so a session or a prompt is known by its user and
+its id; anything named after a session's id, such as the provisional name of its branch,
+includes its user too. See [authenticate](../flows/authenticate.md).
 
 | Entity              | What it is                                                                                                                                                          | Where it is decided                                                            |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
@@ -122,14 +126,6 @@ Not decided.
 - **The provider of the server.** It is chosen before the API is deployed, against the
   requirements above.
 - **How often the database is copied, and for how long the copies are kept.**
-- **The database engine.** SQLite fits an API that is the only writer, on one server; a server
-  database such as PostgreSQL fits searching archived conversations (R13 of
-  [mvp.md](../mvp.md)) and was assumed by the older issues of harness-api.
-- **The format of the ids.** The client already generates the ids of a session and of a
-  prompt, and they are unique only within their user: a session and a prompt are known by
-  their user and their id, and so is anything named after a session's id, such as its
-  branch's provisional name. See [create-session](../flows/create-session.md) and
-  [authenticate](../flows/authenticate.md).
 - **How the maintainer creates, changes and disables a key.** Through the API was described;
   the commands are not designed.
 - **Which projects each user may work in.** Each user's git credential is a fine-grained
