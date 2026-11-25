@@ -29,6 +29,11 @@ conversation on a call to the model.
 
 ## Settled terms
 
+### Uróboros
+
+The public name of the personal assistant in the CLI and on mobile. Its emblem is the dragon
+biting its tail. A run still identifies the agent or workflow stage that performed each action.
+
 ### User
 
 A person who may use the product: the maintainer in the MVP, and after it a few people he
