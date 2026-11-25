@@ -235,11 +235,6 @@ the agent continues from. The harness does not offer one yet; see
 
 ## Open points
 
-- **Metis across clients.** Metis is the name of the personal assistant in the terminal
-  design. We propose using the same name for the assistant on mobile. A run still identifies
-  the agent or workflow stage that did the work. See the
-  [terminal design](https://github.com/Mikode13/harness-cli/issues/23).
-
 These are not decided. They are inputs to system design (agenda items in
 [mvp.md](mvp.md)), not decisions. Points that were here and are now decided are in
 [design/events.md](design/events.md), [flows/ask-and-answer.md](flows/ask-and-answer.md) and
@@ -259,6 +254,10 @@ as the harness gives it.
   [configuration](#configuration); what it holds waits for R10's design. The
   flow for R09 is written and still has no term for a point the code is restored to; see
   [flows/changes-and-push.md](flows/changes-and-push.md#open-points).
+- **Metis across clients.** Metis is the name the terminal design gives the assistant the user
+  talks to. Using the same name on mobile was proposed. A run still names the agent or the
+  workflow stage that did the work. See the
+  [terminal design](https://github.com/Mikode13/harness-cli/issues/23).
 
 ## Words used elsewhere
 
