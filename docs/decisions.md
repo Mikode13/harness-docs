@@ -895,3 +895,12 @@ ready to hand to an agent. #111 alone covers single agents only.
 
 **Consequences:** The harness's work before the API is #111, then #136, and #177 beside them.
 Continuing a workflow from a checkpoint inside a run waits.
+
+## Use Uróboros as the public assistant name
+
+**Decision:** Use Uróboros in the CLI and on mobile. The dragon biting its tail is its emblem.
+
+**Context:** The maintainer chose one name for the assistant and its visual identity on 2026-11-25.
+
+**Consequences:** The header and assistant replies use Uróboros. Delegated activity identifies
+its actor. The terminal command remains `harness-cli`.
