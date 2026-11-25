@@ -235,6 +235,11 @@ the agent continues from. The harness does not offer one yet; see
 
 ## Open points
 
+- **Metis across clients.** Metis is the name of the personal assistant in the terminal
+  design. We propose using the same name for the assistant on mobile. A run still identifies
+  the agent or workflow stage that did the work. See the
+  [terminal design](https://github.com/Mikode13/harness-cli/issues/23).
+
 These are not decided. They are inputs to system design (agenda items in
 [mvp.md](mvp.md)), not decisions. Points that were here and are now decided are in
 [design/events.md](design/events.md), [flows/ask-and-answer.md](flows/ask-and-answer.md) and
