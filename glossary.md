@@ -29,6 +29,11 @@ conversation on a call to the model.
 
 ## Settled terms
 
+### Uróboros
+
+The public name of the personal assistant in the CLI and on mobile. Its emblem is the dragon
+biting its tail. A run still identifies the agent or workflow stage that performed each action.
+
 ### User
 
 A person who may use the product: the maintainer in the MVP, and after it a few people he
@@ -254,10 +259,6 @@ as the harness gives it.
   [configuration](#configuration); what it holds waits for R10's design. The
   flow for R09 is written and still has no term for a point the code is restored to; see
   [flows/changes-and-push.md](flows/changes-and-push.md#open-points).
-- **Metis across clients.** Metis is the name the terminal design gives the assistant the user
-  talks to. Using the same name on mobile was proposed. A run still names the agent or the
-  workflow stage that did the work. See the
-  [terminal design](https://github.com/Mikode13/harness-cli/issues/23).
 
 ## Words used elsewhere
 
