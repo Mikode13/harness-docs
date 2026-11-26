@@ -68,7 +68,8 @@ Every dependency points towards the harness, and the harness depends on none of 
 
 ## Reading the design
 
-Start with [the MVP scope](mvp.md) and [glossary](glossary.md), then use the
+Start with [the MVP scope](mvp.md), [product roadmap](roadmap.md) and
+[glossary](glossary.md), then use the
 [flow index](flows/README.md) to follow one user action. The [data model](design/data-model.md)
 shows the conceptual entities; physical tables, indexes and migrations belong to the API.
 [Harness needs](design/harness-needs.md) identifies library capabilities the product still
@@ -92,6 +93,8 @@ here, never the reverse. The harness's documents never describe the product.
 ## Layout
 
 - [`mvp.md`](mvp.md): the scope and the requirements of the MVP.
+- [`roadmap.md`](roadmap.md): evidenced milestones, delivery states and future research.
+- [`research/open-models.md`](research/open-models.md): bounded open-model and provider evaluation plan.
 - [`glossary.md`](glossary.md): the words the product uses for its parts.
 - `flows/`: one file per flow, with its diagram; [`flows/README.md`](flows/README.md) lists
   them.
