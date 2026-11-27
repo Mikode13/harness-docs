@@ -94,7 +94,7 @@ step 7. There is one mechanism for both.
   reads; the snapshot is what the agent continues from, and the API stores it without
   reading it. A run whose answer is stored and whose snapshot is lost would leave the chat
   whole and the next prompt without its context, so a run is `completed` only once its
-  snapshot is stored. The harness does not offer a snapshot yet; see
+  snapshot is stored. The harness offers the snapshot since its release 13.3.0; see
   [harness-needs](../design/harness-needs.md).
 
 ## Open points
