@@ -10,9 +10,15 @@ an executor, and nothing here asks it to.
 
 ## Agreed
 
+The three are in the harness's [releases](https://github.com/Mikode13/harness/releases): the
+run's record of #177 in 13.2.0, and the snapshots of #111 and of #136, at the end of a run, in
+13.3.0. Checkpoints inside a run stay open under #136.
+
 ### Save and restore an agent's conversation
 
-[harness#111](https://github.com/Mikode13/harness/issues/111).
+[harness#111](https://github.com/Mikode13/harness/issues/111). Delivered in 13.3.0:
+`createLLMAgent` returns an agent whose `snapshot()` gives its conversation as versioned JSON,
+and whose `restore` option takes it back.
 
 The API starts one executor for each run, as a process of its own; see
 [where a run executes](run-lifecycle.md#where-a-run-executes). The harness keeps an agent's
@@ -37,7 +43,9 @@ Two other ways were considered:
 
 ### Save and restore a workflow's conversations
 
-[harness#136](https://github.com/Mikode13/harness/issues/136).
+[harness#136](https://github.com/Mikode13/harness/issues/136). Delivered for the MVP in 13.3.0:
+`createLLMOrchestrator` takes a snapshot of the planner's, the executor's and the reviewer's
+conversations once a run ended, and restores it. A checkpoint inside a run is not supported.
 
 A run of the product can be a workflow, with a planner, an executor and a reviewer; the
 maintainer confirmed on 2026-11-21 that the MVP uses workflows. Issue #111 covers one
@@ -48,11 +56,13 @@ come later.
 
 ### The final answer and the ask as events
 
-[harness#177](https://github.com/Mikode13/harness/issues/177).
+[harness#177](https://github.com/Mikode13/harness/issues/177). Delivered in 13.2.0: a run given
+`onRecord` hands it every progress event, each question and approval with its answer, and the
+run's end, in order.
 
-Today the final answer of a run travels in its result, and what an agent asks its user
-arrives through a callback: `ask` for a question and `approve` for an approval. Neither is
-an event.
+Before it, the final answer of a run travelled only in its result, and what an agent asked its
+user only through a callback: `ask` for a question and `approve` for an approval. Neither was an
+event.
 
 Both happen inside a run, so they belong with the harness's events; see
 [events](events.md). The harness should offer them as events too, so that a consumer that
@@ -68,11 +78,13 @@ rule that a progress event never carries what a consumer needs to be correct is 
 Implied by the documents, and not agreed. Each one says why it might be needed.
 
 - **The error that ends a run, as an event.** [events](events.md) puts an error inside a
-  run, with the final answer and the ask, but only those two were named as needs. Today a
-  run that fails throws.
+  run, with the final answer and the ask, but only those two were named as needs. The run's
+  record of #177 now ends a failed run with an `end` entry that describes the error, while
+  `run()` still throws.
 - **A version for the schema of the events.** The product stores each event with the version
-  of its schema, since a stored event outlives the harness that produced it. Whether that
-  version is the harness package's own or one the harness states for its events is open.
+  of its schema, since a stored event outlives the harness that produced it. The run's record
+  gives each entry a `version` the harness states for its entries, `runRecordVersion`, apart
+  from the package's. Which version the product stores with each event is still open.
 - **Restoring a run that waits for an answer.** After a restart, a run that asked something
   is interrupted and its ask is closed, because the API has lost the executor that asked; see the
   [run lifecycle](run-lifecycle.md#rules). Going on from the ask instead depends on

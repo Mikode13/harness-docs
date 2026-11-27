@@ -230,8 +230,8 @@ snapshot the run before it left, and leaves its own when it ends. The API stores
 reading it.
 
 It is not the conversation. The conversation is what the user reads; the snapshot is what
-the agent continues from. The harness does not offer one yet; see
-[design/harness-needs.md](design/harness-needs.md).
+the agent continues from. The harness offers one since its release 13.3.0, for one agent and for
+a workflow at the end of a run; see [design/harness-needs.md](design/harness-needs.md).
 
 ## Open points
 
